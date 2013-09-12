@@ -202,3 +202,31 @@ func TestAll( t *testing.T ) {
 	})
 	asserts.Equals( t, "should return false as not all values are < 4", "false", fmt.Sprintf("%v",v))
 }
+
+func TestAny( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+	v := Any(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 5 
+	})
+	asserts.Equals( t, "should return true as at least one value is less than 5", "true", fmt.Sprintf("%v",v))
+
+	v = Any(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 4 
+	})
+	asserts.Equals( t, "should return true as at least one value is less than 4", "true", fmt.Sprintf("%v",v))
+
+	v = Any(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 3 
+	})
+	asserts.Equals( t, "should return true as at least one value is less than 3", "true", fmt.Sprintf("%v",v))
+
+	v = Any(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 2 
+	})
+	asserts.Equals( t, "should return true as at least one value is less than 2", "true", fmt.Sprintf("%v",v))
+
+	v = Any(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 1 
+	})
+	asserts.Equals( t, "should return false as no value are less than 1", "false", fmt.Sprintf("%v",v))
+}

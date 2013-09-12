@@ -127,7 +127,7 @@ func IdentityEach ( val T, index int, list[]T ) bool {
 }
 
 // Determine if at least one element in the object matches a truth test.
-// Aliased as `any`.
+// Aliased as `some`.
 func Any (obj []T, opt_iterator ...func(val T,index int, list[]T)bool ) bool {
 	var iterator func(T,int, []T)bool
 	if len(opt_iterator) == 0 {
@@ -153,6 +153,7 @@ func Any (obj []T, opt_iterator ...func(val T,index int, list[]T)bool ) bool {
 	Each(obj, eachFunc)
 	return anyresult
 }
+var Some func(obj []T, opt_iterator ...func(val T,index int, list[]T)bool ) bool = Any
 
 
 // Return the first value which passes a truth test. 
