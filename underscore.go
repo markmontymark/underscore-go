@@ -155,7 +155,8 @@ func Any (obj []T, opt_iterator ...func(val T,index int, list[]T)bool ) bool {
 }
 
 
-// Return the first value which passes a truth test. Aliased as `detect`.
+// Return the first value which passes a truth test. 
+// Aliased as `detect`.
 func Find (obj []T, iterator func(T,int,[]T) bool ) T {
 	var result T
 	Any(obj, func (value T, index int, list []T) bool {
@@ -172,4 +173,25 @@ func Find (obj []T, iterator func(T,int,[]T) bool ) T {
 }
 
 var Detect func(obj []T, iterator func(T,int,[]T) bool ) T  = Find
+
+
+
+
+// Return all the elements that pass a truth test.
+// Aliased as `select`.
+func Filter (obj []T, iterator eachlistiterator ) []T {
+	results := make([]T,0)
+	if obj == nil || len(obj) == 0 {
+		return results
+	}
+	Each(obj, func (value T, index int, list []T) bool {
+      if iterator(value, index, list) {
+			results = append(results , value)
+		}
+		return EachContinue
+	})
+	return results;
+}
+
+var Select func(obj []T, iterator eachlistiterator ) []T = Filter
 

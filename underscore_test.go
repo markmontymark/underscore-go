@@ -143,7 +143,7 @@ func TestFind( t *testing.T ) {
 	v = Find(array, func(n T, i int, list []T) bool { return false })
 	asserts.Nil( t, "should return `nil` if `value` is not found", v)
 }
-func TestDetect( t *testing.T ) {
+func TestDetect_asFindAlias( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
 		v := Detect(array, func(n T, i int, list []T) bool { 
 		return n.(int) > 2 
@@ -152,4 +152,19 @@ func TestDetect( t *testing.T ) {
 
 	v = Detect(array, func(n T, i int, list []T) bool { return false })
 	asserts.Nil( t, "should return `nil` if `value` is not found", v)
+}
+
+func TestFilter( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+		v := Filter(array, func(n T, i int, list []T) bool { 
+		return n.(int) > 2 
+	})
+	asserts.Equals( t, "should return first found `value`", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
+}
+func TestSelect_asFilterAlias( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+		v := Select(array, func(n T, i int, list []T) bool { 
+		return n.(int) > 2 
+	})
+	asserts.Equals( t, "should return first found `value`", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
 }
