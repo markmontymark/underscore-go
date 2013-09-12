@@ -132,3 +132,24 @@ func TestReduceRight( t *testing.T ) {
 	}
 	asserts.Equals( t, "can ReduceRight divide up an array", ",4,3,2",	v.(string))
 }
+
+func TestFind( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+		v := Find(array, func(n T, i int, list []T) bool { 
+		return n.(int) > 2 
+	})
+	asserts.IntEquals( t, "should return first found `value`", 3, v.(int))
+
+	v = Find(array, func(n T, i int, list []T) bool { return false })
+	asserts.Nil( t, "should return `nil` if `value` is not found", v)
+}
+func TestDetect( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+		v := Detect(array, func(n T, i int, list []T) bool { 
+		return n.(int) > 2 
+	})
+	asserts.IntEquals( t, "should return first found `value`", 3, v.(int))
+
+	v = Detect(array, func(n T, i int, list []T) bool { return false })
+	asserts.Nil( t, "should return `nil` if `value` is not found", v)
+}

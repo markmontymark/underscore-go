@@ -14,7 +14,9 @@ const EachBreak    bool = true
 
 // TODO, so far, I've morphed _.each into EachArray and EachStruct, looking for a way to switch  on elems/elem and then can merge the two
 
-func Each(elems []T, iterator func(T,int,[]T) bool ) {
+type eachlistiterator func(T,int,[]T) bool
+
+func Each(elems []T, iterator eachlistiterator ) {
 	if elems == nil {
 		return
 	} 
@@ -120,5 +122,54 @@ func ReduceRight (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
 
 var FoldR  func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = ReduceRight
 
+func IdentityEach ( val T, index int, list[]T ) bool {
+	return val == val
+}
 
+// Determine if at least one element in the object matches a truth test.
+// Aliased as `any`.
+func Any (obj []T, opt_iterator ...func(val T,index int, list[]T)bool ) bool {
+	var iterator func(T,int, []T)bool
+	if len(opt_iterator) == 0 {
+		iterator = IdentityEach
+	} else {
+		iterator = opt_iterator[0]
+	}	
+	anyresult := false
+	if obj == nil {
+		return anyresult
+	}
+
+	eachFunc := func (value T, index int, list []T) bool {
+		if anyresult {
+			return EachBreak
+		}
+		anyresult = iterator(value, index, list)
+		if anyresult {
+			return EachBreak
+		}
+		return EachContinue
+	}
+	Each(obj, eachFunc)
+	return anyresult
+}
+
+
+// Return the first value which passes a truth test. Aliased as `detect`.
+func Find (obj []T, iterator func(T,int,[]T) bool ) T {
+	var result T
+	Any(obj, func (value T, index int, list []T) bool {
+		//fmt.Printf("in Any(%v,%v,...)\n",value,index)
+      if iterator(value, index, list) {
+			//fmt.Printf("in Any iterator, it returned true for value = %v\n",value)
+        result = value
+        return EachBreak
+      }
+		//fmt.Printf("in Any iterator, else returned value so continue n",value)
+		return EachContinue
+	})
+	return result
+}
+
+var Detect func(obj []T, iterator func(T,int,[]T) bool ) T  = Find
 
