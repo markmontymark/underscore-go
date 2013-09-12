@@ -76,4 +76,47 @@ func TestMap( t *testing.T ) {
 }
 
 
+func TestReduce( t *testing.T ) {
+	
+	v,err :=	Reduce( 
+		[]T{1,2,3}, 
+		func (sum T, num T, i int, list []T) T { return sum.(int) + num.(int) }, 
+		0)
+	if err != "" {
+		fmt.Printf("FAIL: %s\n", err )
+		return
+	}
+	asserts.IntEquals( t, "can reduce sum up an array", 6,	v.(int))
+
+	v,err =	Reduce( 
+		[]T{1,2,3}, 
+		func (sum T, num T, i int, list []T) T { return sum.(int) * num.(int) }, 
+		3)
+	if err != "" {
+		fmt.Printf("FAIL: %s\n", err )
+		return
+	}
+	asserts.IntEquals( t, "can reduce multiply up an array", 18,	v.(int))
+
+	v,err =	Inject( 
+		[]T{1,2,3}, 
+		func (sum T, num T, i int, list []T) T { return sum.(int) * num.(int) }, 
+		3)
+	if err != "" {
+		fmt.Printf("FAIL: %s\n", err )
+		return
+	}
+	asserts.IntEquals( t, "can inject multiply up an array", 18,	v.(int))
+
+	v,err =	Inject( 
+		[]T{1,2,3}, 
+		func (sum T, num T, i int, list []T) T { return sum.(int) * num.(int) }, 
+		3)
+	if err != "" {
+		fmt.Printf("FAIL: %s\n", err )
+		return
+	}
+	asserts.IntEquals( t, "can foldl multiply up an array", 18,	v.(int))
+
+}
 

@@ -67,7 +67,32 @@ func MapMap(obj map[T]T, iterator func(T,T,map[T]T) T, context T) []T {
 var Collect func (obj []T, iterator func(T,int,[]T) T, context T) []T = Map
 var CollectMap func (obj map[T]T, iterator func(T,T,map[T]T) T, context T) []T = MapMap
 
+const ReduceError = "Reduce of empty array with no initial value"
 
+// **Reduce** builds up a single result from a list of values, aka `inject`,
+// or `foldl`. Delegates to **ECMAScript 5**'s native `reduce` if available.
+func Reduce (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
+	initial := len(memo) > 0
+	if obj == nil {
+		obj = make([]T,0)
+	}
+	Each(obj, func (value T, index int, list []T) bool {
+		if !initial {
+			memo[0] = value
+			initial = true
+		} else {
+			memo[0] = iterator(memo[0], value, index, list)
+		}
+		return EachContinue
+	})
+	if !initial {
+		return nil,ReduceError
+	}
+	return memo[0],""
+}
+
+var Inject func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = Reduce
+var FoldL  func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = Reduce
 
 
 
