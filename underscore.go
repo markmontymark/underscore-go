@@ -195,3 +195,11 @@ func Filter (obj []T, iterator eachlistiterator ) []T {
 
 var Select func(obj []T, iterator eachlistiterator ) []T = Filter
 
+
+// Return all the elements for which a truth test fails.
+func Reject (obj []T, iterator eachlistiterator ) []T {
+	return Filter(obj, func(value T, index int, list []T) bool {
+		return !iterator(value, index, list)
+	})
+}
+

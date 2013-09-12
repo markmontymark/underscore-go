@@ -168,3 +168,11 @@ func TestSelect_asFilterAlias( t *testing.T ) {
 	})
 	asserts.Equals( t, "should return first found `value`", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
 }
+
+func TestReject( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+		v := Reject(array, func(n T, i int, list []T) bool { 
+		return n.(int) > 2 
+	})
+	asserts.Equals( t, "should return first found `value`", fmt.Sprintf("%v",[]T{1,2}), fmt.Sprintf("%v",v))
+}
