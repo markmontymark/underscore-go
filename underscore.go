@@ -64,4 +64,10 @@ func MapMap(obj map[T]T, iterator func(T,T,map[T]T) T, context T) []T {
 	return results
 }
 
+var Collect func (obj []T, iterator func(T,int,[]T) T, context T) []T = Map
+var CollectMap func (obj map[T]T, iterator func(T,T,map[T]T) T, context T) []T = MapMap
+
+
+
+
 

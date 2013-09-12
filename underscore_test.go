@@ -60,6 +60,19 @@ func TestMap( t *testing.T ) {
 		"[a b c]",
 		fmt.Sprintf("%v", MapMap(map[T]T{"a":1,"b":2,"c":3}, identityKeyMap , nil ) ))
 
+	asserts.Equals( t, "testing collect with array", 
+		"[2 5 4 3]",
+		fmt.Sprintf("%v", Collect([]T{0,3,2,1}, add2slice ,nil ) ))
+
+	asserts.Equals( t, "testing collectmap with map[string]int ", 
+		"[3 4 5]",
+		fmt.Sprintf("%v", CollectMap(map[T]T{"a":1,"b":2,"c":3}, add2map , nil ) ))
+
+	asserts.Equals( t, "testing collectmap with map[string]int ", 
+		"[a b c]",
+		fmt.Sprintf("%v", CollectMap(map[T]T{"a":1,"b":2,"c":3}, identityKeyMap , nil ) ))
+
+
 }
 
 
