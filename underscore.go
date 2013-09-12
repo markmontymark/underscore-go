@@ -14,7 +14,7 @@ const EachBreak    bool = true
 
 // TODO, so far, I've morphed _.each into EachArray and EachStruct, looking for a way to switch  on elems/elem and then can merge the two
 
-func EachArray(elems []T, iterator func(T,int,[]T) bool ) {
+func Each(elems []T, iterator func(T,int,[]T) bool ) {
 	if elems == nil {
 		return
 	} 
@@ -25,7 +25,7 @@ func EachArray(elems []T, iterator func(T,int,[]T) bool ) {
 	}
 }
 
-func EachStruct(elem map[T]T, iterator func(T,T,map[T]T) bool ) {
+func EachMap(elem map[T]T, iterator func(T,T,map[T]T) bool ) {
 	if elem == nil {
 		return
 	} 
@@ -35,4 +35,33 @@ func EachStruct(elem map[T]T, iterator func(T,T,map[T]T) bool ) {
 		}
 	}
 }
+
+
+// Return the results of applying the iterator to each element.
+// Delegates to **ECMAScript 5**'s native `map` if available.
+func Map(obj []T, iterator func(T,int,[]T) T, context T) []T {
+	results := make([]T,0)
+	if obj == nil {
+		return results
+	}
+	Each(obj, func (value T, index int, list []T) bool {
+		results = append( results, iterator( value, index, list))
+		return EachContinue
+	})
+	return results
+}
+
+
+func MapMap(obj map[T]T, iterator func(T,T,map[T]T) T, context T) []T {
+	results := make([]T,0)
+	if obj == nil {
+		return results
+	}
+	EachMap(obj, func (value T, key T , obj map[T]T) bool {
+		results = append( results, iterator( value, key, obj))
+		return EachContinue
+	})
+	return results
+}
+
 
