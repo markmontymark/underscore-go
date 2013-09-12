@@ -203,3 +203,26 @@ func Reject (obj []T, iterator eachlistiterator ) []T {
 	})
 }
 
+
+func Every (obj []T, opt_iterator ...eachlistiterator ) bool {
+	var iterator eachlistiterator //func(T,int, []T)bool
+	if len(opt_iterator) == 0 {
+		iterator = IdentityEach
+	} else {
+		iterator = opt_iterator[0]
+	}	
+	result := true
+	if obj == nil {
+		return result
+	}
+	Each(obj, func (value T, index int, list []T) bool {
+		result = result && iterator(value, index, list)
+		if ! result {
+			return EachBreak
+		}
+		return EachContinue
+	})
+	return result
+}
+
+var All func(obj []T, opt_iterator ...eachlistiterator ) bool = Every

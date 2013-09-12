@@ -135,7 +135,7 @@ func TestReduceRight( t *testing.T ) {
 
 func TestFind( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-		v := Find(array, func(n T, i int, list []T) bool { 
+	v := Find(array, func(n T, i int, list []T) bool { 
 		return n.(int) > 2 
 	})
 	asserts.IntEquals( t, "should return first found `value`", 3, v.(int))
@@ -145,7 +145,7 @@ func TestFind( t *testing.T ) {
 }
 func TestDetect_asFindAlias( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-		v := Detect(array, func(n T, i int, list []T) bool { 
+	v := Detect(array, func(n T, i int, list []T) bool { 
 		return n.(int) > 2 
 	})
 	asserts.IntEquals( t, "should return first found `value`", 3, v.(int))
@@ -156,23 +156,49 @@ func TestDetect_asFindAlias( t *testing.T ) {
 
 func TestFilter( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-		v := Filter(array, func(n T, i int, list []T) bool { 
+	v := Filter(array, func(n T, i int, list []T) bool { 
 		return n.(int) > 2 
 	})
-	asserts.Equals( t, "should return first found `value`", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
+	asserts.Equals( t, "should return last two values: 3 4", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
 }
 func TestSelect_asFilterAlias( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-		v := Select(array, func(n T, i int, list []T) bool { 
+	v := Select(array, func(n T, i int, list []T) bool { 
 		return n.(int) > 2 
 	})
-	asserts.Equals( t, "should return first found `value`", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
+	asserts.Equals( t, "should return last two values: 3 4", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
 }
 
 func TestReject( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-		v := Reject(array, func(n T, i int, list []T) bool { 
+	v := Reject(array, func(n T, i int, list []T) bool { 
 		return n.(int) > 2 
 	})
-	asserts.Equals( t, "should return first found `value`", fmt.Sprintf("%v",[]T{1,2}), fmt.Sprintf("%v",v))
+	asserts.Equals( t, "should return first two values: 1 2", fmt.Sprintf("%v",[]T{1,2}), fmt.Sprintf("%v",v))
+}
+
+func TestEvery( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+	v := Every(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 5 
+	})
+	asserts.Equals( t, "should return true as all values: 1 2 3 4 are less than 5", "true", fmt.Sprintf("%v",v))
+
+	v = Every(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 4 
+	})
+	asserts.Equals( t, "should return false as not all values are < 4", "false", fmt.Sprintf("%v",v))
+}
+
+func TestAll( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+	v := All(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 5 
+	})
+	asserts.Equals( t, "should return true as all values: 1 2 3 4 are less than 5", "true", fmt.Sprintf("%v",v))
+
+	v = All(array, func(n T, i int, list []T) bool { 
+		return n.(int) < 4 
+	})
+	asserts.Equals( t, "should return false as not all values are < 4", "false", fmt.Sprintf("%v",v))
 }
