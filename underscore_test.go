@@ -120,3 +120,15 @@ func TestReduce( t *testing.T ) {
 
 }
 
+func TestReduceRight( t *testing.T ) {
+	
+	v,err :=	ReduceRight( 
+		[]T{"2","3","4"}, 
+		func (sum T, num T, i int, list []T) T { return sum.(string) + "," + num.(string) }, 
+		"")
+	if err != "" {
+		fmt.Printf("FAIL: %s\n", err )
+		return
+	}
+	asserts.Equals( t, "can ReduceRight divide up an array", ",4,3,2",	v.(string))
+}

@@ -38,7 +38,6 @@ func EachMap(elem map[T]T, iterator func(T,T,map[T]T) bool ) {
 
 
 // Return the results of applying the iterator to each element.
-// Delegates to **ECMAScript 5**'s native `map` if available.
 func Map(obj []T, iterator func(T,int,[]T) T, context T) []T {
 	results := make([]T,0)
 	if obj == nil {
@@ -70,7 +69,7 @@ var CollectMap func (obj map[T]T, iterator func(T,T,map[T]T) T, context T) []T =
 const ReduceError = "Reduce of empty array with no initial value"
 
 // **Reduce** builds up a single result from a list of values, aka `inject`,
-// or `foldl`. Delegates to **ECMAScript 5**'s native `reduce` if available.
+// or `foldl`. 
 func Reduce (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
 	initial := len(memo) > 0
 	if obj == nil {
@@ -93,6 +92,33 @@ func Reduce (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
 
 var Inject func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = Reduce
 var FoldL  func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = Reduce
+
+
+// The right-associative version of reduce, also known as `foldr`.
+func ReduceRight (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
+	initial := len(memo) > 0
+	if obj == nil {
+		obj = make([]T,0)
+	}
+	length := len(obj)
+	Each(obj, func (value T, index int, list []T) bool {
+		length = length - 1
+		index = length
+		if !initial {
+			memo[0] = list[index]
+			initial = true
+		} else {
+			memo[0] = iterator(memo[0], list[index], index, list)
+		}
+		return EachContinue
+	})
+	if !initial {
+		return nil,ReduceError
+	}
+	return memo[0],""
+}
+
+var FoldR  func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = ReduceRight
 
 
 
