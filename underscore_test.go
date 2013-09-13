@@ -230,3 +230,39 @@ func TestAny( t *testing.T ) {
 	})
 	asserts.Equals( t, "should return false as no value are less than 1", "false", fmt.Sprintf("%v",v))
 }
+
+func TestContains( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+	v := Contains(array, 1 )
+	asserts.Equals( t, "should return true as array contains a 1", "true", fmt.Sprintf("%v",v))
+
+	v  = Contains(array, 2 )
+	asserts.Equals( t, "should return true as array contains a 1", "true", fmt.Sprintf("%v",v))
+
+	v  = Contains(array, 3 )
+	asserts.Equals( t, "should return true as array contains a 1", "true", fmt.Sprintf("%v",v))
+
+	v  = Contains(array, 4 )
+	asserts.Equals( t, "should return true as array contains a 1", "true", fmt.Sprintf("%v",v))
+
+	v  = Contains(array, 5 )
+	asserts.Equals( t, "should return false as array doesnt contain a 5", "false", fmt.Sprintf("%v",v))
+}
+
+func TestInclude( t *testing.T ) {
+	array := []T{1, 2, 3, 4}
+	v := Include(array, 1 )
+	asserts.Equals( t, "should return true as array contains a 1", "true", fmt.Sprintf("%v",v))
+
+	v  = Include(array, 2 )
+	asserts.Equals( t, "should return true as array contains a 1", "true", fmt.Sprintf("%v",v))
+
+	v  = Include(array, 3 )
+	asserts.Equals( t, "should return true as array contains a 1", "true", fmt.Sprintf("%v",v))
+
+	v  = Include(array, 4 )
+	asserts.Equals( t, "should return true as array contains a 1", "true", fmt.Sprintf("%v",v))
+
+	v  = Include(array, 5 )
+	asserts.Equals( t, "should return false as array doesnt contain a 5", "false", fmt.Sprintf("%v",v))
+}

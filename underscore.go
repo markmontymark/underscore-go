@@ -227,3 +227,17 @@ func Every (obj []T, opt_iterator ...eachlistiterator ) bool {
 }
 
 var All func(obj []T, opt_iterator ...eachlistiterator ) bool = Every
+
+
+// Determine if the array or object contains a given value (using `==`).
+// Aliased as `include`.
+func Contains (obj []T, target T) bool {
+	if obj == nil {
+		return false
+	}
+	return Any(obj, func (value T, index int, list []T) bool {
+		return value == target
+	})
+}
+
+var Include func(obj []T, target T) bool = Contains
