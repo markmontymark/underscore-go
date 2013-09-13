@@ -290,17 +290,23 @@ func Pluck(obj []T, targetvalue T) []T {
 }
 
 
-/*
+
 // Convenience version of a common use case of `filter`: selecting only objects
 // containing specific `key:value` pairs.
-func Where(obj map[T]T, attrs map[T]T, returnFirstFound bool) []T {
+func Where(obj []T, attrs map[T]T, optReturnFirstFound ...bool) T {
+	var returnFirstFound bool
+	if len(optReturnFirstFound) == 0 {
+		returnFirstFound = false
+	} else {
+		returnFirstFound = optReturnFirstFound[0]
+	}
 	if IsEmpty(attrs) {
 		return make([]T,0)
 	}
 	if returnFirstFound {
-		return Find(obj, func(value map[T]T, index int, list[]T) bool {
+		return Find(obj, func(value T, key T, list T) bool {
 			for k,v := range attrs {
-				if v != value[k] {
+				if v != value.(map[T]T)[k] {
 					return false
 				}
 			}
@@ -308,9 +314,9 @@ func Where(obj map[T]T, attrs map[T]T, returnFirstFound bool) []T {
 		})
 
 	} else {
-		return Filter(obj, func(value map[T]T, index int, list[]T) bool {
+		return Filter(obj, func(value T, key T, list T) bool {
 			for k,v := range attrs {
-				if v != value[k] {
+				if v != value.(map[T]T)[k] {
 					return false
 				}
 			}
@@ -318,4 +324,4 @@ func Where(obj map[T]T, attrs map[T]T, returnFirstFound bool) []T {
 		})
 	}
 }
-*/
+
