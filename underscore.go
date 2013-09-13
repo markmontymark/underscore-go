@@ -46,7 +46,9 @@ func Map(obj []T, iterator func(T,int,[]T) T) []T {
 		return results
 	}
 	Each(obj, func (value T, index int, list []T) bool {
-		results = append( results, iterator( value, index, list))
+		if v := iterator(value,index,list); v != nil {
+			results = append( results, v )
+		}
 		return EachContinue
 	})
 	return results
@@ -61,8 +63,7 @@ func MapMap(objlist []map[T]T, iterator func(T,T,map[T]T) T) []T {
 
 	for _,obj := range objlist {
 		EachMap( obj, func (value T, key T, origobj map[T]T ) bool {
-			v := iterator(value,key,origobj) 
-			if v != nil {
+			if v := iterator(value,key,origobj) ; v != nil {
 				results = append( results, v)
 			}
 			return EachContinue
@@ -261,11 +262,21 @@ var Include func(obj []T, target T) bool = Contains
 
 
 // Convenience version of a common use case of `map`: fetching a property.
-func PluckMap(obj []map[T]T, targetkey T) []T {
-	return MapMap(obj, func(value T, testkey T, origobj map[T]T) T { 
-		if targetkey == testkey {
-			return value
+func Pluck(obj []T, targetvalue T) []T {
+	return Map(obj, func(testvalue T, index int , origlist[]T) T { 
+		if targetvalue  == testvalue {
+			return testvalue
 		}
 		return nil
 	} )
 }
+
+// Convenience version of a common use case of `map`: fetching a property.
+func PluckMap(obj []map[T]T, targetkey T) []T {
+  return MapMap(obj, func(value T, testkey T, origobj map[T]T) T { 
+    if targetkey == testkey {
+      return value
+    }
+    return nil
+  } )
+} 

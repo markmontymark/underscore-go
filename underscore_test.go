@@ -269,6 +269,14 @@ func TestInclude( t *testing.T ) {
 }
 
 
+func TestPluck( t *testing.T ) {
+	people := []T{ "name" , "moe", "age" , 30, "name" , "curly", "age" , 50}
+	v := Pluck(people,"name")
+	asserts.Equals( t, "pulls names out of objects",
+		"[name name]",
+		fmt.Sprintf("%v",v))
+}
+
 func TestPluckMap( t *testing.T ) {
 	people := []map[T]T{ { "name" : "moe", "age" : 30}, {"name" : "curly", "age" : 50}}
 	v := PluckMap(people,"name")
