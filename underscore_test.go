@@ -1,8 +1,9 @@
 package underscore
 
 import (
-	"fmt"
 	"./lib/asserts"
+	"fmt"
+	//"strings"
 	"testing"
 )
 
@@ -50,27 +51,27 @@ func TestMap( t *testing.T ) {
 
 	asserts.Equals( t, "testing map with array", 
 		"[2 5 4 3]",
-		fmt.Sprintf("%v", Map([]T{0,3,2,1}, add2slice ,nil ) ))
+		fmt.Sprintf("%v", Map([]T{0,3,2,1}, add2slice ) ))
 
 	asserts.Equals( t, "testing map with map[string]int ", 
 		"[3 4 5]",
-		fmt.Sprintf("%v", MapMap(map[T]T{"a":1,"b":2,"c":3}, add2map , nil ) ))
+		fmt.Sprintf("%v", MapMap([]map[T]T{ {"a":1,"b":2,"c":3}}, add2map ) ))
 
 	asserts.Equals( t, "testing map with map[string]int ", 
 		"[a b c]",
-		fmt.Sprintf("%v", MapMap(map[T]T{"a":1,"b":2,"c":3}, identityKeyMap , nil ) ))
+		fmt.Sprintf("%v", MapMap([]map[T]T{ {"a":1,"b":2,"c":3}}, identityKeyMap ) ))
 
 	asserts.Equals( t, "testing collect with array", 
 		"[2 5 4 3]",
-		fmt.Sprintf("%v", Collect([]T{0,3,2,1}, add2slice ,nil ) ))
+		fmt.Sprintf("%v", Collect([]T{0,3,2,1}, add2slice) ))
 
 	asserts.Equals( t, "testing collectmap with map[string]int ", 
 		"[3 4 5]",
-		fmt.Sprintf("%v", CollectMap(map[T]T{"a":1,"b":2,"c":3}, add2map , nil ) ))
+		fmt.Sprintf("%v", CollectMap([]map[T]T{ {"a":1,"b":2,"c":3} }, add2map ) ))
 
 	asserts.Equals( t, "testing collectmap with map[string]int ", 
 		"[a b c]",
-		fmt.Sprintf("%v", CollectMap(map[T]T{"a":1,"b":2,"c":3}, identityKeyMap , nil ) ))
+		fmt.Sprintf("%v", CollectMap([]map[T]T{ {"a":1,"b":2,"c":3} }, identityKeyMap ) ))
 
 
 }
@@ -266,3 +267,13 @@ func TestInclude( t *testing.T ) {
 	v  = Include(array, 5 )
 	asserts.Equals( t, "should return false as array doesnt contain a 5", "false", fmt.Sprintf("%v",v))
 }
+
+
+func TestPluckMap( t *testing.T ) {
+	people := []map[T]T{ { "name" : "moe", "age" : 30}, {"name" : "curly", "age" : 50}}
+	v := PluckMap(people,"name")
+	asserts.Equals( t, "pulls names out of objects",
+		"[moe curly]",
+		fmt.Sprintf("%v",v))
+}
+

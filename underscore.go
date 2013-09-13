@@ -40,7 +40,7 @@ func EachMap(elem map[T]T, iterator func(T,T,map[T]T) bool ) {
 
 
 // Return the results of applying the iterator to each element.
-func Map(obj []T, iterator func(T,int,[]T) T, context T) []T {
+func Map(obj []T, iterator func(T,int,[]T) T) []T {
 	results := make([]T,0)
 	if obj == nil {
 		return results
@@ -53,20 +53,26 @@ func Map(obj []T, iterator func(T,int,[]T) T, context T) []T {
 }
 
 
-func MapMap(obj map[T]T, iterator func(T,T,map[T]T) T, context T) []T {
+func MapMap(objlist []map[T]T, iterator func(T,T,map[T]T) T) []T {
 	results := make([]T,0)
-	if obj == nil {
+	if objlist == nil {
 		return results
 	}
-	EachMap(obj, func (value T, key T , obj map[T]T) bool {
-		results = append( results, iterator( value, key, obj))
-		return EachContinue
-	})
+
+	for _,obj := range objlist {
+		EachMap( obj, func (value T, key T, origobj map[T]T ) bool {
+			v := iterator(value,key,origobj) 
+			if v != nil {
+				results = append( results, v)
+			}
+			return EachContinue
+		})
+	}
 	return results
 }
 
-var Collect func (obj []T, iterator func(T,int,[]T) T, context T) []T = Map
-var CollectMap func (obj map[T]T, iterator func(T,T,map[T]T) T, context T) []T = MapMap
+var Collect func (obj []T, iterator func(T,int,[]T) T) []T = Map
+var CollectMap func (obj []map[T]T, iterator func(T,T,map[T]T) T ) []T = MapMap
 
 const ReduceError = "Reduce of empty array with no initial value"
 
@@ -241,3 +247,25 @@ func Contains (obj []T, target T) bool {
 }
 
 var Include func(obj []T, target T) bool = Contains
+
+
+
+// Invoke a method (with arguments) on every item in a collection.
+//func Invoke(obj []T, method func(...T)) {
+//	var args = slice.call(arguments, 2);
+//	var isFunc = _.isFunction(method);
+//	return Map(obj, func(value T) {
+//		return (isFunc ? method : value[method]).apply(value, args);
+//	});
+//}
+
+
+// Convenience version of a common use case of `map`: fetching a property.
+func PluckMap(obj []map[T]T, targetkey T) []T {
+	return MapMap(obj, func(value T, testkey T, origobj map[T]T) T { 
+		if targetkey == testkey {
+			return value
+		}
+		return nil
+	} )
+}
