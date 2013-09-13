@@ -12,40 +12,77 @@ const EachContinue bool = false
 const EachBreak    bool = true
 
 
-// TODO, so far, I've morphed _.each into EachArray and EachStruct, looking for a way to switch  on elems/elem and then can merge the two
-
-type eachlistiterator func(T,int,[]T) bool
-
-func Each(elems []T, iterator eachlistiterator ) {
-	if elems == nil {
-		return
-	} 
-	for i,elem := range elems {
-		if iterator(elem, i, elems) == EachBreak {
-			return;
-		}
-	}
+// Is a given value an array?
+func IsString (obj T) bool {
+	v,_ := obj.(string)
+	return v != ""
 }
 
-func EachMap(elem map[T]T, iterator func(T,T,map[T]T) bool ) {
-	if elem == nil {
+// Is a given value an array?
+func IsArray (obj T) bool {
+	v,_ := obj.([]T)
+	//fmt.Printf("Is Array ok = %v\n",ok)
+	return v != nil
+}
+
+// Is a given variable a map
+func IsMap (obj T) bool {
+	v,_ := obj.(map[T]T) 
+	return v != nil
+}
+
+
+// Is a given array, string, or object empty?
+// An "empty" object has no enumerable own-properties.
+func IsEmpty (obj T) bool {
+	if obj == nil {
+		return true
+	}
+	if IsArray(obj) {
+		return len(obj.([]T)) == 0
+	}
+	if IsMap(obj) {
+		return len(obj.(map[T]T)) == 0
+	}
+	if IsString(obj) {
+		return len(obj.(string)) == 0
+	}
+	return true
+}
+
+
+type eachlistiterator func(T,T,T) bool
+
+
+func Each(elemslist_or_map T, iterator eachlistiterator ) {
+	if elemslist_or_map == nil || IsEmpty(elemslist_or_map) {
 		return
 	} 
-	for k,v := range elem {
-		if iterator(v,k,elem) == EachBreak {
-			return;
+
+	if IsArray( elemslist_or_map ) {
+		for i,elem := range elemslist_or_map.([]T) {
+			if iterator(elem, i, elemslist_or_map.([]T)) == EachBreak {
+				return
+			}
+		}
+
+	} else if IsMap( elemslist_or_map ) {
+		for k,v := range elemslist_or_map.(map[T]T) {
+			if iterator(v,k,elemslist_or_map.(map[T]T)) == EachBreak {
+				return
+			}
 		}
 	}
 }
 
 
 // Return the results of applying the iterator to each element.
-func Map(obj []T, iterator func(T,int,[]T) T) []T {
+func Map(obj T, iterator func(T,T,T) T) []T {
 	results := make([]T,0)
 	if obj == nil {
 		return results
 	}
-	Each(obj, func (value T, index int, list []T) bool {
+	Each(obj, func (value T, index T, list T) bool {
 		if v := iterator(value,index,list); v != nil {
 			results = append( results, v )
 		}
@@ -53,38 +90,19 @@ func Map(obj []T, iterator func(T,int,[]T) T) []T {
 	})
 	return results
 }
+var Collect func (obj T, iterator func(T,T,T) T) []T = Map
 
-
-func MapMap(objlist []map[T]T, iterator func(T,T,map[T]T) T) []T {
-	results := make([]T,0)
-	if objlist == nil {
-		return results
-	}
-
-	for _,obj := range objlist {
-		EachMap( obj, func (value T, key T, origobj map[T]T ) bool {
-			if v := iterator(value,key,origobj) ; v != nil {
-				results = append( results, v)
-			}
-			return EachContinue
-		})
-	}
-	return results
-}
-
-var Collect func (obj []T, iterator func(T,int,[]T) T) []T = Map
-var CollectMap func (obj []map[T]T, iterator func(T,T,map[T]T) T ) []T = MapMap
 
 const ReduceError = "Reduce of empty array with no initial value"
 
 // **Reduce** builds up a single result from a list of values, aka `inject`,
 // or `foldl`. 
-func Reduce (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
+func Reduce (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) {
 	initial := len(memo) > 0
 	if obj == nil {
 		obj = make([]T,0)
 	}
-	Each(obj, func (value T, index int, list []T) bool {
+	Each(obj, func (value T, index T, list T) bool {
 		if !initial {
 			memo[0] = value
 			initial = true
@@ -99,25 +117,25 @@ func Reduce (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
 	return memo[0],""
 }
 
-var Inject func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = Reduce
-var FoldL  func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = Reduce
+var Inject func (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) = Reduce
+var FoldL  func (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) = Reduce
 
 
 // The right-associative version of reduce, also known as `foldr`.
-func ReduceRight (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
+func ReduceRight (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) {
 	initial := len(memo) > 0
 	if obj == nil {
 		obj = make([]T,0)
 	}
 	length := len(obj)
-	Each(obj, func (value T, index int, list []T) bool {
+	Each(obj, func (value T, index T, list T) bool {
 		length = length - 1
 		index = length
 		if !initial {
-			memo[0] = list[index]
+			memo[0] = list.([]T)[index.(int)]
 			initial = true
 		} else {
-			memo[0] = iterator(memo[0], list[index], index, list)
+			memo[0] = iterator(memo[0], list.([]T)[index.(int)], index, list)
 		}
 		return EachContinue
 	})
@@ -127,31 +145,31 @@ func ReduceRight (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) {
 	return memo[0],""
 }
 
-var FoldR  func (obj []T, iterator func(T,T,int,[]T) T, memo ...T) (T,string) = ReduceRight
+var FoldR  func (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) = ReduceRight
 
-func IdentityEach ( val T, index int, list[]T ) bool {
+func IdentityEach ( val T, index T, list T ) bool {
 	return val == val
 }
 
 // Determine if at least one element in the object matches a truth test.
 // Aliased as `some`.
-func Any (obj []T, opt_iterator ...func(val T,index int, list[]T)bool ) bool {
-	var iterator func(T,int, []T)bool
-	if len(opt_iterator) == 0 {
-		iterator = IdentityEach
+func Any (obj []T, opt_predicate ...func(val T,index T, list T)bool ) bool {
+	var predicate func(T,T,T)bool
+	if len(opt_predicate) == 0 {
+		predicate = IdentityEach
 	} else {
-		iterator = opt_iterator[0]
+		predicate = opt_predicate[0]
 	}	
 	anyresult := false
 	if obj == nil {
 		return anyresult
 	}
 
-	eachFunc := func (value T, index int, list []T) bool {
+	eachFunc := func (value T, index T, list T) bool {
 		if anyresult {
 			return EachBreak
 		}
-		anyresult = iterator(value, index, list)
+		anyresult = predicate(value, index, list)
 		if anyresult {
 			return EachBreak
 		}
@@ -160,27 +178,24 @@ func Any (obj []T, opt_iterator ...func(val T,index int, list[]T)bool ) bool {
 	Each(obj, eachFunc)
 	return anyresult
 }
-var Some func(obj []T, opt_iterator ...func(val T,index int, list[]T)bool ) bool = Any
+var Some func(obj []T, opt_predicate ...func(val T,index T, list T)bool ) bool = Any
 
 
 // Return the first value which passes a truth test. 
 // Aliased as `detect`.
-func Find (obj []T, iterator func(T,int,[]T) bool ) T {
+func Find (obj []T, predicate func(T,T,T) bool ) T {
 	var result T
-	Any(obj, func (value T, index int, list []T) bool {
-		//fmt.Printf("in Any(%v,%v,...)\n",value,index)
-      if iterator(value, index, list) {
-			//fmt.Printf("in Any iterator, it returned true for value = %v\n",value)
+	Any(obj, func (value T, index T, list T) bool {
+      if predicate(value, index, list) {
         result = value
         return EachBreak
       }
-		//fmt.Printf("in Any iterator, else returned value so continue n",value)
 		return EachContinue
 	})
 	return result
 }
 
-var Detect func(obj []T, iterator func(T,int,[]T) bool ) T  = Find
+var Detect func(obj []T, iterator func(T,T,T) bool ) T  = Find
 
 
 
@@ -192,7 +207,7 @@ func Filter (obj []T, iterator eachlistiterator ) []T {
 	if obj == nil || len(obj) == 0 {
 		return results
 	}
-	Each(obj, func (value T, index int, list []T) bool {
+	Each(obj, func (value T, index T, list T) bool {
       if iterator(value, index, list) {
 			results = append(results , value)
 		}
@@ -206,7 +221,7 @@ var Select func(obj []T, iterator eachlistiterator ) []T = Filter
 
 // Return all the elements for which a truth test fails.
 func Reject (obj []T, iterator eachlistiterator ) []T {
-	return Filter(obj, func(value T, index int, list []T) bool {
+	return Filter(obj, func(value T, index T, list T) bool {
 		return !iterator(value, index, list)
 	})
 }
@@ -223,7 +238,7 @@ func Every (obj []T, opt_iterator ...eachlistiterator ) bool {
 	if obj == nil {
 		return result
 	}
-	Each(obj, func (value T, index int, list []T) bool {
+	Each(obj, func (value T, index T, list T) bool {
 		result = result && iterator(value, index, list)
 		if ! result {
 			return EachBreak
@@ -242,7 +257,7 @@ func Contains (obj []T, target T) bool {
 	if obj == nil {
 		return false
 	}
-	return Any(obj, func (value T, index int, list []T) bool {
+	return Any(obj, func (value T, index T, list T) bool {
 		return value == target
 	})
 }
@@ -263,20 +278,44 @@ var Include func(obj []T, target T) bool = Contains
 
 // Convenience version of a common use case of `map`: fetching a property.
 func Pluck(obj []T, targetvalue T) []T {
-	return Map(obj, func(testvalue T, index int , origlist[]T) T { 
-		if targetvalue  == testvalue {
+	return Map(obj, func(testvalue T, index T , origlist T) T { 
+		if IsMap(testvalue) {
+			return testvalue.(map[T]T)[targetvalue]
+		}
+		if targetvalue == testvalue {
 			return testvalue
 		}
 		return nil
 	} )
 }
 
-// Convenience version of a common use case of `map`: fetching a property.
-func PluckMap(obj []map[T]T, targetkey T) []T {
-  return MapMap(obj, func(value T, testkey T, origobj map[T]T) T { 
-    if targetkey == testkey {
-      return value
-    }
-    return nil
-  } )
-} 
+
+/*
+// Convenience version of a common use case of `filter`: selecting only objects
+// containing specific `key:value` pairs.
+func Where(obj map[T]T, attrs map[T]T, returnFirstFound bool) []T {
+	if IsEmpty(attrs) {
+		return make([]T,0)
+	}
+	if returnFirstFound {
+		return Find(obj, func(value map[T]T, index int, list[]T) bool {
+			for k,v := range attrs {
+				if v != value[k] {
+					return false
+				}
+			}
+			return true
+		})
+
+	} else {
+		return Filter(obj, func(value map[T]T, index int, list[]T) bool {
+			for k,v := range attrs {
+				if v != value[k] {
+					return false
+				}
+			}
+			return true
+		})
+	}
+}
+*/

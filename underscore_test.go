@@ -12,68 +12,60 @@ import (
 func TestEach( t *testing.T ) {
 
 	sliceCollector := make([]string,0)
-	silly := func( elem T, i int, list []T ) bool {
-		sliceCollector = append(sliceCollector, fmt.Sprintf("each: elem %d, index %d, list %v,", elem, i, list) )
-		return EachContinue
-	}
-
-	mapCollector := make([]string,0)
-	sillymap := func( val T, key T, elem map[T]T ) bool {
-		mapCollector = append( mapCollector, fmt.Sprintf("eachmap: val %d, key %v, elem %v,", val, key, elem) )
+	silly := func( elem T, i T, list T ) bool {
+		sliceCollector = append(sliceCollector, fmt.Sprintf("each: elem %d, index %v, list %v,", elem, i, list) )
 		return EachContinue
 	}
 
 	Each([]T{0,3,2,1}, silly )
-	EachMap(map[T]T{"a":1,"b":2,"c":3}, sillymap )
 
 	asserts.Equals( t, "Test Each(0,3,2,4)", "[each: elem 0, index 0, list [0 3 2 1], each: elem 3, index 1, list [0 3 2 1], each: elem 2, index 2, list [0 3 2 1], each: elem 1, index 3, list [0 3 2 1],]", fmt.Sprintf("%v",sliceCollector) )
-	asserts.Equals( t, "Test EachMap({\"a\":1,\"b\":2,\"c\":3})", "[eachmap: val 1, key a, elem map[a:1 b:2 c:3], eachmap: val 2, key b, elem map[a:1 b:2 c:3], eachmap: val 3, key c, elem map[a:1 b:2 c:3],]", fmt.Sprintf("%v",mapCollector) )
 }
 
 func TestMap( t *testing.T ) {
 
-	add2slice := func( elem T, i int, list []T ) T {
+	add2 := func( elem T, i T, list T ) T {
 		return elem.(int) + 2
 	}
 
-	add2map := func( value T, key T, obj map[T]T ) T {
-		return value.(int) + 2
-	}
+	identityValueMap := func( value T, key T, obj T ) T { return value }
+	identityKeyMap := func( value T, key T, obj T ) T { return key }
+	identityNestedKeyMap := func( value T, key T, obj T ) T { return value.(map[T]T)["a"] }
+	identityNestedKeyShorterMap := func( value T, key T, obj T ) T { return value.(map[T]T)["b"] }
 
-	identityKeyMap := func( value T, key T, obj map[T]T ) T {
-		return key
-	}
-
-	//sillymap := func( val T, key T, elem map[T]T ) bool {
-		//fmt.Printf("in silly with val %d, key %v, elem %v\n", val, key, elem)
-		//return EachContinue
-	//}
-
-	asserts.Equals( t, "testing map with array", 
-		"[2 5 4 3]",
-		fmt.Sprintf("%v", Map([]T{0,3,2,1}, add2slice ) ))
-
-	asserts.Equals( t, "testing map with map[string]int ", 
-		"[3 4 5]",
-		fmt.Sprintf("%v", MapMap([]map[T]T{ {"a":1,"b":2,"c":3}}, add2map ) ))
-
-	asserts.Equals( t, "testing map with map[string]int ", 
-		"[a b c]",
-		fmt.Sprintf("%v", MapMap([]map[T]T{ {"a":1,"b":2,"c":3}}, identityKeyMap ) ))
-
+	asserts.Equals( t, "testing map with array",     
+		"[2 5 4 3]", fmt.Sprintf("%v", Map([]T{0,3,2,1}, add2 ) ))
 	asserts.Equals( t, "testing collect with array", 
-		"[2 5 4 3]",
-		fmt.Sprintf("%v", Collect([]T{0,3,2,1}, add2slice) ))
+		"[2 5 4 3]", fmt.Sprintf("%v", Collect([]T{0,3,2,1}, add2) ))
+
+	amap :=  map[T]T{ "a":3,"b":2,"c":1 }
+	list := make([]T,0)
+	list = append( list, amap )
+	list = append( list, map[T]T{ "a":1,"d":4,"e":5 } )
 
 	asserts.Equals( t, "testing collectmap with map[string]int ", 
-		"[3 4 5]",
-		fmt.Sprintf("%v", CollectMap([]map[T]T{ {"a":1,"b":2,"c":3} }, add2map ) ))
+		"[3 2 1]",
+		fmt.Sprintf("%v", Collect( amap , identityValueMap ) ))
+
+	asserts.Equals( t, "testing collectmap with map[string]int ", 
+		"[map[a:3 b:2 c:1] map[a:1 d:4 e:5]]",
+		fmt.Sprintf("%v", Collect( list, identityValueMap ) ))
 
 	asserts.Equals( t, "testing collectmap with map[string]int ", 
 		"[a b c]",
-		fmt.Sprintf("%v", CollectMap([]map[T]T{ {"a":1,"b":2,"c":3} }, identityKeyMap ) ))
+		fmt.Sprintf("%v", Collect( amap , identityKeyMap ) ))
 
+	asserts.Equals( t, "testing collectmap with map[string]int ", 
+		"[0 1]",
+		fmt.Sprintf("%v", Collect( list, identityKeyMap ) ))
 
+	asserts.Equals( t, "testing collectmap with map[string]int ", 
+		"[3 1]",
+		fmt.Sprintf("%v", Collect( list, identityNestedKeyMap ) ))
+
+	asserts.Equals( t, "testing collectmap with map[string]int ", 
+		"[2]",
+		fmt.Sprintf("%v", Collect( list, identityNestedKeyShorterMap ) ))
 }
 
 
@@ -81,7 +73,7 @@ func TestReduce( t *testing.T ) {
 	
 	v,err :=	Reduce( 
 		[]T{1,2,3}, 
-		func (sum T, num T, i int, list []T) T { return sum.(int) + num.(int) }, 
+		func (sum T, num T, i T, list T) T { return sum.(int) + num.(int) }, 
 		0)
 	if err != "" {
 		fmt.Printf("FAIL: %s\n", err )
@@ -91,7 +83,7 @@ func TestReduce( t *testing.T ) {
 
 	v,err =	Reduce( 
 		[]T{1,2,3}, 
-		func (sum T, num T, i int, list []T) T { return sum.(int) * num.(int) }, 
+		func (sum T, num T, i T, list T) T { return sum.(int) * num.(int) }, 
 		3)
 	if err != "" {
 		fmt.Printf("FAIL: %s\n", err )
@@ -101,7 +93,7 @@ func TestReduce( t *testing.T ) {
 
 	v,err =	Inject( 
 		[]T{1,2,3}, 
-		func (sum T, num T, i int, list []T) T { return sum.(int) * num.(int) }, 
+		func (sum T, num T, i T, list T) T { return sum.(int) * num.(int) }, 
 		3)
 	if err != "" {
 		fmt.Printf("FAIL: %s\n", err )
@@ -111,7 +103,7 @@ func TestReduce( t *testing.T ) {
 
 	v,err =	Inject( 
 		[]T{1,2,3}, 
-		func (sum T, num T, i int, list []T) T { return sum.(int) * num.(int) }, 
+		func (sum T, num T, i T, list T) T { return sum.(int) * num.(int) }, 
 		3)
 	if err != "" {
 		fmt.Printf("FAIL: %s\n", err )
@@ -125,7 +117,7 @@ func TestReduceRight( t *testing.T ) {
 	
 	v,err :=	ReduceRight( 
 		[]T{"2","3","4"}, 
-		func (sum T, num T, i int, list []T) T { return sum.(string) + "," + num.(string) }, 
+		func (sum T, num T, i T, list T) T { return sum.(string) + "," + num.(string) }, 
 		"")
 	if err != "" {
 		fmt.Printf("FAIL: %s\n", err )
@@ -136,35 +128,35 @@ func TestReduceRight( t *testing.T ) {
 
 func TestFind( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-	v := Find(array, func(n T, i int, list []T) bool { 
+	v := Find(array, func(n T, i T, list T) bool { 
 		return n.(int) > 2 
 	})
 	asserts.IntEquals( t, "should return first found `value`", 3, v.(int))
 
-	v = Find(array, func(n T, i int, list []T) bool { return false })
+	v = Find(array, func(n T, i T, list T) bool { return false })
 	asserts.Nil( t, "should return `nil` if `value` is not found", v)
 }
 func TestDetect_asFindAlias( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-	v := Detect(array, func(n T, i int, list []T) bool { 
+	v := Detect(array, func(n T, i T, list T) bool { 
 		return n.(int) > 2 
 	})
 	asserts.IntEquals( t, "should return first found `value`", 3, v.(int))
 
-	v = Detect(array, func(n T, i int, list []T) bool { return false })
+	v = Detect(array, func(n T, i T, list T) bool { return false })
 	asserts.Nil( t, "should return `nil` if `value` is not found", v)
 }
 
 func TestFilter( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-	v := Filter(array, func(n T, i int, list []T) bool { 
+	v := Filter(array, func(n T, i T, list T) bool { 
 		return n.(int) > 2 
 	})
 	asserts.Equals( t, "should return last two values: 3 4", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
 }
 func TestSelect_asFilterAlias( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-	v := Select(array, func(n T, i int, list []T) bool { 
+	v := Select(array, func(n T, i T, list T) bool { 
 		return n.(int) > 2 
 	})
 	asserts.Equals( t, "should return last two values: 3 4", fmt.Sprintf("%v",[]T{3,4}), fmt.Sprintf("%v",v))
@@ -172,7 +164,7 @@ func TestSelect_asFilterAlias( t *testing.T ) {
 
 func TestReject( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-	v := Reject(array, func(n T, i int, list []T) bool { 
+	v := Reject(array, func(n T, i T, list T) bool { 
 		return n.(int) > 2 
 	})
 	asserts.Equals( t, "should return first two values: 1 2", fmt.Sprintf("%v",[]T{1,2}), fmt.Sprintf("%v",v))
@@ -180,12 +172,12 @@ func TestReject( t *testing.T ) {
 
 func TestEvery( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-	v := Every(array, func(n T, i int, list []T) bool { 
+	v := Every(array, func(n T, i T, list T) bool { 
 		return n.(int) < 5 
 	})
 	asserts.Equals( t, "should return true as all values: 1 2 3 4 are less than 5", "true", fmt.Sprintf("%v",v))
 
-	v = Every(array, func(n T, i int, list []T) bool { 
+	v = Every(array, func(n T, i T, list T) bool { 
 		return n.(int) < 4 
 	})
 	asserts.Equals( t, "should return false as not all values are < 4", "false", fmt.Sprintf("%v",v))
@@ -193,12 +185,12 @@ func TestEvery( t *testing.T ) {
 
 func TestAll( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-	v := All(array, func(n T, i int, list []T) bool { 
+	v := All(array, func(n T, i T, list T) bool { 
 		return n.(int) < 5 
 	})
 	asserts.Equals( t, "should return true as all values: 1 2 3 4 are less than 5", "true", fmt.Sprintf("%v",v))
 
-	v = All(array, func(n T, i int, list []T) bool { 
+	v = All(array, func(n T, i T, list T) bool { 
 		return n.(int) < 4 
 	})
 	asserts.Equals( t, "should return false as not all values are < 4", "false", fmt.Sprintf("%v",v))
@@ -206,27 +198,27 @@ func TestAll( t *testing.T ) {
 
 func TestAny( t *testing.T ) {
 	array := []T{1, 2, 3, 4}
-	v := Any(array, func(n T, i int, list []T) bool { 
+	v := Any(array, func(n T, i T, list T) bool { 
 		return n.(int) < 5 
 	})
 	asserts.Equals( t, "should return true as at least one value is less than 5", "true", fmt.Sprintf("%v",v))
 
-	v = Any(array, func(n T, i int, list []T) bool { 
+	v = Any(array, func(n T, i T, list T) bool { 
 		return n.(int) < 4 
 	})
 	asserts.Equals( t, "should return true as at least one value is less than 4", "true", fmt.Sprintf("%v",v))
 
-	v = Any(array, func(n T, i int, list []T) bool { 
+	v = Any(array, func(n T, i T, list T) bool { 
 		return n.(int) < 3 
 	})
 	asserts.Equals( t, "should return true as at least one value is less than 3", "true", fmt.Sprintf("%v",v))
 
-	v = Any(array, func(n T, i int, list []T) bool { 
+	v = Any(array, func(n T, i T, list T) bool { 
 		return n.(int) < 2 
 	})
 	asserts.Equals( t, "should return true as at least one value is less than 2", "true", fmt.Sprintf("%v",v))
 
-	v = Any(array, func(n T, i int, list []T) bool { 
+	v = Any(array, func(n T, i T, list T) bool { 
 		return n.(int) < 1 
 	})
 	asserts.Equals( t, "should return false as no value are less than 1", "false", fmt.Sprintf("%v",v))
@@ -275,13 +267,63 @@ func TestPluck( t *testing.T ) {
 	asserts.Equals( t, "pulls names out of objects",
 		"[name name]",
 		fmt.Sprintf("%v",v))
-}
 
-func TestPluckMap( t *testing.T ) {
-	people := []map[T]T{ { "name" : "moe", "age" : 30}, {"name" : "curly", "age" : 50}}
-	v := PluckMap(people,"name")
+	v  = Pluck(people,30)
+	asserts.Equals( t, "pulls 30 out of list",
+		"[30]",
+		fmt.Sprintf("%v",v))
+
+	people = make([]T,0)
+	people = append( people, map[T]T{ "name" : "moe", "age" : 30} )
+	people = append( people, map[T]T{ "name" : "curly", "age" : 50} )
+	v  = Pluck(people,"name")
 	asserts.Equals( t, "pulls names out of objects",
 		"[moe curly]",
 		fmt.Sprintf("%v",v))
+}
+
+func TestIsArrayWithArray( t *testing.T ) {
+	list := []T{ "name" , "moe", "age" , 30}
+	asserts.True( t, "Testing IsArray", IsArray( list) )
+}
+
+func TestIsArrayWithString( t *testing.T ) {
+	scalar := "name"
+	asserts.False( t, "Testing IsArray", IsArray( scalar ) )
+}
+
+func TestIsArrayWithMap( t *testing.T ) {
+	mapp := make(map[string]int,0)
+	asserts.False( t, "Testing IsArray", IsArray( mapp ) )
+}
+
+func TestIsStringWithArray( t *testing.T ) {
+	list := []T{ "name" , "moe", "age" , 30}
+	asserts.False( t, "Testing IsString", IsString( list) )
+}
+
+func TestIsStringWithString( t *testing.T ) {
+	scalar := "name"
+	asserts.True( t, "Testing IsString", IsString( scalar ) )
+}
+
+func TestIsStringWithMap( t *testing.T ) {
+	mapp := make(map[string]int,0)
+	asserts.False( t, "Testing IsString", IsString( mapp ) )
+}
+
+func TestIsMapWithArray( t *testing.T ) {
+	list := []T{ "name" , "moe", "age" , 30}
+	asserts.False( t, "Testing IsMap with array ", IsMap( list) )
+}
+
+func TestIsMapWithString( t *testing.T ) {
+	scalar := "name"
+	asserts.False( t, "Testing IsMap with string", IsMap( scalar ) )
+}
+
+func TestIsMapWithMap( t *testing.T ) {
+	mapp := make(map[T]T,0)
+	asserts.True( t, "Testing IsMap", IsMap( mapp ) )
 }
 
