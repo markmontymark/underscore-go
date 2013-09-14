@@ -329,20 +329,6 @@ func TestIsMapWithMap( t *testing.T ) {
 
 
 func TestWhere( t *testing.T ) {
-	/*
-	var list = [{a: 1, b: 2}, {a: 2, b: 2}, {a: 1, b: 3}, {a: 1, b: 4}];
-	var result = _.where(list, {a: 1});
-	- equal(result.length, 3);
-	- equal(result[result.length - 1].b, 4);
-	result = _.where(list, {b: 2});
-	equal(result.length, 2);
-	equal(result[0].a, 1);
-
-	result = _.where(list, {a: 1}, true);
-	equal(result.b, 2, "Only get the first object matched.")
-	result = _.where(list, {a: 1}, false);
-	equal(result.length, 3);
-	*/
 
 	list := make([]T,0)
 	list = append(list,map[T]T{"a": 1, "b": 2})
@@ -359,5 +345,16 @@ func TestWhere( t *testing.T ) {
 
 	v  = Where(list,map[T]T{"b":2},true)
 	asserts.Equals( t, "Find objects with 'b':2", "map[a:1 b:2]", fmt.Sprintf("%v",v))
+}
+
+func TestFindWhere( t *testing.T ) {
+
+	list := make([]T,0)
+	list = append(list,map[T]T{"a": 1, "b": 2})
+	list = append(list,map[T]T{"a": 2, "b": 2})
+	list = append(list,map[T]T{"a": 1, "b": 3})
+	list = append(list,map[T]T{"a": 1, "b": 4})
+	v := FindWhere(list, map[T]T{"a": 1})
+	asserts.Equals( t, "Find first object with key 'a':1", "map[a:1 b:2]", fmt.Sprintf("%v",v))
 }
 

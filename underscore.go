@@ -325,3 +325,7 @@ func Where(obj []T, attrs map[T]T, optReturnFirstFound ...bool) T {
 	}
 }
 
+func FindWhere(obj []T, attrs map[T]T) T {
+	return Where(obj,attrs,true)
+}
+
