@@ -510,6 +510,7 @@ func SortedIndex (array T, obj T, lessThan func(T,T)bool, opt_iterator ...func(T
 	return low
 }
 
+// Safely create a real, live array from anything iterable.
 func ToArray( obj T ) []T {
 	if obj == nil {
 		return make([]T,0)
@@ -523,6 +524,69 @@ func ToArray( obj T ) []T {
 	fmt.Printf("Error: ToArray, got something I dont know what to do with %v\n",obj)
 	return nil
 }
+
+//Return the number of elements in an object.
+func Size(obj T) int {
+	if IsEmpty( obj ) {
+		return 0
+	}	
+	if IsArrayOfMaps( obj ) {
+		return len(obj.([]map[T]T))
+	}
+	if IsArray( obj ) {
+		return len(obj.([]T))
+	}
+	if IsMap( obj ) {
+		return len(obj.(map[T]T))
+	}
+	if IsString( obj ) {
+		return len(obj.(string))
+	} else {
+		fmt.Printf("TypeError (Size): what is this? %v\n",obj)
+		return math.MinInt64
+	}
+	
+}
+
+
+// Array Functions
+
+// Get the first element of an array. Passing **n** will return the first N
+// values in the array. Aliased as `head` and `take`. The **guard** check
+// allows it to work with `_.map`.
+func FirstN (array []T, n int, opt_guard ...bool) []T {
+	if array == nil {
+		return nil
+	}
+	if n == 0 {
+		retval := make([]T,0)
+		retval = append(retval,array[0])
+		return retval
+	} else if len(opt_guard) > 0 && opt_guard[0] {
+		retval := make([]T,0)
+		retval = append(retval,array[0])
+		return retval
+	}
+	if n > len(array) {
+		return array[:]
+	} else {
+		return array[0:n]
+	}
+}
+
+var HeadN func(array []T, n int, opt_guard ...bool) []T = FirstN
+var TakeN func(array []T, n int, opt_guard ...bool) []T = FirstN
+
+func First(array []T) T {
+	if array == nil {
+		return nil
+	}
+	return array[0]
+}
+
+var Head func(array []T) T = First
+var Take func(array []T) T = First
+
 
 
 
@@ -552,27 +616,5 @@ func Values(obj map[T]T) []T {
 		retval = append(retval, obj[key])
 	}
 	return retval
-}
-
-func Size(obj T) int {
-	if IsEmpty( obj ) {
-		return 0
-	}	
-	if IsArrayOfMaps( obj ) {
-		return len(obj.([]map[T]T))
-	}
-	if IsArray( obj ) {
-		return len(obj.([]T))
-	}
-	if IsMap( obj ) {
-		return len(obj.(map[T]T))
-	}
-	if IsString( obj ) {
-		return len(obj.(string))
-	} else {
-		fmt.Printf("TypeError (Size): what is this? %v\n",obj)
-		return math.MinInt64
-	}
-	
 }
 

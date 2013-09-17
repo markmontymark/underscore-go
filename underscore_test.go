@@ -483,3 +483,22 @@ func TestToArray( t *testing.T ){
     asserts.Equals( t, "object flattened into array", "[1 2 3]", fmt.Sprintf("%v", numbers) )
 }
 
+
+func TestFirst( t *testing.T ) {
+		asserts.IntEquals( t, "can pull out the first element of an array", First([]T{1,2,3}).(int), 1 )
+		asserts.Equals( t, "can pull out the first element of an array", 
+			fmt.Sprintf("%v",FirstN([]T{1,2,3},2)), "[1 2]")
+
+		asserts.Equals( t, "can pull out the zeroth element of an array", 
+			fmt.Sprintf("%v",FirstN([]T{1,2,3},0)), "[1]")
+
+		asserts.Equals( t, "can pull out too many items out", 
+			fmt.Sprintf("%v",FirstN([]T{1,2,3},5)), "[1 2 3]")
+
+		asserts.Equals( t, "works well with map", 
+			fmt.Sprintf("%v",Map( []T{ []T{1,2,3}, []T{1,2,3}}, func(obj T,idx T,list T)T{return First(obj.([]T))})), "[1 1]")
+		asserts.Equals( t, "works well with nil", 
+			fmt.Sprintf("%v",First(nil)), "<nil>")
+}
+
+
