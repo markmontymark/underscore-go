@@ -1,7 +1,9 @@
 package underscore
 
 import (
-	//"fmt"
+	"fmt"
+	//"math"
+	"math/rand"
 )
 
 type Underscore struct {}
@@ -21,13 +23,25 @@ func IsString (obj T) bool {
 // Is a given value an array?
 func IsArray (obj T) bool {
 	v,_ := obj.([]T)
-	//fmt.Printf("Is Array ok = %v\n",ok)
 	return v != nil
 }
+
+// Is a given value an array?
+func IsArrayOfMaps (obj T) bool {
+	v,_ := obj.([]map[T]T)
+	return v != nil
+}
+
 
 // Is a given variable a map
 func IsMap (obj T) bool {
 	v,_ := obj.(map[T]T) 
+	return v != nil
+}
+
+// Is a given value an array?
+func IsFunction(obj T) bool {
+	v,_ := obj.(func(T,T,T)T)
 	return v != nil
 }
 
@@ -47,7 +61,7 @@ func IsEmpty (obj T) bool {
 	if IsString(obj) {
 		return len(obj.(string)) == 0
 	}
-	return true
+	return false
 }
 
 
@@ -66,13 +80,23 @@ func Each(elemslist_or_map T, iterator eachlistiterator ) {
 			}
 		}
 
+	} else if IsArrayOfMaps( elemslist_or_map ) {
+		for i,elem := range elemslist_or_map.([]map[T]T) {
+			if iterator(elem, i, elemslist_or_map.([]map[T]T)) == EachBreak {
+				return
+			}
+		}
+
 	} else if IsMap( elemslist_or_map ) {
 		for k,v := range elemslist_or_map.(map[T]T) {
 			if iterator(v,k,elemslist_or_map.(map[T]T)) == EachBreak {
 				return
 			}
 		}
+	} else {
+		fmt.Printf("Each isnt doing anything useful\n")
 	}
+	
 }
 
 
@@ -149,6 +173,10 @@ var FoldR  func (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) = Redu
 
 func IdentityEach ( val T, index T, list T ) bool {
 	return val == val
+}
+
+func Identity ( val T, index T, list T ) T {
+	return val
 }
 
 // Determine if at least one element in the object matches a truth test.
@@ -325,7 +353,93 @@ func Where(obj []T, attrs map[T]T, optReturnFirstFound ...bool) T {
 	}
 }
 
+// Convenience version of a common use case of `find`: getting the first object
+// containing specific `key:value` pairs.
 func FindWhere(obj []T, attrs map[T]T) T {
 	return Where(obj,attrs,true)
 }
+
+/* 
+TODO punting on these until I found a generic or better Go way of impl max/min
+SEE https://groups.google.com/forum/#!topic/golang-nuts/f32UN1TYiAI
+// Return the maximum element or (element-based computation).
+_.max = function(obj, iterator, context) {
+// Return the minimum element (or element-based computation).
+_.min = function(obj, iterator, context) {
+*/
+
+// Shuffle an array, using the modern version of the
+// [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
+func Shuffle(obj []T) []T {
+	shuffled := make([]T,len(obj))
+	indices := rand.Perm(len(obj))
+	for i,idx := range indices {
+		shuffled[i],shuffled[idx] = obj[idx],obj[i]
+	}
+	return shuffled
+}
+
+// An internal function to generate lookup iterators
+func lookupIterator (value T) func(obj T, idx T, list T) T {
+	if IsFunction(value) { 
+		//fmt.Printf("lookupIterator got a func\n")
+		return value.(func(obj T, idx T, list T)T)
+	}
+	//fmt.Printf("lookupIterator didnt get a func\n")
+	return func(obj T, idx T, list T) T {
+		//fmt.Printf("inlookup iterator, got obj %v, idx %v, list %v\n",obj,idx,list)
+		if IsMap(obj) {
+			return obj.(map[T]T)[value]
+		}
+		return obj
+	}
+}
+
+
+// An internal function used for aggregate "group by" operations.
+func group (behavior func( result map[T]T, k T, v T)  ) func(o T,v T) map[T]T {
+	return func(obj T, value T) map[T]T {
+		result := make(map[T]T,0)
+		var iterator func(T,T,T) T
+		if value == nil {
+			iterator = Identity
+		} else {
+			iterator = lookupIterator(value)
+		}
+
+		Each(obj, func(value T, index T, list T) bool {
+			key := iterator(value, index, obj)
+			//_,ok := result[key]
+			behavior(result, key, value)
+			return EachContinue
+		})
+		return result
+	}
+}
+
+
+// Shortcut function for checking if an object has a given property directly
+// on itself (in other words, not on a prototype).
+func Has (obj T, key T) bool {
+	_,ok := obj.(map[T]T)[key]
+	return ok
+}
+
+// Groups the object's values by a criterion. Pass either a string attribute
+// to group by, or a function that returns the criterion.
+var GroupBy = group(func(result map[T]T, key T, value T) {
+	if key == nil {
+		return
+	}
+	if Has(result,key) {
+		//fmt.Printf("in group, got res %v, key %v, val %v\n\n",result,key,value)
+		slice := result[key].([]T)
+		slice = append(slice , value )
+		result[key] = slice
+	} else {
+		slice := make([]T,1)
+		slice[0] = value
+		result[key] = slice
+	}
+})
 

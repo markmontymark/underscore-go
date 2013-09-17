@@ -14,6 +14,12 @@ func IntEquals (t *testing.T, name string , got int, expected int ) {
    }
 }
 
+func Float64Equals (t *testing.T, name string , got float64, expected float64 ) {
+   if got != expected {
+      t.Errorf("Failed %s\ngot\n%v\n\nexpected\n%v\n\n", name, got, expected )
+   }
+}
+
 
 func True (t *testing.T, name string , got bool ) {
    if !got {

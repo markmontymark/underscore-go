@@ -3,7 +3,6 @@ package underscore
 import (
 	"./lib/asserts"
 	"fmt"
-	//"strings"
 	"testing"
 )
 
@@ -348,7 +347,6 @@ func TestWhere( t *testing.T ) {
 }
 
 func TestFindWhere( t *testing.T ) {
-
 	list := make([]T,0)
 	list = append(list,map[T]T{"a": 1, "b": 2})
 	list = append(list,map[T]T{"a": 2, "b": 2})
@@ -358,3 +356,51 @@ func TestFindWhere( t *testing.T ) {
 	asserts.Equals( t, "Find first object with key 'a':1", "map[a:1 b:2]", fmt.Sprintf("%v",v))
 }
 
+//func TestMax( t *testing.T ) {
+	//list := []int{2,3,4,9,5,6,7,8}
+	//asserts.Equals( t, "Find max element in array", "9", fmt.Sprintf("%v",MaxInt(list))) 
+//}
+
+/*
+func TestShuffle( t *testing.T ) {
+	list := []T{2,3,4,9,5,6,7,8}
+	shuffledlist := Shuffle(list)
+	asserts.IntEquals( t, "Find max element in array", len(list), len(shuffledlist))
+	asserts.Equals( t, "sort orig list and shuffled list", 
+		fmt.Sprintf("%v",sort.Sort(list)),
+		fmt.Sprintf("%v",sort.Sort(shuffledlist)))
+}
+*/
+
+func TestGroupBy( t *testing.T ) {
+
+/*
+	data := GroupBy([]T{1, 2, 3, 4, 5, 6,1}, func(obj T,key T,val T) T{ 
+		//fmt.Printf("group by func got obj %v, key %v, val %v\n", obj,key,val)
+		//fmt.Printf("group by func, returning %v\n", (val.(int) % 2) )
+		return obj.(int) % 2 
+	})
+	asserts.Equals( t, "group ints ", "parity map[1:[1 3 5 1] 0:[2 4 6]]",
+		fmt.Sprintf("parity %v",data))
+	asserts.Equals( t, "group evens ", "[2 4 6]", fmt.Sprintf("%v",data[0]))
+
+
+	data2 := []T{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
+	grouped := GroupBy( data2, func (obj T,key T,val T) T { return len(obj.(string)) })
+ 
+	asserts.Equals( t, "grouping words of length 3", 
+		fmt.Sprintf("%v", grouped[3]), "[one two six ten]")
+	asserts.Equals( t, "grouping words of length 4", 
+		fmt.Sprintf("%v", grouped[4]), "[four five nine]")
+	asserts.Equals( t, "grouping words of length 5", 
+		fmt.Sprintf("%v", grouped[5]), "[three seven eight]")
+*/
+
+	data3 := []map[T]T{ {"a": 1, "b":2}, {"b":3}, {"a":4,"c":5},{"a":1,"b":7,"c":8} }
+	grouped3 := GroupBy( data3, func (obj T,key T,val T) T { 
+		//fmt.Printf("in group by func with obj %v, key %v, val %v\n",obj,key,val)
+		return obj.(map[T]T)["a"] 
+	})
+	asserts.Equals( t, "group by an object key\\'s value", "map[1:[map[a:1 b:2] map[a:1 b:7 c:8]] 4:[map[a:4 c:5]]]",fmt.Sprintf("%v",grouped3))
+
+}
