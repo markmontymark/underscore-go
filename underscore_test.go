@@ -437,3 +437,20 @@ func TestValues( t *testing.T ) {
 	nilretval := Values(nildata)
 	asserts.Equals( t, "values of an empty map", "[]",fmt.Sprintf("%v",nilretval))
 }
+
+func TestSize( t *testing.T ) {
+	data := Size( map[T]T{ "a":1,"b":4,"c":6 } )
+	asserts.IntEquals( t, "size of a map", 3,data)
+
+	data1 := Size( []map[T]T{{ "a":1,"b":4,"c":6 }} )
+	asserts.IntEquals( t, "size of a map", 1,data1)
+
+	data10 := Size( []map[T]T{} )
+	asserts.IntEquals( t, "size of a map", 0,data10)
+
+	data2 := Size( []T{ "a","b","c",1 } )
+	asserts.IntEquals( t, "size of a varied list ", 4,data2)
+
+	data20 := Size( []T{ } )
+	asserts.IntEquals( t, "size of an empty list ", 0,data20)
+}

@@ -2,7 +2,7 @@ package underscore
 
 import (
 	"fmt"
-	//"math"
+	"math"
 	"math/rand"
 )
 
@@ -489,6 +489,28 @@ func Values(obj map[T]T) []T {
 		retval = append(retval, obj[key])
 	}
 	return retval
+}
+
+func Size(obj T) int {
+	if IsEmpty( obj ) {
+		return 0
+	}	
+	if IsArrayOfMaps( obj ) {
+		return len(obj.([]map[T]T))
+	}
+	if IsArray( obj ) {
+		return len(obj.([]T))
+	}
+	if IsMap( obj ) {
+		return len(obj.(map[T]T))
+	}
+	if IsString( obj ) {
+		return len(obj.(string))
+	} else {
+		fmt.Printf("TypeError (Size): what is this? %v\n",obj)
+		return math.MinInt64
+	}
+	
 }
 
 
