@@ -555,8 +555,18 @@ func TestLast( t *testing.T ) {
 
 		asserts.Equals( t, "works well with map", 
 			fmt.Sprintf("%v",Map( []T{ []T{1,2,3}, []T{1,2,3}}, func(obj T,idx T,list T)T{return Last(obj.([]T),2)})), "[[2 3] [2 3]]")
+
 		asserts.Equals( t, "works well with nil", 
 			fmt.Sprintf("%v",Initial(nil)), "[]")
 }
 
+func TestRest( t *testing.T ) {
+	asserts.Equals( t, "can pull out rest of items", 
+		fmt.Sprintf("%v",Rest([]T{1,2,3})), "[2 3]")
 
+	asserts.Equals( t, "works well with map", 
+		fmt.Sprintf("%v",Map( []T{ []T{1,2,3}, []T{1,2,3}}, func(obj T,idx T,list T)T{return Rest(obj.([]T))})), "[[2 3] [2 3]]")
+
+	asserts.Equals( t, "works well with nil", 
+		fmt.Sprintf("%v",Rest(nil)), "[]")
+}

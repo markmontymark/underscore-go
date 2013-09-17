@@ -7,9 +7,7 @@ import (
 )
 
 type Underscore struct {}
-
 type T interface{}
-
 type eachlistiterator func(T,T,T) bool
 
 const EachContinue bool = false
@@ -623,8 +621,27 @@ func Last(array []T , opt_n ...int) []T {
 }
 
 
-// Map Functions
+// Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
+// Especially useful on the arguments object. Passing an **n** will return
+// the rest N values in the array. The **guard**
+// check allows it to work with `_.map`.
+func Rest (array []T) []T {
+	if array == nil {
+		return nil
+	}
+	arraylen := len(array)
+	if arraylen < 2 {
+		return make([]T,0)
+	}
+	return Last( array, arraylen - 1)
+}
 
+var Tail func(array []T) []T = Rest
+var Drop func(array []T) []T = Rest
+
+
+
+// Map Functions
 
 // Retrieve the names of a maps keys
 func Keys(obj map[T]T) []T {
