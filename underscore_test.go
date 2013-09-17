@@ -374,7 +374,6 @@ func TestShuffle( t *testing.T ) {
 
 func TestGroupBy( t *testing.T ) {
 
-/*
 	data := GroupBy([]T{1, 2, 3, 4, 5, 6,1}, func(obj T,key T,val T) T{ 
 		//fmt.Printf("group by func got obj %v, key %v, val %v\n", obj,key,val)
 		//fmt.Printf("group by func, returning %v\n", (val.(int) % 2) )
@@ -394,7 +393,6 @@ func TestGroupBy( t *testing.T ) {
 		fmt.Sprintf("%v", grouped[4]), "[four five nine]")
 	asserts.Equals( t, "grouping words of length 5", 
 		fmt.Sprintf("%v", grouped[5]), "[three seven eight]")
-*/
 
 	data3 := []map[T]T{ {"a": 1, "b":2}, {"b":3}, {"a":4,"c":5},{"a":1,"b":7,"c":8} }
 	grouped3 := GroupBy( data3, func (obj T,key T,val T) T { 
