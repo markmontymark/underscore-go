@@ -409,5 +409,31 @@ func TestGroupBy( t *testing.T ) {
 		return obj.(map[T]T)["a"] 
 	})
 	asserts.Equals( t, "count by an object key\\'s value", "map[1:2 4:1]",fmt.Sprintf("%v",grouped5))
+}
 
+func TestKeys( t *testing.T ) {
+	data := Keys( map[T]T{ "a":1,"b":4,"c":6 } )
+	asserts.Equals( t, "keys of a map", "[a b c]",fmt.Sprintf("%v",data))
+
+	nodata := Keys( map[T]T{ } )
+	asserts.Equals( t, "keys of an empty map", "[]",fmt.Sprintf("%v",nodata))
+
+	var nildata map[T]T = nil
+	nilretval := Keys(nildata)
+	asserts.Equals( t, "keys of an empty map", "[]",fmt.Sprintf("%v",nilretval))
+}
+
+func TestValues( t *testing.T ) {
+	data := Values( map[T]T{ "a":1,"b":4,"c":6 } )
+	asserts.Equals( t, "values of a map", "[1 4 6]",fmt.Sprintf("%v",data))
+
+	data2 := Values( map[T]T{ "a":1,"b":1,"c":6 } )
+	asserts.Equals( t, "values of a map", "[1 1 6]",fmt.Sprintf("%v",data2))
+
+	nodata := Values( map[T]T{ } )
+	asserts.Equals( t, "values of an empty map", "[]",fmt.Sprintf("%v",nodata))
+
+	var nildata map[T]T = nil
+	nilretval := Values(nildata)
+	asserts.Equals( t, "values of an empty map", "[]",fmt.Sprintf("%v",nilretval))
 }

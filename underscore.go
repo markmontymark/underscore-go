@@ -462,3 +462,33 @@ var CountBy = group( func(result map[T]T, key T, value T) {
    }
 })
 
+
+// Map Functions
+
+
+// Retrieve the names of a maps keys
+func Keys(obj map[T]T) []T {
+	retval := make([]T,0)
+	if obj == nil {
+		return retval
+	}
+	for key,_ := range obj {
+		retval = append(retval, key)
+	}
+	return retval
+}
+
+// Retrieve the values of a maps keys
+func Values(obj map[T]T) []T {
+	retval := make([]T,0)
+	if obj == nil {
+		return retval
+	}
+	keys := Keys(obj)
+	for _,key := range keys {
+		retval = append(retval, obj[key])
+	}
+	return retval
+}
+
+
