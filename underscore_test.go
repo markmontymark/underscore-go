@@ -502,3 +502,32 @@ func TestFirst( t *testing.T ) {
 }
 
 
+func TestInitial( t *testing.T ) {
+		asserts.Equals( t, "can pull out the initial elements of an array", 
+			fmt.Sprintf("%v",Initial([]T{1,2,3})), 
+			"[1 2]" )
+		asserts.Equals( t, "can pull out the first element of an array", 
+			fmt.Sprintf("%v",Initial([]T{1,2,3},2)), "[1 2]")
+
+		asserts.Equals( t, "can pull out the zeroth element of an array", 
+			fmt.Sprintf("%v",Initial([]T{1,2,3},0)), "[]")
+
+		asserts.Equals( t, "can pull out the first element of an array", 
+			fmt.Sprintf("%v",Initial([]T{1,2,3},1)), "[1]")
+
+		asserts.Equals( t, "can pull out all elements of an array", 
+			fmt.Sprintf("%v",Initial([]T{1,2,3},3)), "[1 2 3]")
+
+		asserts.Equals( t, "can pull out too many out", 
+			fmt.Sprintf("%v",Initial([]T{1,2,3},4)), "[1 2 3]")
+
+		asserts.Equals( t, "can pull out too many items out", 
+			fmt.Sprintf("%v",Initial([]T{1,2,3},5)), "[1 2 3]")
+
+		asserts.Equals( t, "works well with map", 
+			fmt.Sprintf("%v",Map( []T{ []T{1,2,3}, []T{1,2,3}}, func(obj T,idx T,list T)T{return Initial(obj.([]T),2)})), "[[1 2] [1 2]]")
+		asserts.Equals( t, "works well with nil", 
+			fmt.Sprintf("%v",Initial(nil)), "[]")
+}
+
+

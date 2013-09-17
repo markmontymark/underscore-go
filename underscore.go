@@ -588,6 +588,23 @@ var Head func(array []T) T = First
 var Take func(array []T) T = First
 
 
+func Initial(array []T , opt_n ...int) []T {
+	if array == nil {
+      return nil
+   }
+	var n int
+	if len(opt_n) > 0 {
+		n = opt_n[0]
+	} else {
+		n = len(array) - 1
+	}
+	if n > len(array) {
+		return array[:]
+	}
+	return array[0:n]
+}
+
+
 
 
 // Map Functions
