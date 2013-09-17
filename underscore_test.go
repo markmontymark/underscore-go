@@ -396,9 +396,18 @@ func TestGroupBy( t *testing.T ) {
 
 	data3 := []map[T]T{ {"a": 1, "b":2}, {"b":3}, {"a":4,"c":5},{"a":1,"b":7,"c":8} }
 	grouped3 := GroupBy( data3, func (obj T,key T,val T) T { 
-		//fmt.Printf("in group by func with obj %v, key %v, val %v\n",obj,key,val)
 		return obj.(map[T]T)["a"] 
 	})
 	asserts.Equals( t, "group by an object key\\'s value", "map[1:[map[a:1 b:2] map[a:1 b:7 c:8]] 4:[map[a:4 c:5]]]",fmt.Sprintf("%v",grouped3))
+
+	grouped4 := IndexBy( data3, func (obj T,key T,val T) T { 
+		return obj.(map[T]T)["a"] 
+	})
+	asserts.Equals( t, "index by an object key\\'s value", "map[1:map[a:1 b:7 c:8] 4:map[a:4 c:5]]",fmt.Sprintf("%v",grouped4))
+
+	grouped5 := CountBy( data3, func (obj T,key T,val T) T { 
+		return obj.(map[T]T)["a"] 
+	})
+	asserts.Equals( t, "count by an object key\\'s value", "map[1:2 4:1]",fmt.Sprintf("%v",grouped5))
 
 }

@@ -443,3 +443,22 @@ var GroupBy = group(func(result map[T]T, key T, value T) {
 	}
 })
 
+var IndexBy = group( func(result map[T]T, key T, value T) {
+	if key == nil {
+		return
+	}
+	result[key] = value
+})
+
+var CountBy = group( func(result map[T]T, key T, value T) {
+	if key == nil {
+		return
+	}
+	if Has(result,key) {
+      //fmt.Printf("in group, got res %v, key %v, val %v\n\n",result,key,value)
+      result[key] = (result[key]).(int) + 1
+   } else {
+      result[key] = 1
+   }
+})
+
