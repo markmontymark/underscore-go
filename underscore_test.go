@@ -454,3 +454,23 @@ func TestSize( t *testing.T ) {
 	data20 := Size( []T{ } )
 	asserts.IntEquals( t, "size of an empty list ", 0,data20)
 }
+
+func TestSortedIndex(t *testing.T) {
+
+	intLessThan := func( a T, b T) bool { return a.(int) < b.(int) }
+	numbers := []T{10, 20, 30, 40, 50}
+	num := 35
+	indexForNum := SortedIndex(numbers, num, intLessThan )
+	asserts.IntEquals( t, "35 should be inserted at index 3", 3, indexForNum)
+
+	indexFor30 := SortedIndex(numbers, 30, intLessThan )
+	asserts.IntEquals( t, "30 should be inserted at index 2", 2, indexFor30)
+
+	objects := []map[T]T{{"x": 10}, {"x": 20}, {"x": 30}, {"x": 40}}
+	iterator := func(obj T,idx T,list T) T { return obj.(map[T]T)["x"] }
+	asserts.IntEquals(t,"sorted index with object list", 2, 
+		SortedIndex(objects, map[T]T{"x": 25}, intLessThan,iterator))
+	asserts.IntEquals(t,"sorted index with object list, take 2", 3, 
+		SortedIndex(objects, map[T]T{"x": 35}, intLessThan,iterator))
+}
+

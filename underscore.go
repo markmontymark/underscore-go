@@ -10,6 +10,8 @@ type Underscore struct {}
 
 type T interface{}
 
+type eachlistiterator func(T,T,T) bool
+
 const EachContinue bool = false
 const EachBreak    bool = true
 
@@ -65,7 +67,6 @@ func IsEmpty (obj T) bool {
 }
 
 
-type eachlistiterator func(T,T,T) bool
 
 
 func Each(elemslist_or_map T, iterator eachlistiterator ) {
@@ -511,6 +512,53 @@ func Size(obj T) int {
 		return math.MinInt64
 	}
 	
+}
+
+func SortedIndex (array T, obj T, lessThan func(T,T)bool, opt_iterator ...func(T,T,T)T) int {
+	var value T
+	var iterator func(T,T,T) T
+	_,isArrayOfMaps := array.([]map[T]T)
+	_,isArray := array.([]T)
+	if !(isArrayOfMaps || isArray) {
+		fmt.Printf("Error: can't find sorted index of a non-list object, got %v\n",array)
+		return math.MinInt64
+	}
+	if len(opt_iterator) > 0 {
+		iterator = opt_iterator[0]
+		value = iterator(obj,nil,nil)
+	} else {
+		value = obj
+	}
+	low := 0
+	high := 0
+	if isArrayOfMaps {
+		high = len(array.([]map[T]T))
+	} else if isArray {
+		high = len(array.([]T))
+	}
+	var otherValue T
+	for low < high {
+		mid := uint(low + high) >> 1
+		if iterator != nil {
+			if isArrayOfMaps {
+				otherValue = iterator(array.([]map[T]T)[mid],nil,nil)
+			} else if isArray {
+				otherValue = iterator(array.([]T)[mid],nil,nil)
+			}
+		} else {
+			if isArrayOfMaps {
+				otherValue = array.([]map[T]T)[mid]
+			} else if isArray {
+				otherValue = array.([]T)[mid]
+			}
+		}		
+		if lessThan(otherValue,value) {
+			low = int(mid) + 1 
+		} else {
+			high = int(mid)
+		}
+	}
+	return low
 }
 
 
