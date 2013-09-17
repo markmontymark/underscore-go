@@ -605,6 +605,22 @@ func Initial(array []T , opt_n ...int) []T {
 }
 
 
+func Last(array []T , opt_n ...int) []T {
+	if array == nil {
+      return nil
+   }
+	var n int
+	arraylen := len(array)
+	if len(opt_n) > 0 {
+		n = opt_n[0]
+	} else {
+		n = 1
+	}
+	if n > arraylen {
+		return array[:]
+	}
+	return array[(arraylen-n):]
+}
 
 
 // Map Functions
