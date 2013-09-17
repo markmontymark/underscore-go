@@ -474,3 +474,12 @@ func TestSortedIndex(t *testing.T) {
 		SortedIndex(objects, map[T]T{"x": 35}, intLessThan,iterator))
 }
 
+
+func TestToArray( t *testing.T ){
+    a := []T{1,2,3}
+    asserts.Equals( t, "Clone an array",fmt.Sprintf("%v",a), fmt.Sprintf("%v",ToArray(a)))
+    b := map[T]T{"one" : 1, "two" : 2, "three" : 3}
+    numbers := ToArray(b)
+    asserts.Equals( t, "object flattened into array", "[1 2 3]", fmt.Sprintf("%v", numbers) )
+}
+
