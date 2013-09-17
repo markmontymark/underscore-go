@@ -570,3 +570,12 @@ func TestRest( t *testing.T ) {
 	asserts.Equals( t, "works well with nil", 
 		fmt.Sprintf("%v",Rest(nil)), "[]")
 }
+
+
+func TestCompact( t *testing.T ) {
+	asserts.Equals( t, "can trim out all falsy values", 
+		fmt.Sprintf("%v",Compact([]T{0,1,false,2,false,3})), "[1 2 3]")
+	asserts.Equals( t, "can trim out all falsy values", 
+		fmt.Sprintf("%v",Compact(nil)), "[]")
+}
+

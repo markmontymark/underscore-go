@@ -174,6 +174,22 @@ func IdentityEach ( val T, index T, list T ) bool {
 	return val == val
 }
 
+func IdentityIsTruthy( val T, index T, list T ) bool {
+	v,ok := val.(bool)
+	if ok {
+		return  v
+	}
+	sv,sok := val.(string)
+	if sok {
+		return  sv != ""
+	}
+	iv,iok := val.(int)
+	if iok {
+		return  iv != 0
+	}
+	return val != nil
+}
+
 func Identity ( val T, index T, list T ) T {
 	return val
 }
@@ -638,6 +654,10 @@ func Rest (array []T) []T {
 
 var Tail func(array []T) []T = Rest
 var Drop func(array []T) []T = Rest
+
+func Compact(array []T) []T {
+	return Filter(array,IdentityIsTruthy)
+}
 
 
 
