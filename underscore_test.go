@@ -654,4 +654,16 @@ func TestUniq( t *testing.T ) {
 }
 
 
+func TestUnion( t *testing.T ) {
+   result := Union([]T{1, 2, 3}, []T{2, 30, 1}, []T{1, 40})
+   asserts.Equals( t, "takes the union of a list of arrays", fmt.Sprintf("%v",result), "[1 2 3 30 40]")
+
+   result2 := Union([]T{1, 2, 3}, []T{2, 30, 1}, []T{1, 40, []T{1}})
+   asserts.Equals( t, "takes the union of a list of nested arrays", fmt.Sprintf("%v",result2),"[1 2 3 30 40 [1]]")
+
+   result3 := Union(nil, []T{1, 2, 3})
+   asserts.Equals( t, "takes the union of nil and a list of arrays", fmt.Sprintf("%v",result3),"[<nil> 1 2 3]")
+}
+
+
 

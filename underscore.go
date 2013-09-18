@@ -802,6 +802,11 @@ func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
 
 var Unique func(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T  = Uniq
 
+// Produce an array that contains the union: each distinct element from all of
+// the passed-in arrays.
+func Union (opt_array ...T) []T {
+	return Uniq(Flatten(opt_array, true),false)
+}
 
 
 
