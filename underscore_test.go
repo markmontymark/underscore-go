@@ -634,3 +634,24 @@ func TestWithout( t *testing.T ) {
 }
 
 
+func TestUniq( t *testing.T ) {
+   list := []T{1, 2, 1, 3, 1, 4}
+   asserts.Equals( t, "can find the unique values of an unsorted array",
+		 fmt.Sprintf("%v", Uniq(list,false)), "[1 2 3 4]") 
+
+   list2 := []T{1, 1, 1, 2, 2, 3}
+   asserts.Equals( t, "can find the unique values of a sorted array faster",
+		 fmt.Sprintf("%v", Uniq(list2,true)), "[1 2 3]") 
+
+	list3 := []map[T]T{{ "name":"moe"}, { "name":"curly"}, { "name":"larry"}, {"name":"curly"}}
+   iterator   := func(value T, key T, list T) T { return value.(map[T]T)["name"] }
+   comparator := func(a T, b T) bool { return a.(map[T]T)["name"] == b.(map[T]T)["name"] }
+   asserts.Equals( t, "can find the unique values of an array using a custom iterator",
+		fmt.Sprintf("%v",Uniq(list3, false, iterator,comparator)), "[map[name:moe] map[name:curly] map[name:larry]]")
+   asserts.Equals( t, "can find the unique values of an array using a custom iterator",
+		fmt.Sprintf("%v",Map(Uniq(list3, false, iterator,comparator),iterator)), "[moe curly larry]")
+
+}
+
+
+

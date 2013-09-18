@@ -9,6 +9,7 @@ import (
 type Underscore struct {}
 type T interface{}
 type eachlistiterator func(T,T,T) bool
+type mapiterator func(T,T,T) T
 
 const EachContinue bool = false
 const EachBreak    bool = true
@@ -96,7 +97,7 @@ func Each(elemslist_or_map T, iterator eachlistiterator ) {
 			}
 		}
 	} else {
-		fmt.Printf("Each isnt doing anything useful\n")
+		fmt.Printf("Each isnt doing anything useful with first arg, %v\n",elemslist_or_map)
 	}
 	
 }
@@ -299,16 +300,24 @@ var All func(obj []T, opt_iterator ...eachlistiterator ) bool = Every
 
 // Determine if the array or object contains a given value (using `==`).
 // Aliased as `include`.
-func Contains (obj []T, target T) bool {
+func Contains (obj []T, target T, opt_comparator ...func(T,T)bool) bool {
 	if obj == nil {
 		return false
 	}
+	var comparator func(T,T)bool
+	if len(opt_comparator) > 0 {
+		comparator = opt_comparator[0]
+	}
 	return Any(obj, func (value T, index T, list T) bool {
-		return value == target
+		if comparator != nil {
+			return comparator(value,target)
+		} else {
+			return value == target
+		}
 	})
 }
 
-var Include func(obj []T, target T) bool = Contains
+var Include func(obj []T, target T, opt_comparator ...func(T,T)bool) bool = Contains
 
 
 
@@ -719,6 +728,79 @@ func Without (toRemove []T, opt_from ...T) []T {
 	}
 	return Difference( toRemove, rest )
 }
+
+// Produce a duplicate-free version of the array. If the array has already
+// been sorted, you have the option of using a faster algorithm.
+// Aliased as `unique`.
+func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
+	var array []T
+	var arrayofmaps []map[T]T
+	isAM := IsArrayOfMaps(list)
+	isA  := IsArray(list)
+	if isAM {
+		arrayofmaps = list.([]map[T]T)
+	} else if isA {
+		array = list.([]T)
+	}
+
+	var iterator mapiterator
+	var comparator func(T,T) bool
+	if IsFunction(isSorted) {
+		iterator = isSorted.(mapiterator)
+		isSorted = false
+		if len(opt_iterator) > 0 {
+			comparator = opt_iterator[0].(func(T,T)bool)
+		}
+	} else if len(opt_iterator) > 0 {
+		iterator =   opt_iterator[0].(func(T,T,T)T)
+		comparator = opt_iterator[1].(func(T,T)bool)
+	}
+	var initialA []T
+	if iterator != nil {
+		if isA {
+			initialA = Map(array, iterator)
+		} else if isAM {
+			initialA = Map(arrayofmaps, iterator)
+		}
+	} else {
+		if isA {
+			initialA = array
+		}
+	}
+   results := make([]T,0)
+   seen := make([]T,0)
+	if isA {
+		Each(initialA, func(value T, index T, list T) bool {
+			if isSorted.(bool) {
+				if index == 0 || seen[ len(seen) - 1] != value {
+					seen = append(seen,value)
+					results = append( results, array[index.(int)])
+				}
+			} else if ! Contains(seen, value) {
+			  seen = append( seen , value)
+			  results = append( results, array[index.(int)])
+			}
+			return EachContinue
+		})
+	}
+	if isAM {
+		Each(arrayofmaps, func(value T, index T, list T) bool {
+			if isSorted.(bool) {
+				if index == 0 || seen[ len(seen) - 1] != value {
+					seen = append(seen,value)
+					results = append( results, array[index.(int)])
+				}
+			} else if ! Contains(seen, value, comparator) {
+			  seen = append( seen , value)
+			  results = append( results, value )
+			}
+			return EachContinue
+		})
+	}
+   return results
+}
+
+var Unique func(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T  = Uniq
 
 
 
