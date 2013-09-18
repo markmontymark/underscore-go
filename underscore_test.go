@@ -603,3 +603,34 @@ func TestDifference( t *testing.T ) {
 		fmt.Sprintf("%v",result2), "[3 4]")
 }
 
+func TestWithout( t *testing.T ) {
+
+    list := []T{1, 2, 1, 0, 3, 1, 4}
+    asserts.Equals( t, "can remove all instances of func args from an object",
+		fmt.Sprintf("%v", Without(list, 0, 1)), "[2 3 4]")
+
+    asserts.Equals( t, "can remove all instances from an array of args from an object",
+		fmt.Sprintf("%v", Without(list, []T{0, 1})), "[2 3 4]")
+
+    list2 := []T{1, 2, "1", 0, 3, 1, 4}
+    asserts.Equals( t, "can remove all instances of func args from an object",
+		fmt.Sprintf("%v", Without(list2, 0, 1)), "[2 1 3 4]")
+
+    asserts.Equals( t, "can remove all instances from an array of args from an object",
+		fmt.Sprintf("%v", Without(list2, []T{0, 1})), "[2 1 3 4]")
+
+    asserts.Equals( t, "can remove all instances from an array of args from an object",
+		fmt.Sprintf("%v", Without(list2, []T{0, "1"})), "[1 2 3 1 4]")
+
+    asserts.Equals( t, "can remove all instances from an array of args from an object",
+		fmt.Sprintf("%v", Without(list2, []T{0, "1", 1})), "[2 3 4]")
+
+	/* TODO: fix ArrayOfMaps
+   listm := []T{ {"one" : 1}, {"two" : 2}}
+   asserts.Equals( t, "uses real object identity for comparisons.",
+		fmt.Sprintf("%v",Without(listm, map[T]T{"one" : 1})), "barg") //).length == 2, 
+   asserts.True("ditto", len(Without(listm, listm[0])) == 1)
+	*/
+}
+
+

@@ -694,12 +694,11 @@ func Flatten (array []T, opt_shallow ...bool) []T {
 }
 
 
-
 // Take the difference between one array and a number of other arrays.
 // Only the elements present in just the first array will remain.
 func Difference (toRemove []T, opt_from ...[]T) []T {
 	if len(opt_from) == 0 {
-		return toRemove
+		return make([]T,0)
 	}
 	var rest []T = make([]T,0)
 	for _,from := range opt_from {
@@ -708,6 +707,17 @@ func Difference (toRemove []T, opt_from ...[]T) []T {
 	return Filter(toRemove, func(value T, idx T, list T) bool { 
 		return ! Contains(rest, value) 
 	})
+}
+
+func Without (toRemove []T, opt_from ...T) []T {
+	if len(opt_from) == 0 {
+		return make([]T,0)
+	}
+	var rest []T = make([]T,0)
+	for _,from := range opt_from {
+		rest = append(rest,from)
+	}
+	return Difference( toRemove, rest )
 }
 
 
