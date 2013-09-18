@@ -593,3 +593,13 @@ func TestFlatten( t *testing.T ) {
 }
 
 
+func TestDifference( t *testing.T ) {
+    result := Difference([]T{1, 2, 3}, []T{2, 30, 40})
+    asserts.Equals( t, "takes the difference of two arrays", 
+		fmt.Sprintf("%v",result), "[1 3]")
+
+    result2 := Difference([]T{1, 2, 3, 4}, []T{2, 30, 40}, []T{1, 11, 111})
+    asserts.Equals( t, "takes the difference of three arrays",
+		fmt.Sprintf("%v",result2), "[3 4]")
+}
+

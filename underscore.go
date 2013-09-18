@@ -695,6 +695,23 @@ func Flatten (array []T, opt_shallow ...bool) []T {
 
 
 
+// Take the difference between one array and a number of other arrays.
+// Only the elements present in just the first array will remain.
+func Difference (toRemove []T, opt_from ...[]T) []T {
+	if len(opt_from) == 0 {
+		return toRemove
+	}
+	var rest []T = make([]T,0)
+	for _,from := range opt_from {
+		rest = flatten(from,true,rest)
+	}
+	return Filter(toRemove, func(value T, idx T, list T) bool { 
+		return ! Contains(rest, value) 
+	})
+}
+
+
+
 
 // Map Functions
 
