@@ -25,6 +25,9 @@ func IsArray (obj T) bool {
 	v,_ := obj.([]T)
 	return v != nil
 }
+func IsArrayEach (obj T, idx T, list T) bool {
+	return IsArray(obj)
+}
 
 // Is a given value an array?
 func IsArrayOfMaps (obj T) bool {
@@ -658,6 +661,38 @@ var Drop func(array []T) []T = Rest
 func Compact(array []T) []T {
 	return Filter(array,IdentityIsTruthy)
 }
+
+// Internal implementation of a recursive `flatten` function.
+func flatten(input []T, shallow bool, output []T) []T {
+	//if shallow && Every(input, IsArrayEach) {
+		//fmt.Printf("everything is array and shallow: %v\n",input)
+		//output = append(output,input...
+		//return output
+	//}
+	Each(input, func(value T, idx T, list T) bool  {
+		if IsArray(value) {
+			if shallow {
+				output = append(output,value.([]T)...)
+			} else {
+				output = flatten(value.([]T), shallow, output)
+			}
+		} else {
+			output = append(output,value)
+		}
+		return EachContinue
+	})
+	return output
+}
+
+// Flatten out an array, either recursively (by default), or just one level.
+func Flatten (array []T, opt_shallow ...bool) []T {
+	var shallow bool
+	if len(opt_shallow) > 0 {
+		shallow = opt_shallow[0]
+	}
+   return flatten(array, shallow, make([]T,0))
+}
+
 
 
 

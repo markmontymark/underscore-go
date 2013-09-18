@@ -579,3 +579,17 @@ func TestCompact( t *testing.T ) {
 		fmt.Sprintf("%v",Compact(nil)), "[]")
 }
 
+
+func TestFlatten( t *testing.T ) {
+   list := []T{ 1, []T{2}, []T{3, []T{[]T{[]T{4}}}}}
+	asserts.Equals( t, "can flatten nested arrays", fmt.Sprintf("%v",Flatten(list)), "[1 2 3 4]")
+   asserts.Equals( t, "can shallowly flatten nested arrays", fmt.Sprintf("%v",Flatten(list, true)),
+		"[1 2 3 [[[4]]]]")
+   list2 := []T{ []T{1}, []T{2}, []T{3}, []T{[]T{4}}}
+   asserts.Equals( t, "can shallowly flatten arrays containing only other arrays",
+		fmt.Sprintf("%v",Flatten(list2, true)), "[1 2 3 [4]]")
+   asserts.Equals( t, "can flatten arrays containing only other arrays",
+		fmt.Sprintf("%v",Flatten(list2)), "[1 2 3 4]")
+}
+
+
