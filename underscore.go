@@ -23,8 +23,8 @@ func IsString (obj T) bool {
 
 // Is a given value an array?
 func IsArray (obj T) bool {
-	v,_ := obj.([]T)
-	return v != nil
+	_,ok := obj.([]T)
+	return ok // v != nil
 }
 func IsArrayEach (obj T, idx T, list T) bool {
 	return IsArray(obj)
@@ -657,11 +657,9 @@ func Rest (array []T) []T {
 	if array == nil {
 		return nil
 	}
-	arraylen := len(array)
-	if arraylen < 2 {
-		return make([]T,0)
-	}
-	return Last( array, arraylen - 1)
+	dst := make([]T,len(array)-1)
+	copy(dst, array[1:])
+	return dst
 }
 
 var Tail func(array []T) []T = Rest
@@ -674,18 +672,21 @@ func Compact(array []T) []T {
 // Internal implementation of a recursive `flatten` function.
 func flatten(input []T, shallow bool, output []T) []T {
 	//if shallow && Every(input, IsArrayEach) {
-		//fmt.Printf("everything is array and shallow: %v\n",input)
-		//output = append(output,input...
-		//return output
+	//	fmt.Printf("everything is array and shallow: %v\n",input)
+	//	output = append(output,input...)
+	//	return output
 	//}
 	Each(input, func(value T, idx T, list T) bool  {
 		if IsArray(value) {
 			if shallow {
+				//fmt.Printf("output before: %v\n",output)
 				output = append(output,value.([]T)...)
+				//fmt.Printf("output after : %v\n",output)
 			} else {
 				output = flatten(value.([]T), shallow, output)
 			}
 		} else {
+			//fmt.Printf("is not array %v output before: %v\n",value, output)
 			output = append(output,value)
 		}
 		return EachContinue
@@ -811,10 +812,10 @@ func Union (opt_array ...T) []T {
 // Produce an array that contains every item shared between all the
 // passed-in arrays.
 func Intersection(lessThan func(T,T)bool,opt_array ...T) []T {
-    //var rest = slice.call(arguments, 1);
-	return Filter(Uniq(opt_array,false), func(this T, idx T, list T) bool {
-		return Every(opt_array, func(that T, idx2 T,list T) bool {
-			return IndexOf(that.([]T), this,lessThan) >= 0
+	rest := Uniq(Flatten(Rest(opt_array),true),false)
+	return Filter(Uniq(opt_array[0],false), func(this T, idx T, list T) bool {
+		return Every(rest, func(that T, idx2 T,list T) bool {
+			return IndexOf(rest, this,lessThan) != -1
 		})
 	})
 }

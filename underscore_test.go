@@ -665,7 +665,21 @@ func TestUnion( t *testing.T ) {
    asserts.Equals( t, "takes the union of nil and a list of arrays", fmt.Sprintf("%v",result3),"[<nil> 1 2 3]")
 }
 
-func TestIndex( t *testing.T ) {
+func TestIntersection( t *testing.T ) {
+	strLessThan := func( this T, that T ) bool {
+		return this.(string) < that.(string)
+	}
+	stooges := []T{"moe", "curly", "larry"}
+	leaders := []T{"moe", "groucho"}
+	asserts.Equals( t, "can take the set intersection of two arrays",
+		fmt.Sprintf("%v",Intersection(strLessThan,stooges, leaders)), "[moe]")
+
+	theSixStooges := []T{"moe", "moe", "curly", "curly", "larry", "larry"}
+	asserts.Equals( t, "returns a duplicate-free array",
+		fmt.Sprintf("%v",Intersection(strLessThan, theSixStooges, leaders)), "[moe]")
+}
+
+func TestIndexOf( t *testing.T ) {
 	intLessThan := func( this T, that T ) bool {
 		return this.(int) < that.(int)
 	}
