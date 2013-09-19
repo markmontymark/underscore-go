@@ -808,6 +808,43 @@ func Union (opt_array ...T) []T {
 	return Uniq(Flatten(opt_array, true),false)
 }
 
+// Produce an array that contains every item shared between all the
+// passed-in arrays.
+func Intersection(lessThan func(T,T)bool,opt_array ...T) []T {
+    //var rest = slice.call(arguments, 1);
+	return Filter(Uniq(opt_array,false), func(this T, idx T, list T) bool {
+		return Every(opt_array, func(that T, idx2 T,list T) bool {
+			return IndexOf(that.([]T), this,lessThan) >= 0
+		})
+	})
+}
+
+
+func IndexOf (array []T, item T, lessThan func(T,T) bool, isSorted ...bool) int {
+	if array == nil{
+		return -1
+	}
+	length := len(array)
+	if length == 0 {
+		return -1
+	}
+	i := 0
+   if len(isSorted) > 0 && isSorted[0] {
+		i = SortedIndex(array, item, lessThan )
+		if array[i] == item {
+			return i
+		} else {
+			return -1
+		}
+   }
+	for i,v := range array {
+		if v == item {
+			return i
+		}
+	}
+	return -1
+}
+
 
 
 // Map Functions

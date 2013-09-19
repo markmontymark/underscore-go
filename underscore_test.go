@@ -665,5 +665,28 @@ func TestUnion( t *testing.T ) {
    asserts.Equals( t, "takes the union of nil and a list of arrays", fmt.Sprintf("%v",result3),"[<nil> 1 2 3]")
 }
 
+func TestIndex( t *testing.T ) {
+	intLessThan := func( this T, that T ) bool {
+		return this.(int) < that.(int)
+	}
+	numbers := []T{1, 2, 3}
+	asserts.IntEquals( t, "can compute indexOf, even without the native function",
+	IndexOf(numbers, 2,intLessThan), 1)
+
+	asserts.IntEquals( t, "handles nulls properly",
+	IndexOf(nil, 2,intLessThan), -1)
+
+	num := 35;
+	numbers2 := []T{10, 20, 30, 40, 50}
+	asserts.IntEquals( t, "35 is not in the list", IndexOf(numbers2, num, intLessThan, true), -1 )
+	num  = 40
+	asserts.IntEquals( t, "40 is in the list", IndexOf(numbers2, num, intLessThan,true), 3)
+
+	numbers3 := []T{1, 40, 40, 40, 40, 40, 40, 40, 50, 60, 70}
+	num = 40
+	asserts.IntEquals( t, "40 is in the list ", IndexOf(numbers3,num,intLessThan,true), 1)
+
+}
+
 
 
