@@ -766,4 +766,18 @@ func TestPairs( t *testing.T ){
 }
 
 
+func TestLastIndexOf( t *testing.T ) {
+	numbers := []T{1, 0, 1}
+	asserts.IntEquals( t, "lastindexof simple test", LastIndexOf(numbers, 1), 2)
 
+	numbers2 := []T{1, 0, 1, 0, 0, 1, 0, 0, 0}
+	asserts.IntEquals( t, "can compute lastIndexOf", LastIndexOf(numbers2, 1), 5)
+	asserts.IntEquals( t, "lastIndexOf the other element", LastIndexOf(numbers2, 0), 8)
+
+	asserts.IntEquals( t, "handles nulls properly", LastIndexOf(nil, 2), -1) 
+
+	numbers3 := []T{1, 2, 3, 1, 2, 3, 1, 2, 3}
+	index := LastIndexOf(numbers3, 2, 2)
+	asserts.IntEquals( t, "supports the fromIndex argument",index, 1)
+
+}

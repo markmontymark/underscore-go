@@ -820,7 +820,10 @@ func Intersection(lessThan func(T,T)bool,opt_array ...T) []T {
 	})
 }
 
-
+// Return the position of the first occurrence of an
+// item in an array, or -1 if the item is not included in the array.
+// If the array is large and already in sort order, pass `true`
+// for **isSorted** to use binary search.
 func IndexOf (array []T, item T, lessThan func(T,T) bool, isSorted ...bool) int {
 	if array == nil{
 		return -1
@@ -830,6 +833,7 @@ func IndexOf (array []T, item T, lessThan func(T,T) bool, isSorted ...bool) int 
 		return -1
 	}
 	i := 0
+	// do binary search if isSorted = true
    if len(isSorted) > 0 && isSorted[0] {
 		i = SortedIndex(array, item, lessThan )
 		if array[i] == item {
@@ -845,6 +849,26 @@ func IndexOf (array []T, item T, lessThan func(T,T) bool, isSorted ...bool) int 
 	}
 	return -1
 }
+
+func LastIndexOf (array []T, item T, from ...int) int {
+	if array == nil {
+		return -1
+	}
+   var i int 
+	if from != nil {
+		i = from[0] 
+	} else {
+		i = len(array)
+	}
+	for i > 0 {
+		i -= 1
+		if array[i] == item {
+			return i
+		}
+	}
+	return -1
+}
+
 
 
 
