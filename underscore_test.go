@@ -844,3 +844,15 @@ func TestMemoize( t *testing.T ) {
 	asserts.Equals( t, "blah", o("toString").(string), "toString")
 	asserts.Equals( t, "blah blah", fastO("toString").(string), "toString")
 }
+
+
+func TestOnce( t *testing.T ) {
+	num := 0
+	increment := Once(func(...T) T { 
+		num += 1 
+		return num 
+	})
+	increment()
+	increment()
+	asserts.IntEquals( t, "can increment once", num, 1)
+}

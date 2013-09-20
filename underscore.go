@@ -1052,3 +1052,18 @@ func Memoize ( fn func(...T) T, opt_hasher ...func(...T) T ) func(...T) T {
 	}
 }
 
+// Returns a function that will be executed at most one time, no matter how
+// often you call it. Useful for lazy initialization.
+func Once ( fn func(...T) T ) func(...T) T {
+	ran := false
+	var memo T
+	return func(args ...T) T {
+		if ran {
+			return memo
+		}
+      ran = true
+      memo = fn(args...)
+      fn = nil
+      return memo
+	}
+}
