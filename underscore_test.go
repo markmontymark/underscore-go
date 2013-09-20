@@ -730,4 +730,31 @@ func TestZip( t *testing.T ) {
 }
 
 
+func TestObject( t *testing.T ) {
+   result := Object([]T{"moe", "larry", "curly"}, []T{30, 40, 50})
+   shouldBe := map[T]T{ "moe": 30, "larry": 40, "curly": 50}
+   asserts.Equals( t, "two arrays zipped together into an object",
+		fmt.Sprintf("%v", result), fmt.Sprintf("%v",shouldBe) )
+
+	result2   := Object([]T{"one", 1, "two", 2, "three", 3})
+	shouldBe2 := map[T]T{ "one": 1, "two": 2, "three": 3}
+	asserts.Equals( t, "an array of pairs zipped together into an object",
+		fmt.Sprintf("%v", result2), fmt.Sprintf("%v",shouldBe2) )
+
+	result3   := Object([]T{[]T{"one", 1}, []T{"two", 2}, []T{"three", 3}})
+	shouldBe3 := map[T]T{ "one": 1, "two": 2, "three": 3}
+	asserts.Equals( t, "an array of pairs zipped together into an object",
+		fmt.Sprintf("%v", result3), fmt.Sprintf("%v",shouldBe3) )
+
+    asserts.Nil( t, "handles nils", Object(nil))
+/*
+	TODO: need to write Pairs first
+    var stooges = {moe: 30, larry: 40, curly: 50};
+    ok(_.isEqual(_.object(_.pairs(stooges)), stooges), 'an object converted to pairs and back to an object');
+
+*/
+}
+
+
+
 

@@ -876,6 +876,39 @@ func Zip (arrays ...[]T ) []T {
 	return retval	
 }
 
+func Object( pairs_or_two_arrays ...[]T ) map[T]T {
+	if pairs_or_two_arrays == nil {
+		return nil
+	}
+	retval := make(map[T]T)
+	if len(pairs_or_two_arrays) == 1 { // got single array of ['k1','v1',k2,v2,...] pairs
+		kvpairs := pairs_or_two_arrays[0]
+		length := len(kvpairs)
+		if length == 0 {
+			return retval
+		}
+		if IsArray(kvpairs[0]) {
+			for i := 0 ; i < length ; i ++  {
+				retval[ kvpairs[i].([]T)[0] ] = kvpairs[i].([]T)[1]
+			}
+		} else {
+			for i := 0 ; i < length ; i += 2 {
+				retval[ kvpairs[i] ] = kvpairs[i+1]
+			}
+		}
+		return retval
+	}
+	keys := pairs_or_two_arrays[0]	
+	values := pairs_or_two_arrays[1]	
+	length := len(keys)
+	if length != len(values) {
+		fmt.Printf("Object() Error: got arrays of unequal length\n")
+	}
+	for i := 0 ; i < length ; i ++ {
+		retval[ keys[i] ] = values[i]	
+	}
+	return retval
+}
 
 
 // Map Functions
