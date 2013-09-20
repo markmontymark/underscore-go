@@ -703,4 +703,31 @@ func TestIndexOf( t *testing.T ) {
 }
 
 
+func TestZip( t *testing.T ) {
+
+   names := []T{"moe", "larry", "curly"}
+	ages := []T{30, 40, 50}
+	leaders := []T{true}
+
+   stooges := Zip(names, ages, leaders)
+   asserts.Equals( t, "zipped together arrays of different lengths",
+		fmt.Sprintf("%v", stooges), "[[moe 30 true] [larry 40 <nil>] [curly 50 <nil>]]")
+
+   stooges2 := Zip([]T{"moe",30, "stooge 1"},[]T{"larry",40, "stooge 2"},[]T{"curly",50, "stooge 3"})
+	asserts.Equals( t, "zipped pairs",
+    fmt.Sprintf("%v",stooges2), "[[moe larry curly] [30 40 50] [stooge 1 stooge 2 stooge 3]]")
+
+    // In the case of difference lengths of the tuples undefineds
+    // should be used as placeholder
+    stooges3 := Zip([]T{"moe",30},[]T{"larry",40},[]T{"curly",50, "extra data"})
+    asserts.Equals( t, "zipped pairs with empties", 
+		fmt.Sprintf("%v",stooges3), "[[moe larry curly] [30 40 50] [<nil> <nil> extra data]]")
+	empty := Zip([]T{})
+	asserts.Equals( t, "unzipped empty", fmt.Sprintf("%v",empty),"[]")
+
+	empty2 := Zip([]T{})
+	asserts.Equals( t, "unzipped empty2", fmt.Sprintf("%v",empty2),"[]")
+}
+
+
 

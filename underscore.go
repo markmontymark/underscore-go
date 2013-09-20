@@ -848,6 +848,36 @@ func IndexOf (array []T, item T, lessThan func(T,T) bool, isSorted ...bool) int 
 
 
 
+func Zip (arrays ...[]T ) []T {
+	if arrays == nil || len(arrays) == 0 {
+		return make([]T,0)
+	}
+	var length int = 0
+	var tmplength int = 0
+	var num_arrays int
+	for _,array := range arrays {
+		num_arrays += 1
+		tmplength = len(array)
+		if tmplength > length {
+			length = tmplength
+		}
+	}
+	//var retval [][]T
+	retval := make([]T,length)
+	for i := 0 ; i < length; i++ {
+		zipped := make([]T,num_arrays)
+		for j,array := range arrays {
+			if i < len(array) {
+				zipped[j] = array[i]
+			}
+		}
+		retval[i] = zipped
+	}
+	return retval	
+}
+
+
+
 // Map Functions
 
 // Retrieve the names of a maps keys
