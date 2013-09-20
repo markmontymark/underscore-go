@@ -938,3 +938,14 @@ func Values(obj map[T]T) []T {
 	return retval
 }
 
+// Convert an object into a list of `[key, value]` pairs.
+func Pairs (obj map[T]T) []T {
+	keys := Keys(obj)
+	length := len(keys)
+	pairs := make([]T,length)
+	for i := 0; i < length; i++ {
+		pairs[i] = []T{keys[i], obj[keys[i]] }
+	}
+	return pairs
+}
+

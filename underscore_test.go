@@ -747,14 +747,23 @@ func TestObject( t *testing.T ) {
 		fmt.Sprintf("%v", result3), fmt.Sprintf("%v",shouldBe3) )
 
     asserts.Nil( t, "handles nils", Object(nil))
-/*
-	TODO: need to write Pairs first
-    var stooges = {moe: 30, larry: 40, curly: 50};
-    ok(_.isEqual(_.object(_.pairs(stooges)), stooges), 'an object converted to pairs and back to an object');
 
-*/
+   stooges := map[T]T{ "moe": 30, "larry": 40, "curly": 50}
+	asserts.Equals( t, "an object converted to pairs and back to an object",
+		fmt.Sprintf("%v",stooges), fmt.Sprintf("%v",Object(Pairs(stooges))))
 }
 
+
+func TestPairs( t *testing.T ){
+	asserts.Equals( t,  "can convert an object into pairs",
+		fmt.Sprintf("%v",Pairs( map[T]T{"one": 1, "two": 2})), 
+		fmt.Sprintf("%v",[]T{[]T{"one", 1}, []T{"two", 2}}))
+
+	asserts.Equals( t, "... even when one of them is 'length'",
+		fmt.Sprintf("%v",Pairs(map[T]T{"one": 1, "two": 2, "length": 3})), 
+		fmt.Sprintf("%v",[]T{ []T{"one", 1}, []T{"two", 2}, []T{"length", 3}}))
+
+}
 
 
 
