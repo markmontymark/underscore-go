@@ -1012,3 +1012,20 @@ func Pairs (obj map[T]T) []T {
 	return pairs
 }
 
+// Function Functions
+
+// Partially apply a function by creating a version that has had some of its
+// arguments pre-filled, without changing its dynamic `this` context.
+func Partial (fn func(...T) T , savedArgs ...T) func(...T) T {
+	return func( laterArgs ...T ) T {
+		//args := make([]T, len(savedArgs) + len(laterArgs))
+		args := append( savedArgs, laterArgs... )
+		//for i,v := range savedArgs {
+			//args[i] = v
+		//}
+		//for j,v := range laterArgs {
+			//args[ len(savedArgs) + j ]= v
+		//}
+      return fn( args...)
+	}
+}

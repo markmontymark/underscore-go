@@ -803,3 +803,22 @@ func TestRange( t *testing.T ) {
 		fmt.Sprintf("%v",Range(0, -10, -1)), "[0 -1 -2 -3 -4 -5 -6 -7 -8 -9]")
 
 }
+
+
+func TestPartial( t *testing.T ) {
+
+	funk := func( args ...T) T { 
+		return fmt.Sprintf("%v",args )
+	}
+
+	passAB := Partial(funk, "a", "b");
+
+	asserts.Equals( t, "can partially apply", 
+		fmt.Sprintf("%v", passAB("c", "d")), "[a b c d]")
+
+	asserts.Equals( t, "can partially apply", 
+		fmt.Sprintf("%v", passAB("e", "f")), "[a b e f]")
+
+	asserts.Equals( t, "can partially apply", 
+		fmt.Sprintf("%v", passAB("1", 2)), "[a b 1 2]")
+}
