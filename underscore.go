@@ -934,6 +934,45 @@ func Object( pairs_or_two_arrays ...[]T ) map[T]T {
 	return retval
 }
 
+// Generate an integer Array containing an arithmetic progression. A port of
+// Underscore's range() which is a port of the native Python `range()` function. See
+// [the Python documentation](http://docs.python.org/library/functions.html#range).
+func Range (start_stop_and_step ...int) []int {
+	if start_stop_and_step == nil {
+		return make([]int,0)
+	}
+	var start int
+	var stop int
+	var step int
+	argslength := len(start_stop_and_step)
+	if argslength == 3 {
+		start,stop,step = start_stop_and_step[0],start_stop_and_step[1],start_stop_and_step[2]
+	} else if argslength == 2 {
+		start,stop = start_stop_and_step[0],start_stop_and_step[1]
+		step = 1
+	} else if argslength == 1 {
+		stop = start_stop_and_step[0]
+		start = 0
+		step = 1
+	}
+	
+	if step == 0 {
+		step = 1
+	}
+
+   length := int(math.Max(math.Ceil(float64(stop - start) / float64(step)), 0))
+   idx := 0
+	retval := make([]int,length)
+
+	for idx < length {
+		retval[idx] = start
+      start += step
+		idx += 1
+    }
+
+    return retval
+}
+
 
 // Map Functions
 

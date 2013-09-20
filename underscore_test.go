@@ -781,3 +781,25 @@ func TestLastIndexOf( t *testing.T ) {
 	asserts.IntEquals( t, "supports the fromIndex argument",index, 1)
 
 }
+
+func TestRange( t *testing.T ) {
+	asserts.Equals( t, "range with no arguments generates an empty array",
+		fmt.Sprintf("%v",Range()),"[]")
+	asserts.Equals( t, "range with 0 as a first argument generates an empty array",
+		fmt.Sprintf("%v",Range(0)), "[]")
+	asserts.Equals( t, "range with a single positive argument generates an array of elements 0,1,2,...,n-1",
+		fmt.Sprintf("%v",Range(4)), "[0 1 2 3]") 
+	asserts.Equals( t, "range with two arguments a &amp; b, a&lt;b generates an array of elements a,a+1,a+2,...,b-2,b-1",
+		fmt.Sprintf("%v",Range(5, 8)), "[5 6 7]") 
+	asserts.Equals( t, "range with two arguments a &amp; b, b&lt;a generates an empty array",
+		fmt.Sprintf("%v",Range(8, 5)), "[]") 
+	asserts.Equals( t, "range with three arguments a &amp; b &amp; c, c &lt; b-a, a &lt; b generates an array of elements a,a+c,a+2c,...,b - (multiplier of a) &lt; c",
+		fmt.Sprintf("%v",Range(3, 10, 3)), "[3 6 9]") 
+	asserts.Equals( t, "range with three arguments a &amp; b &amp; c, c &gt; b-a, a &lt; b generates an array with a single element, equal to a",
+		fmt.Sprintf("%v",Range(3, 10, 15)), "[3]") 
+	asserts.Equals( t,  "range with three arguments a &amp; b &amp; c, a &gt; b, c &lt; 0 generates an array of elements a,a-c,a-2c and ends with the number not less than b",
+		fmt.Sprintf("%v",Range(12, 7, -2)), "[12 10 8]")
+	asserts.Equals( t,  "final example in the Python docs",
+		fmt.Sprintf("%v",Range(0, -10, -1)), "[0 -1 -2 -3 -4 -5 -6 -7 -8 -9]")
+
+}
