@@ -177,6 +177,9 @@ var FoldR  func (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) = Redu
 func IdentityEach ( val T, index T, list T ) bool {
 	return val == val
 }
+func identityHasher ( val ...T ) T {
+	return val[0]
+}
 
 func IdentityIsTruthy( val T, index T, list T ) bool {
 	v,ok := val.(bool)
@@ -1029,3 +1032,23 @@ func Partial (fn func(...T) T , savedArgs ...T) func(...T) T {
       return fn( args...)
 	}
 }
+
+// Memoize an expensive function by storing its results.
+func Memoize ( fn func(...T) T, opt_hasher ...func(...T) T ) func(...T) T {
+	memo := map[T]T{}
+	var hasher func(...T) T
+	if opt_hasher != nil {
+		hasher = opt_hasher[0]
+	} else {
+		hasher = identityHasher
+	}
+	return func( args ...T ) T {
+		key := hasher(args...)
+		if Has(memo,key) {
+			return memo[key]
+		}
+		memo[key] = fn(args...)
+		return memo[key]
+	}
+}
+

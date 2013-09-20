@@ -6,6 +6,15 @@ import (
 	"testing"
 )
 
+var fib func ( ...T) T
+func init(){
+	fib = func(n ...T) T {
+		if n[0].(int) < 2 {
+			return n[0]
+		}
+		return fib(n[0].(int) - 1).(int) + fib(n[0].(int) - 2).(int)
+	}
+}
 
 
 func TestEach( t *testing.T ) {
@@ -821,4 +830,17 @@ func TestPartial( t *testing.T ) {
 
 	asserts.Equals( t, "can partially apply", 
 		fmt.Sprintf("%v", passAB("1", 2)), "[a b 1 2]")
+}
+
+func TestMemoize( t *testing.T ) {
+	asserts.IntEquals( t, "a memoized version of fibonacci produces identical results",
+		fib(10).(int), 55)
+	fib2 := Memoize(fib, func(n ...T) T { return n[0]}) // Redefine `fib` for memoization
+	asserts.IntEquals( t, "a memoized version of fibonacci produces identical results",
+		fib2(10).(int), 55)
+
+	o := func(str ...T) T { return str[0] }
+	fastO := Memoize(o)
+	asserts.Equals( t, "blah", o("toString").(string), "toString")
+	asserts.Equals( t, "blah blah", fastO("toString").(string), "toString")
 }
