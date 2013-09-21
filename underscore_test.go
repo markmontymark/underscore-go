@@ -914,6 +914,29 @@ func TestCompose( t *testing.T ) {
 
 	composed4 := Compose( greet, exclaim, pause)
 	asserts.Equals( t, "in this case, the functions are not commutative",composed4("moe").(string), "hi: moe, !") 
-
-
 } 
+
+
+func TestAfter( t *testing.T ) {
+	testAfter := func(afterAmount , timesCalled int) int {
+		afterCalled := 0
+		after := After(afterAmount, func(...T)T {
+			afterCalled += 1
+			return nil
+		})
+		for timesCalled > 0 {
+			timesCalled -= 1
+			after()
+		}
+		return afterCalled
+	}
+
+	asserts.IntEquals( t, "after(N) should fire after being called N times", 
+		testAfter(5, 5), 1)
+	asserts.IntEquals( t, "after(N) should not fire unless called N times",  
+		testAfter(5, 4), 0) 
+	asserts.IntEquals( t, "after(0) should not fire immediately", 
+		testAfter(0, 0), 0) 
+	asserts.IntEquals( t, "after(0) should fire when first invoked", 
+		testAfter(0, 1), 1)
+}

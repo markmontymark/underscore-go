@@ -1100,3 +1100,18 @@ func Compose ( funcs ...T) func(...T)T {
 	}
 }
 
+// Returns a function that will only be executed after being called N times.
+func After (times int, fn func(...T)T) func(...T)T {
+	return func( args ...T)T {
+		if times < 0 {
+			times = 0
+		} else {
+			times -= 1
+		}
+		if times < 1 {
+			return fn(args...)
+		}
+		return nil
+	}
+}
+
