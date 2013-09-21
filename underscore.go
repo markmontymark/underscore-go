@@ -1079,3 +1079,24 @@ func Wrap (fn func(...T)T, wrapper func(...T)T) func(...T)T {
 		return wrapper(wrappedargs...)
 	}
 }
+
+// Returns a function that is the composition of a list of functions, each
+// consuming the return value of the function that follows.
+func Compose ( funcs ...T) func(...T)T {
+	return func( args ...T) T {
+		for i := len(funcs) - 1; i >= 0; i-=1 {
+			fn := funcs[i].(func(...T)T)
+			retval := fn(args...)
+			args = nil
+			if retval == nil {
+				continue
+			} else if _,ok := retval.([]T); ok {
+				args = retval.([]T)
+			} else {
+				args = []T{retval}
+			}
+		}
+		return args[0]
+	}
+}
+

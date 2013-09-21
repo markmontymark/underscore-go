@@ -896,3 +896,24 @@ func TestWrap( t *testing.T ) {
 	asserts.Equals( t, "noop test, rest of args", fmt.Sprintf("%v",ret.([]T)[1:]),
 		"[[whats your] vector victor]")
 }
+
+
+func TestCompose( t *testing.T ) {
+	greet    := func(name ...T)T{ return "hi: " + name[0].(string) }
+	exclaim  := func(sentence ...T)T{ return sentence[0].(string) + "!" }
+	pause    := func(midway ...T)T{ return midway[0].(string) + ", " }
+	composed := Compose(exclaim, greet)
+
+	asserts.Equals( t, "can compose a function that takes another",composed("moe").(string), "hi: moe!") 
+
+	composed2 := Compose(greet, exclaim)
+	asserts.Equals( t, "in this case, the functions are also commutative",composed2("moe").(string), "hi: moe!") 
+
+	composed3 := Compose(greet, pause, exclaim)
+	asserts.Equals( t, "in this case, the functions are not commutative",composed3("moe").(string), "hi: moe!, ") 
+
+	composed4 := Compose( greet, exclaim, pause)
+	asserts.Equals( t, "in this case, the functions are not commutative",composed4("moe").(string), "hi: moe, !") 
+
+
+} 
