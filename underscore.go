@@ -1067,3 +1067,15 @@ func Once ( fn func(...T) T ) func(...T) T {
       return memo
 	}
 }
+
+// Returns the first function passed as an argument to the second,
+// allowing you to adjust arguments, run code before and after, and
+// conditionally execute the original function.
+func Wrap (fn func(...T)T, wrapper func(...T)T) func(...T)T {
+	return func(args ...T) T {
+		wrappedargs := make([]T, 0)
+		wrappedargs = append(wrappedargs,fn)
+		wrappedargs = append(wrappedargs,args...)
+		return wrapper(wrappedargs...)
+	}
+}

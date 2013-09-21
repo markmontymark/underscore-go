@@ -856,3 +856,43 @@ func TestOnce( t *testing.T ) {
 	increment()
 	asserts.IntEquals( t, "can increment once", num, 1)
 }
+
+func TestWrap( t *testing.T ) {
+	// from http://play.golang.org/p/Ic5G5QEO93
+	reverse := func(s string) string {
+		n := len(s)
+		runes := make([]rune, n)
+		for _, rune := range s {
+			n--
+			runes[n] = rune
+		}
+		return string(runes[n:])
+	}
+	greet := func(name ...T) T { return fmt.Sprintf("hi: %v",name[0]) }
+	backwards := Wrap(greet, func(args ...T)T {
+		fn := args[0].(func(...T)T)
+		name := args[1]
+		return fmt.Sprintf("%v %v", fn(name) , 
+			reverse(name.(string)))
+	})
+	asserts.Equals( t,"wrapped the salutation function", backwards("moe").(string), "hi: moe eom" )
+
+	inner := func(...T) T{ return "Hello " }
+	obj   := map[T]T{ "name" : "Moe"}
+	hi    := Wrap(inner, func(args ...T)T {
+		fn := args[0].(func(...T)T)
+		this := args[1].(map[T]T)
+		return fn().(string) + this["name"].(string)
+	})
+	asserts.Equals( t, "pass obj as arg ", hi(obj).(string), "Hello Moe")
+
+	noop  := func(...T) T {return nil }
+	wrapped := Wrap(noop, func( args ...T)T{ 
+		return args
+	})
+	ret    := wrapped([]T{"whats", "your"}, "vector", "victor")
+	_,ok := ret.([]T)[0].(func(...T)T)
+	asserts.True( t, "noop test first arg is a func", ok)
+	asserts.Equals( t, "noop test, rest of args", fmt.Sprintf("%v",ret.([]T)[1:]),
+		"[[whats your] vector victor]")
+}
