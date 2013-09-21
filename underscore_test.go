@@ -345,14 +345,14 @@ func TestWhere( t *testing.T ) {
 	list = append(list,map[T]T{"a": 1, "b": 4})
 
 	v := Where(list, map[T]T{"a": 1})
-	asserts.Equals( t, "Find objects with key 'a':1", "3", fmt.Sprintf("%v",len(v.([]T))))
-	asserts.Equals( t, "Last found has a 'b':4", "4", fmt.Sprintf("%v", v.([]T)[ len(v.([]T)) - 1].(map[T]T)["b"]))
+	asserts.Equals( t, "Find objects with key a:1", "3", fmt.Sprintf("%v",len(v.([]T))))
+	asserts.Equals( t, "Last found has a b:4", "4", fmt.Sprintf("%v", v.([]T)[ len(v.([]T)) - 1].(map[T]T)["b"]))
 
 	v  = Where(list,map[T]T{"b":2})
-	asserts.Equals( t, "Find objects with 'b':2", "2", fmt.Sprintf("%v",len(v.([]T))))
+	asserts.Equals( t, "Find objects with b:2", "2", fmt.Sprintf("%v",len(v.([]T))))
 
 	v  = Where(list,map[T]T{"b":2},true)
-	asserts.Equals( t, "Find objects with 'b':2", "map[a:1 b:2]", fmt.Sprintf("%v",v))
+	asserts.Equals( t, "Find objects with b:2", "map[a:1 b:2]", fmt.Sprintf("%v",v))
 }
 
 func TestFindWhere( t *testing.T ) {
@@ -362,7 +362,7 @@ func TestFindWhere( t *testing.T ) {
 	list = append(list,map[T]T{"a": 1, "b": 3})
 	list = append(list,map[T]T{"a": 1, "b": 4})
 	v := FindWhere(list, map[T]T{"a": 1})
-	asserts.Equals( t, "Find first object with key 'a':1", "map[a:1 b:2]", fmt.Sprintf("%v",v))
+	asserts.Equals( t, "Find first object with key a:1", "map[a:1 b:2]", fmt.Sprintf("%v",v))
 }
 
 //func TestMax( t *testing.T ) {
@@ -407,17 +407,17 @@ func TestGroupBy( t *testing.T ) {
 	grouped3 := GroupBy( data3, func (obj T,key T,val T) T { 
 		return obj.(map[T]T)["a"] 
 	})
-	asserts.Equals( t, "group by an object key\\'s value", "map[1:[map[a:1 b:2] map[a:1 b:7 c:8]] 4:[map[a:4 c:5]]]",fmt.Sprintf("%v",grouped3))
+	asserts.Equals( t, "group by an object keys value", "map[1:[map[a:1 b:2] map[a:1 b:7 c:8]] 4:[map[a:4 c:5]]]",fmt.Sprintf("%v",grouped3))
 
 	grouped4 := IndexBy( data3, func (obj T,key T,val T) T { 
 		return obj.(map[T]T)["a"] 
 	})
-	asserts.Equals( t, "index by an object key\\'s value", "map[1:map[a:1 b:7 c:8] 4:map[a:4 c:5]]",fmt.Sprintf("%v",grouped4))
+	asserts.Equals( t, "index by an object keys value", "map[1:map[a:1 b:7 c:8] 4:map[a:4 c:5]]",fmt.Sprintf("%v",grouped4))
 
 	grouped5 := CountBy( data3, func (obj T,key T,val T) T { 
 		return obj.(map[T]T)["a"] 
 	})
-	asserts.Equals( t, "count by an object key\\'s value", "map[1:2 4:1]",fmt.Sprintf("%v",grouped5))
+	asserts.Equals( t, "count by an object keys value", "map[1:2 4:1]",fmt.Sprintf("%v",grouped5))
 }
 
 func TestKeys( t *testing.T ) {
@@ -768,7 +768,7 @@ func TestPairs( t *testing.T ){
 		fmt.Sprintf("%v",Pairs( map[T]T{"one": 1, "two": 2})), 
 		fmt.Sprintf("%v",[]T{[]T{"one", 1}, []T{"two", 2}}))
 
-	asserts.Equals( t, "... even when one of them is 'length'",
+	asserts.Equals( t, "... even when one of them is length",
 		fmt.Sprintf("%v",Pairs(map[T]T{"one": 1, "two": 2, "length": 3})), 
 		fmt.Sprintf("%v",[]T{ []T{"one", 1}, []T{"two", 2}, []T{"length", 3}}))
 
@@ -946,4 +946,35 @@ func TestInvert( t *testing.T ) {
 	asserts.Equals( t, "can invert an object", fmt.Sprintf("%v",Keys(Invert(obj))), "[Moe Larry Curly]")
 	asserts.Equals( t, "two inverts gets you back where you started",
 		fmt.Sprintf("%v",Invert(Invert(obj))), fmt.Sprintf("%v", obj))
+}
+
+
+func TestExtend( t *testing.T ) {
+
+    asserts.Equals( t , "can extend an object with the attributes of another",
+		Extend(map[T]T{}, map[T]T{"a":"b"})["a"].(string), "b") 
+
+    asserts.Equals( t, "properties in source override destination",
+		Extend(map[T]T{"a":"x"}, map[T]T{"a":"b"})["a"].(string), "b" )
+
+    asserts.Equals( t, "properties not in source dont get overriden", 
+		Extend(map[T]T{"x":"x"}, map[T]T{"a":"b"})["x"].(string), "x") 
+
+    result := Extend(map[T]T{ "x":"x"}, map[T]T{"a":"a"}, map[T]T{"b":"b"})
+    asserts.Equals( t, "can extend from multiple source objects", 
+		fmt.Sprintf("%v",result), fmt.Sprintf("%v",map[T]T{"x":"x", "a":"a", "b":"b"})) 
+
+    result2 := Extend(map[T]T{"x":"x"}, map[T]T{"a":"a", "x":2}, map[T]T{"a":"b"})
+    asserts.Equals( t, "extending from multiple source objects last property trumps", 
+		fmt.Sprintf("%v",result2), fmt.Sprintf("%v",map[T]T{"x":2, "a":"b"}) )
+
+    result3 := Extend(map[T]T{}, map[T]T{"a": 0, "b": nil})
+    asserts.Equals( t,  "extend copies undefined values", 
+		fmt.Sprintf("%v",Keys(result3)), "[a b]")
+
+    result4 := map[T]T{}
+    result5 := Extend(result4, nil, 0, map[T]T{"a":1})
+    asserts.IntEquals( t,  "should not error on `null` or `undefined` sources", 
+		result5["a"].(int), 1)
+
 }

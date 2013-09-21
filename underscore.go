@@ -1124,3 +1124,16 @@ func Invert(obj map[T]T) map[T]T {
 	}
 	return result
 }
+
+func Extend(objToExtend map[T]T, args ...T) map[T]T {
+	Each( args, func (objToCopy, key, list T) bool {
+		if ! IsMap(objToCopy) {
+			return EachContinue
+		}
+		for k,v := range objToCopy.(map[T]T) {
+			objToExtend[ k ] = v
+		}
+		return EachContinue
+	})
+	return objToExtend
+}
