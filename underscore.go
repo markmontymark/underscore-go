@@ -1183,3 +1183,20 @@ func Defaults(obj map[T]T , args ...T) map[T]T {
 	})
 	return obj
 }
+
+func Clone( obj T ) T {
+	if IsMap(obj) {
+		return Extend( map[T]T{}, obj.(map[T]T) )
+	}
+	if IsArray(obj) {
+		return obj.([]T)[:]
+/*
+		retval := []T{}
+		for _,v := range obj.([]T) {
+			retval = append(retval,v)
+		}
+		return retval
+*/
+	}
+	return obj
+}

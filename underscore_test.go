@@ -1029,3 +1029,29 @@ func TestDefaults( t *testing.T ) {
     asserts.IntEquals( t, "should not error on `null` or `undefined` sources", options2["a"].(int), 1)
 }
 
+
+func TestClone( t *testing.T ) {
+	moe := map[T]T{ "name" : "moe", "lucky" : []T{13, 27, 34}}
+	var clone map[T]T
+	clone = Clone(moe).(map[T]T)
+	asserts.Equals( t, "the clone as the attributes of the original", 
+		clone["name"].(string), "moe")
+
+	clone["name"] = "curly"
+	asserts.True( t, "clones can change shallow attributes without affecting the original", 
+		clone["name"].(string) == "curly" && moe["name"].(string) == "moe") 
+
+	clone["lucky"] = append(clone["lucky"].([]T), 101)
+	// CHANGE FROM ORIG Underscore.js, changes to deep attributes are not shared!!!
+	// TODO:  Fix???
+	asserts.IntEquals( t, "changes to deep attributes are NOT shared with the original",
+		Last(moe["lucky"].([]T))[0].(int), 34) // was 101 in Underscore.js
+	asserts.IntEquals( t, "non objects should not be changed by clone", Clone(1).(int), 1) 
+	asserts.Nil( t, "non objects should not be changed by clone", Clone(nil))
+
+	var cloneArray []T
+	cloneArray = Clone(moe["lucky"]).([]T)
+	asserts.Equals( t ,"clone an array", fmt.Sprintf("%v",cloneArray), fmt.Sprintf("%v", moe["lucky"]))
+	cloneArray = append(cloneArray, 10101)
+	asserts.NotEquals( t ,"clone an array is shallow?", fmt.Sprintf("%v",cloneArray), fmt.Sprintf("%v", moe["lucky"]))
+}
