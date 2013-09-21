@@ -1228,7 +1228,6 @@ func Tap( obj T, fn func(...T)T) T {
 }
 
 
-// Utility Functions
 
 // Add a "chain" function, which will delegate to the wrapper.
 func (this *Underscore ) Chain () *Underscore {
@@ -1251,7 +1250,18 @@ func (this *Underscore ) Value() T {
 	return this.wrapped
 }
 
+func (this *Underscore) IsFinite(obj float64) bool {
+	return ! math.IsNaN(obj) && ! math.IsInf(obj,1) && ! math.IsInf(obj,-1)
+}
 
+func (this *Underscore) IsNaN(obj float64) bool {
+	return math.IsNaN(obj)
+}
+
+func (this *Underscore) Has(key T) bool {
+	return Has(this.wrapped,key)
+}
+// Utility Functions
 
 
 
