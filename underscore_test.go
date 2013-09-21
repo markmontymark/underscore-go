@@ -1055,3 +1055,28 @@ func TestClone( t *testing.T ) {
 	cloneArray = append(cloneArray, 10101)
 	asserts.NotEquals( t ,"clone an array is shallow?", fmt.Sprintf("%v",cloneArray), fmt.Sprintf("%v", moe["lucky"]))
 }
+
+func TestTap( t *testing.T ) {
+	var intercepted T
+	interceptor  := func( args ...T) T { 
+		obj := args[0]
+		intercepted = obj 
+		return nil
+	}
+	returned  := Tap(1, interceptor)
+	asserts.IntEquals( t, "passes tapped object to interceptor",intercepted.(int), 1) 
+	asserts.IntEquals( t, "returns tapped object", returned.(int), 1) 
+
+	returned2 := Newun([]T{1,2,3}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
+
+	asserts.True( t, "can use tapped objects in a chain", 
+		returned2.(int) == 6 && intercepted.(int) == 6) 
+
+	returned3 := Newun([]T{1}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
+	asserts.True( t, "can use tapped scalar in a chain", 
+		returned3.(int) == 2 && intercepted.(int) == 2) 
+
+	returned4 := Newun(map[T]T{"a":1}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
+	asserts.True( t, "can use tapped scalar in a chain", 
+		returned4.(int) == 2 && intercepted.(int) == 2) 
+}

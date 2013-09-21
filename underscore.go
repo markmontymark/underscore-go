@@ -6,13 +6,25 @@ import (
 	"math/rand"
 )
 
-type Underscore struct {}
 type T interface{}
+type Underscore struct {
+	ischained bool
+	wrapped T
+}
 type eachlistiterator func(T,T,T) bool
 type mapiterator func(T,T,T) T
 
 const EachContinue bool = false
 const EachBreak    bool = true
+
+
+
+func Newun(obj T) *Underscore {
+	un := new(Underscore)
+	un.wrapped = obj
+	return un
+}
+
 
 
 // Is a given value an array?
@@ -976,6 +988,17 @@ func Range (start_stop_and_step ...int) []int {
     return retval
 }
 
+func Max(lessThan func(T,T)bool, args ...T) T {
+	val := args[0]
+	for _,v := range args {
+		//fmt.Printf("Max method compare v %v and val %v\n",v,val)
+		if ! lessThan(v,val) {
+			val = v
+		}
+	}
+	return val
+}
+
 
 // Function Functions
 
@@ -1156,7 +1179,7 @@ func Pick (obj map[T]T, keysToKeep ...T) map[T]T {
 	return copy
 }
 
-   // Return a copy of the object without the blacklisted properties.
+// Return a copy of the object without the blacklisted properties.
 func Omit(obj map[T]T, keysToRemove ...T) map[T]T {
 	copy := map[T]T{}
 	keysToRemove = Flatten(keysToRemove,true)
@@ -1168,7 +1191,7 @@ func Omit(obj map[T]T, keysToRemove ...T) map[T]T {
 	return copy
 }
 
-
+// Fill in a given object with default properties.
 func Defaults(obj map[T]T , args ...T) map[T]T {
 	Each( args, func(val,idx,list T) bool {
 		if ! IsMap(val) {
@@ -1184,19 +1207,54 @@ func Defaults(obj map[T]T , args ...T) map[T]T {
 	return obj
 }
 
+
+// Create a (not-shallow-cloned if Array or Map) duplicate of an object.
 func Clone( obj T ) T {
 	if IsMap(obj) {
 		return Extend( map[T]T{}, obj.(map[T]T) )
 	}
 	if IsArray(obj) {
 		return obj.([]T)[:]
-/*
-		retval := []T{}
-		for _,v := range obj.([]T) {
-			retval = append(retval,v)
-		}
-		return retval
-*/
 	}
 	return obj
 }
+
+// Invokes interceptor with the obj, and then returns obj.
+// The primary purpose of this method is to "tap into" a method chain, in
+// order to perform operations on intermediate results within the chain.
+func Tap( obj T, fn func(...T)T) T {
+	fn(obj)
+	return obj
+}
+
+
+// Utility Functions
+
+// Add a "chain" function, which will delegate to the wrapper.
+func (this *Underscore ) Chain () *Underscore {
+	this.ischained = true
+	return this
+}
+func (this *Underscore ) Map(fn func(T,T,T)T) *Underscore {
+	this.wrapped = Map(this.wrapped, fn)
+	return this
+}
+func (this *Underscore ) Max(lessThan func(T,T)bool) *Underscore {
+	this.wrapped = Max(lessThan, this.wrapped.([]T)...)
+	return this
+}
+func (this *Underscore ) Tap(fn func(...T)T) *Underscore {
+	Tap(this.wrapped,fn)
+	return this
+}
+func (this *Underscore ) Value() T {
+	return this.wrapped
+}
+
+
+
+
+
+
+
+
