@@ -977,44 +977,6 @@ func Range (start_stop_and_step ...int) []int {
 }
 
 
-// Map Functions
-
-// Retrieve the names of a maps keys
-func Keys(obj map[T]T) []T {
-	retval := make([]T,0)
-	if obj == nil {
-		return retval
-	}
-	for key,_ := range obj {
-		retval = append(retval, key)
-	}
-	return retval
-}
-
-// Retrieve the values of a maps keys
-func Values(obj map[T]T) []T {
-	retval := make([]T,0)
-	if obj == nil {
-		return retval
-	}
-	keys := Keys(obj)
-	for _,key := range keys {
-		retval = append(retval, obj[key])
-	}
-	return retval
-}
-
-// Convert an object into a list of `[key, value]` pairs.
-func Pairs (obj map[T]T) []T {
-	keys := Keys(obj)
-	length := len(keys)
-	pairs := make([]T,length)
-	for i := 0; i < length; i++ {
-		pairs[i] = []T{keys[i], obj[keys[i]] }
-	}
-	return pairs
-}
-
 // Function Functions
 
 // Partially apply a function by creating a version that has had some of its
@@ -1115,3 +1077,50 @@ func After (times int, fn func(...T)T) func(...T)T {
 	}
 }
 
+
+
+// Map Functions
+
+// Retrieve the names of a maps keys
+func Keys(obj map[T]T) []T {
+	retval := make([]T,0)
+	if obj == nil {
+		return retval
+	}
+	for key,_ := range obj {
+		retval = append(retval, key)
+	}
+	return retval
+}
+
+// Retrieve the values of a maps keys
+func Values(obj map[T]T) []T {
+	retval := make([]T,0)
+	if obj == nil {
+		return retval
+	}
+	keys := Keys(obj)
+	for _,key := range keys {
+		retval = append(retval, obj[key])
+	}
+	return retval
+}
+
+// Convert an object into a list of `[key, value]` pairs.
+func Pairs (obj map[T]T) []T {
+	keys := Keys(obj)
+	length := len(keys)
+	pairs := make([]T,length)
+	for i := 0; i < length; i++ {
+		pairs[i] = []T{keys[i], obj[keys[i]] }
+	}
+	return pairs
+}
+
+func Invert(obj map[T]T) map[T]T {
+	result := map[T]T{}
+	for k,v := range obj {
+		result[v] = k
+	}
+	return result
+}

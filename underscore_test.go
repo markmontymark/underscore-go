@@ -940,3 +940,10 @@ func TestAfter( t *testing.T ) {
 	asserts.IntEquals( t, "after(0) should fire when first invoked", 
 		testAfter(0, 1), 1)
 }
+
+func TestInvert( t *testing.T ) {
+	obj := map[T]T{ "first": "Moe", "second": "Larry", "third": "Curly"}
+	asserts.Equals( t, "can invert an object", fmt.Sprintf("%v",Keys(Invert(obj))), "[Moe Larry Curly]")
+	asserts.Equals( t, "two inverts gets you back where you started",
+		fmt.Sprintf("%v",Invert(Invert(obj))), fmt.Sprintf("%v", obj))
+}
