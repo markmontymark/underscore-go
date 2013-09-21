@@ -1137,3 +1137,34 @@ func Extend(objToExtend map[T]T, args ...T) map[T]T {
 	})
 	return objToExtend
 }
+
+ // Return a copy of the object only containing the whitelisted properties.
+func Pick (obj map[T]T, keysToKeep ...T) map[T]T {
+	copy := map[T]T{}
+	Each(keysToKeep, func(keyToKeep,index,list T) bool {
+		if _,isList := keyToKeep.([]T) ; isList {
+			for _,keyToKeep := range keyToKeep.([]T) {
+				if v,ok := obj[keyToKeep] ; ok  {
+					copy[keyToKeep] = v
+				}
+			}
+		} else if v,ok := obj[keyToKeep] ; ok  {
+			copy[keyToKeep] = v
+		}
+		return EachContinue
+	})
+	return copy
+}
+
+   // Return a copy of the object without the blacklisted properties.
+func Omit(obj map[T]T, keysToRemove ...T) map[T]T {
+	copy := map[T]T{}
+	keysToRemove = Flatten(keysToRemove,true)
+	for k,v := range obj {
+		if ! Contains(keysToRemove, k) {
+			copy[k] = v
+		}
+	}
+	return copy
+}
+

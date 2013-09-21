@@ -978,3 +978,31 @@ func TestExtend( t *testing.T ) {
 		result5["a"].(int), 1)
 
 }
+
+
+func TestPick( t *testing.T ) {
+    result := Pick(map[T]T{"a":1, "b":2, "c":3}, "a", "c")
+    asserts.Equals( t, "can restrict properties to those named",
+		fmt.Sprintf("%v",result), fmt.Sprintf("%v",map[T]T{"a":1, "c":3})) 
+
+    result2 := Pick(map[T]T{"a":1, "b":2, "c":3}, []T{"b", "c"})
+    asserts.Equals( t, "can restrict properties to those named in an array", 
+		fmt.Sprintf("%v",result2), fmt.Sprintf("%v",map[T]T{"b":2, "c":3}))
+
+    result3 := Pick(map[T]T{"a":1, "b":2, "c":3}, []T{"a"}, "b")
+    asserts.Equals( t, "can restrict properties to those named in mixed args",
+		fmt.Sprintf("%v",result3), fmt.Sprintf("%v",map[T]T{"a":1, "b":2}))
+}
+
+func TestOmit( t *testing.T ) {
+    result := Omit(map[T]T{"a":1, "b":2, "c":3}, "b")
+    asserts.Equals( t, "can omit a single named property", 
+		fmt.Sprintf("%v",result), fmt.Sprintf("%v",map[T]T{"a":1, "c":3}))
+    result2 := Omit(map[T]T{"a":1, "b":2, "c":3}, "a", "c")
+    asserts.Equals( t, "can omit several named properties", 
+		fmt.Sprintf("%v",result2), fmt.Sprintf("%v",map[T]T{"b":2})) 
+    result3 := Omit(map[T]T{"a":1, "b":2, "c":3}, []T{"b", "c"})
+    asserts.Equals( t, "can omit properties named in an array", 
+		fmt.Sprintf("%v",result3), fmt.Sprintf("%v",map[T]T{"a":1})) 
+}
+
