@@ -3,6 +3,7 @@ package underscore
 import (
 	"./lib/asserts"
 	"fmt"
+	"math"
 	"testing"
 )
 
@@ -1004,5 +1005,27 @@ func TestOmit( t *testing.T ) {
     result3 := Omit(map[T]T{"a":1, "b":2, "c":3}, []T{"b", "c"})
     asserts.Equals( t, "can omit properties named in an array", 
 		fmt.Sprintf("%v",result3), fmt.Sprintf("%v",map[T]T{"a":1})) 
+}
+
+
+func TestDefaults( t *testing.T ) {
+
+    options := map[T]T{ "zero": 0, "one": 1, "empty": "", "nan": math.NaN(), "nothing": nil}
+    Defaults(options, map[T]T{"zero": 1, "one": 10, "twenty": 20, "nothing": "str"})
+
+    asserts.IntEquals( t, "value exists", options["zero"].(int), 0)
+    asserts.IntEquals( t, "value exists",options["one"].(int), 1 )
+    asserts.IntEquals( t, "default applied",options["twenty"].(int), 20)
+    asserts.Nil( t, "null isnt overridden",options["nothing"])
+
+    Defaults(options, map[T]T{"empty": "full"}, map[T]T{"nan": "nan"}, map[T]T{"word": "word"}, map[T]T{"word": "dog"})
+    asserts.Equals( t, "value exists", options["empty"].(string), "")
+    asserts.True  ( t, "NaN isnt overridden", math.IsNaN(options["nan"].(float64)))
+    asserts.Equals( t, "new value is added, first one wins",options["word"].(string), "word")
+
+    options2 := map[T]T{}
+    Defaults(options2, nil, map[T]T{"a":1})
+
+    asserts.IntEquals( t, "should not error on `null` or `undefined` sources", options2["a"].(int), 1)
 }
 

@@ -1168,3 +1168,18 @@ func Omit(obj map[T]T, keysToRemove ...T) map[T]T {
 	return copy
 }
 
+
+func Defaults(obj map[T]T , args ...T) map[T]T {
+	Each( args, func(val,idx,list T) bool {
+		if ! IsMap(val) {
+			return EachContinue
+		}
+		for k,v := range val.(map[T]T) {
+			if _,ok := obj[k] ; !ok {
+				obj[ k ] = v
+			}
+		}	
+		return EachContinue
+	})
+	return obj
+}
