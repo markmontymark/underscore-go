@@ -4,6 +4,7 @@ import (
 	"./lib/asserts"
 	"fmt"
 	"math"
+	//"sort"
 	"testing"
 )
 
@@ -366,21 +367,23 @@ func TestFindWhere( t *testing.T ) {
 	asserts.Equals( t, "Find first object with key a:1", "map[a:1 b:2]", fmt.Sprintf("%v",v))
 }
 
-//func TestMax( t *testing.T ) {
-	//list := []int{2,3,4,9,5,6,7,8}
-	//asserts.Equals( t, "Find max element in array", "9", fmt.Sprintf("%v",MaxInt(list))) 
-//}
+func TestMax( t *testing.T ) {
+	list := []int{2,3,4,9,5,6,7,8}
+	asserts.Equals( t, "Find max element in array", "9", fmt.Sprintf("%v",MaxInt(list...))) 
+}
 
-/*
 func TestShuffle( t *testing.T ) {
 	list := []T{2,3,4,9,5,6,7,8}
 	shuffledlist := Shuffle(list)
-	asserts.IntEquals( t, "Find max element in array", len(list), len(shuffledlist))
-	asserts.Equals( t, "sort orig list and shuffled list", 
-		fmt.Sprintf("%v",sort.Sort(list)),
-		fmt.Sprintf("%v",sort.Sort(shuffledlist)))
+	asserts.IntEquals( t, "Find max element in array", 
+		Max(maxIntLessThan,list...).(int), 
+		Max(maxIntLessThan,shuffledlist...).(int))
+
+	asserts.True( t, "sort orig list and shuffled list", 
+		Every(list, func (item,idx,list T) bool {
+			return Contains(shuffledlist,item)
+		}))
 }
-*/
 
 func TestGroupBy( t *testing.T ) {
 

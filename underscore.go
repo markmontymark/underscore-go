@@ -419,10 +419,19 @@ _.min = function(obj, iterator, context) {
 // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
 func Shuffle(obj []T) []T {
 	shuffled := make([]T,len(obj))
-	indices := rand.Perm(len(obj))
-	for i,idx := range indices {
-		shuffled[i],shuffled[idx] = obj[idx],obj[i]
-	}
+	//indices := rand.Perm(len(obj))
+	//for i,idx := range indices {
+		//shuffled[i],shuffled[idx] = obj[idx],obj[i]
+	//}
+	index := 0
+	var rand int
+	Each(obj, func(val,idx,list T) bool {
+		rand = Random(index)
+		index += 1
+		shuffled[ index - 1 ] = shuffled[ rand ]
+		shuffled[ rand ] = val
+		return EachContinue
+	})
 	return shuffled
 }
 
@@ -999,8 +1008,17 @@ func maxIntLessThan(a T,b T) bool {
 func Max(lessThan func(T,T)bool, args ...T) T {
 	val := args[0]
 	for _,v := range args {
-		//fmt.Printf("Max method compare v %v and val %v\n",v,val)
 		if ! lessThan(v,val) {
+			val = v
+		}
+	}
+	return val
+}
+
+func MaxInt(args ...int) int {
+	val := args[0]
+	for _,v := range args {
+		if ! maxIntLessThan(v,val) {
 			val = v
 		}
 	}
