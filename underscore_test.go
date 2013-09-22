@@ -1067,16 +1067,48 @@ func TestTap( t *testing.T ) {
 	asserts.IntEquals( t, "passes tapped object to interceptor",intercepted.(int), 1) 
 	asserts.IntEquals( t, "returns tapped object", returned.(int), 1) 
 
-	returned2 := Newun([]T{1,2,3}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
+	returned2 := New([]T{1,2,3}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
 
 	asserts.True( t, "can use tapped objects in a chain", 
 		returned2.(int) == 6 && intercepted.(int) == 6) 
 
-	returned3 := Newun([]T{1}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
+	returned3 := New([]T{1}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
 	asserts.True( t, "can use tapped scalar in a chain", 
 		returned3.(int) == 2 && intercepted.(int) == 2) 
 
-	returned4 := Newun(map[T]T{"a":1}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
+	returned4 := New(map[T]T{"a":1}).Chain().Map(func(val,idx,list T) T { return val.(int) * 2 }).Max(func(a T, b T)bool{ return a.(int) < b.(int) } ).Tap(interceptor).Value()
 	asserts.True( t, "can use tapped scalar in a chain", 
 		returned4.(int) == 2 && intercepted.(int) == 2) 
 }
+
+
+
+func TestTimes( t *testing.T ) {
+	vals := []T{}
+	Times(3, func (i ...T) T { 
+		vals = append(vals,i...)
+		return nil
+	})
+	asserts.Equals( t, "is 0 indexed", fmt.Sprintf("%v",vals), "[0 1 2]")
+
+	vals2 := []T{}
+	New(3).Times(func(i ...T) T { 
+		vals2 = append( vals2, i...); 
+		return i[0] 
+	})
+	asserts.Equals( t, "works as a wrapper", fmt.Sprintf("%v",vals2), "[0 1 2]")
+
+	// collects return values
+	asserts.Equals( t, "collects return values", 
+		fmt.Sprintf("%v",New(3).Times(func(i ...T)T { return i[0] })),"[0 1 2]")
+
+	asserts.Equals( t, "zero times retval is empty array", 
+		fmt.Sprintf("%v",Times(0, New(nil).Identity)), "[]")
+	asserts.Equals( t, " -1 times retval is empty array", 
+		fmt.Sprintf("%v",Times(-1, New(nil).Identity)), "[]")
+	asserts.Equals( t, " -Infinity times retval is empty array",
+		fmt.Sprintf("%v",Times(int(math.Inf(-1)), New(nil).Identity)), 
+		"[]")
+}
+
+

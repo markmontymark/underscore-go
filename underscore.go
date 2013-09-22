@@ -10,6 +10,7 @@ type T interface{}
 type Underscore struct {
 	ischained bool
 	wrapped T
+	prototype map[T]T
 }
 type eachlistiterator func(T,T,T) bool
 type mapiterator func(T,T,T) T
@@ -19,12 +20,11 @@ const EachBreak    bool = true
 
 
 
-func Newun(obj T) *Underscore {
+func New(obj T) *Underscore {
 	un := new(Underscore)
 	un.wrapped = obj
 	return un
 }
-
 
 
 // Is a given value an array?
@@ -61,6 +61,11 @@ func IsFunction(obj T) bool {
 	return v != nil
 }
 
+// Is a given value an array?
+func IsFunctionVariadic(obj T) bool {
+	v,_ := obj.(func(...T)T)
+	return v != nil
+}
 
 // Is a given array, string, or object empty?
 // An "empty" object has no enumerable own-properties.
@@ -339,7 +344,7 @@ var Include func(obj []T, target T, opt_comparator ...func(T,T)bool) bool = Cont
 // Invoke a method (with arguments) on every item in a collection.
 //func Invoke(obj []T, method func(...T)) {
 //	var args = slice.call(arguments, 2);
-//	var isFunc = _.isFunction(method);
+//	var isFunc = IsFunction(method);
 //	return Map(obj, func(value T) {
 //		return (isFunc ? method : value[method]).apply(value, args);
 //	});
@@ -988,6 +993,9 @@ func Range (start_stop_and_step ...int) []int {
     return retval
 }
 
+func maxIntLessThan(a T,b T) bool {
+	return a.(int) < b.(int)
+}
 func Max(lessThan func(T,T)bool, args ...T) T {
 	val := args[0]
 	for _,v := range args {
@@ -1227,7 +1235,16 @@ func Tap( obj T, fn func(...T)T) T {
 	return obj
 }
 
-
+func Result (obj, propertyName T ) T {
+	if obj == nil {
+		return nil;
+	}
+	val := obj.(map[T]T)[propertyName]
+	if IsFunctionVariadic(val) { // func(...T) T
+		return val.(func(...T)T)(obj)
+	}
+	return val
+}
 
 // Add a "chain" function, which will delegate to the wrapper.
 func (this *Underscore ) Chain () *Underscore {
@@ -1261,10 +1278,31 @@ func (this *Underscore) IsNaN(obj float64) bool {
 func (this *Underscore) Has(key T) bool {
 	return Has(this.wrapped,key)
 }
+
 // Utility Functions
 
+// Keep the identity function around for default iterators.
+func (this *Underscore) Identity (value ...T) T {
+	return value[0]
+}
 
+func Times (n int, iterator func(...T)T ) []T  {
+	if n < 0 {
+		return []T{}
+	}
+	collected := make([]T,n)
+	for i := 0; i < n; i += 1 {
+		collected[i] = iterator(i)
+	}
+	return collected
+}
+// Run a function **n** times.
+func (this *Underscore) Times (iterator func(...T)T  )  []T {
+	return Times(this.wrapped.(int),iterator)
+}
 
-
-
+// Helper function to continue chaining intermediate results.
+func result (obj T) T {
+	return New(obj).Chain()
+}
 
