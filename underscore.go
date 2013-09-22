@@ -957,9 +957,9 @@ func Object( pairs_or_two_arrays ...[]T ) map[T]T {
 // Generate an integer Array containing an arithmetic progression. A port of
 // Underscore's range() which is a port of the native Python `range()` function. See
 // [the Python documentation](http://docs.python.org/library/functions.html#range).
-func Range (start_stop_and_step ...int) []int {
+func Range (start_stop_and_step ...int) []T {
 	if start_stop_and_step == nil {
-		return make([]int,0)
+		return make([]T,0)
 	}
 	var start int
 	var stop int
@@ -982,7 +982,7 @@ func Range (start_stop_and_step ...int) []int {
 
    length := int(math.Max(math.Ceil(float64(stop - start) / float64(step)), 0))
    idx := 0
-	retval := make([]int,length)
+	retval := make([]T,length)
 
 	for idx < length {
 		retval[idx] = start
@@ -1300,6 +1300,41 @@ func Times (n int, iterator func(...T)T ) []T  {
 func (this *Underscore) Times (iterator func(...T)T  )  []T {
 	return Times(this.wrapped.(int),iterator)
 }
+
+// Return a random integer between min and max (inclusive).
+func Random (min int,optmax ...int) int {
+	var max int
+	if optmax == nil {
+		max = min
+		min = 0
+	} else {
+		max = optmax[0]
+	}
+	return min + int(rand.Float64() * float64( max - min + 1))
+}
+
+
+func (this *Underscore ) Random (min int,optmax ...int) int {
+	return Random(min,optmax...)
+}
+
+// Return a random float64 between min and max (inclusive).
+func RandomFloat64 (min float64,optmax ...float64) float64 {
+	var max float64
+	if optmax == nil {
+		max = min
+		min = 0
+	} else {
+		max = optmax[0]
+	}
+	return min + rand.Float64() * ( max - min + 1.0)
+}
+
+
+func (this *Underscore ) RandomFloat64 (min float64,optmax ...float64) float64 {
+	return RandomFloat64(min,optmax...)
+}
+
 
 // Helper function to continue chaining intermediate results.
 func result (obj T) T {

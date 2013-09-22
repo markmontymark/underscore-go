@@ -1111,4 +1111,21 @@ func TestTimes( t *testing.T ) {
 		"[]")
 }
 
+func TestRandom( t *testing.T ) {
+	array := Range(1000)
+	min := math.Pow(2, 31)
+	max := math.Pow(2, 62)
+
+	asserts.True( t, "should produce a random number greater than or equal to the minimum number",
+		Every(array, func(val,ignore1,ignore2 T) bool {
+			r := RandomFloat64(min, max)
+			return r >= min && r <= max
+	})) 
+
+	asserts.True( t,  "should produce a random number when passed `Number.MAX_VALUE`",
+		Some(array, func(a,b,c T) bool { 
+			r := RandomFloat64(math.MaxFloat64)
+			return r > 0.0	
+		}))
+}
 

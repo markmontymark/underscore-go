@@ -1,10 +1,18 @@
 package asserts
 
-import "testing"
+import (
+	"testing"
+)
 
 func Equals (t *testing.T, name string , got string, expected string ) {
    if got != expected {
       t.Errorf("Failed %s\ngot\n%s\n\nexpected\n%s\n\n", name, got, expected )
+   }
+}
+
+func NotEquals (t *testing.T, name string , got string, expected string ) {
+   if got == expected {
+      t.Errorf("Failed %s\ngot\n%s\n\nexpected something different\n%s\n\n", name, got, expected )
    }
 }
 
