@@ -4,9 +4,14 @@ import (
 	"./lib/asserts"
 	"fmt"
 	"math"
-	//"sort"
+	"sort"
 	"testing"
 )
+
+type IntSlice []int 
+func (this IntSlice) Len () int { return len(this) }
+func (this IntSlice) Less ( a , b int) bool { return this[a] < this[b] }
+func (this IntSlice) Swap( a , b int)  { this[a],this[b] = this[b],this[a] }
 
 var fib func ( ...T) T
 func init(){
@@ -314,7 +319,10 @@ func TestIsStringWithArray( t *testing.T ) {
 
 func TestIsStringWithString( t *testing.T ) {
 	scalar := "name"
-	asserts.True( t, "Testing IsString", IsString( scalar ) )
+	asserts.True( t, "Testing IsString function", IsString( scalar ) )
+	asserts.True( t, "Testing IsString method(T)", New().IsString( scalar ) )
+	asserts.True( t, "Testing New(scalar).IsString method()", New(scalar).IsString( ) )
+	asserts.False( t, "Testing New([]T{scalar}).IsString method()", New([]T{scalar}).IsString( ) )
 }
 
 func TestIsStringWithMap( t *testing.T ) {
@@ -376,8 +384,8 @@ func TestShuffle( t *testing.T ) {
 	list := []T{2,3,4,9,5,6,7,8}
 	shuffledlist := Shuffle(list)
 	asserts.IntEquals( t, "Find max element in array", 
-		Max(maxIntLessThan,list...).(int), 
-		Max(maxIntLessThan,shuffledlist...).(int))
+		Max(intLessThan,list...).(int), 
+		Max(intLessThan,shuffledlist...).(int))
 
 	asserts.True( t, "sort orig list and shuffled list", 
 		Every(list, func (item,idx,list T) bool {
@@ -1120,7 +1128,7 @@ func TestRandom( t *testing.T ) {
 	max := math.Pow(2, 62)
 
 	asserts.True( t, "should produce a random number greater than or equal to the minimum number",
-		Every(array, func(val,ignore1,ignore2 T) bool {
+		Every(array, func(a,b,c T) bool {
 			r := RandomFloat64(min, max)
 			return r >= min && r <= max
 	})) 
@@ -1132,3 +1140,91 @@ func TestRandom( t *testing.T ) {
 		}))
 }
 
+
+func TestInvoke( t *testing.T ){
+	list := []T{ IntSlice{5, 1, 7}, IntSlice{3, 2, 1}}
+	result := Invoke(list, func( item T, args ...T) T  {
+		sort.Sort(item.(IntSlice))
+		return item
+	})
+	asserts.Equals( t , "each array sorted", fmt.Sprintf("%v",result), 
+		"[[1 5 7] [1 2 3]]")
+}
+
+
+func TestSample( t *testing.T ){
+	numbers := Range(10)
+	all_sampled := Sample(numbers,10)
+	asserts.True( t, "contains the same members before and after sample, take 1",
+		Every(all_sampled, func(val , idx, list T) bool {
+			return Contains(numbers,val)
+		}))
+	asserts.True( t, "contains the same members before and after sample ,take 2",
+		Every(numbers, func(val , idx, list T) bool {
+			return Contains(all_sampled.([]T),val)
+		}))
+	
+	all_sampled2 := Sample(numbers, 20)
+	asserts.True( t, "also works when sampling more objects than are present, take 1",
+		Every(all_sampled2, func(val , idx, list T) bool {
+			return Contains(numbers,val)
+		}))
+	asserts.True( t, "also works when sampling more objects than are present,take 2",
+		Every(numbers, func(val , idx, list T) bool {
+			return Contains(all_sampled2.([]T),val)
+		}))
+
+	fmt.Printf("sample one? %v\n", Sample(numbers))
+/*
+    ok(_.contains(numbers, _.sample(numbers)), 'sampling a single element returns something from the array');
+    strictEqual(_.sample([]), undefined, 'sampling empty array with no number returns undefined');
+    notStrictEqual(_.sample([], 5), [], 'sampling empty array with a number returns an empty array');
+    notStrictEqual(_.sample([1, 2, 3], 0), [], 'sampling an array with 0 picks returns an empty array');
+    deepEqual(_.sample([1, 2], -1), [], 'sampling a negative number of picks returns an empty array');
+    ok(_.contains([1, 2, 3], _.sample({a: 1, b: 2, c: 3})), 'sample one value from an object');
+*/
+}
+
+func TestSortBy( t *testing.T ) {
+	people := []map[T]T{ {"name" : "curly", "age" : 50}, {"name" : "moe", "age" : 30}}
+	peopleSorted := SortBy(people, 
+		func(obj,b,c T) T{ return obj.(map[T]T)["age"] }, 
+		func(a,b *map[T]T) bool { 
+			fmt.Printf("in less than func with a %v, b %v\n",(*a)["criteria"],(*b)["criteria"])
+			return (*a)["criteria"].(int) < (*b)["criteria"].(int)
+		} )
+	asserts.Equals( t, "stooges sorted by age",
+		fmt.Sprintf("%v",peopleSorted), "[moe curly]")
+		//fmt.Sprintf("%v",Pluck(peopleSorted, "name")), "[moe curly]")
+/*
+	var list = [undefined, 4, 1, undefined, 3, 2];
+	equal(_.sortBy(list, _.identity).join(','), '1,2,3,4,,', 'sortBy with undefined values');
+
+	var list = ["one", "two", "three", "four", "five"];
+	var sorted = _.sortBy(list, 'length');
+	equal(sorted.join(' '), 'one two four five three', 'sorted by length');
+
+	function Pair(x, y) {
+	this.x = x;
+	this.y = y;
+	}
+
+	var collection = [
+	new Pair(1, 1), new Pair(1, 2),
+	new Pair(1, 3), new Pair(1, 4),
+	new Pair(1, 5), new Pair(1, 6),
+	new Pair(2, 1), new Pair(2, 2),
+	new Pair(2, 3), new Pair(2, 4),
+	new Pair(2, 5), new Pair(2, 6),
+	new Pair(undefined, 1), new Pair(undefined, 2),
+	new Pair(undefined, 3), new Pair(undefined, 4),
+	new Pair(undefined, 5), new Pair(undefined, 6)
+	];
+
+	var actual = _.sortBy(collection, function(pair) {
+	return pair.x;
+	});
+
+	deepEqual(actual, collection, 'sortBy should be stable');
+*/
+}

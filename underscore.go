@@ -1,92 +1,68 @@
+// underscore.go
+// ported from ...
+//     Underscore.js 1.5.2
+//     http://underscorejs.org
+//     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+//     Underscore may be freely distributed under the MIT license.
+
+
 package underscore
 
 import (
 	"fmt"
 	"math"
 	"math/rand"
+	"sort"
 )
 
 type T interface{}
 type Underscore struct {
 	ischained bool
 	wrapped T
-	prototype map[T]T
 }
+
+type sortedMap struct {
+	value T
+	index T
+	criteria T	
+}
+type maps []map[T]T
+func (this maps) Len () int { return len(this) }
+//func (this maps) Less ( a , b int) bool { return this[a]["criteria"] < this[b]["criteria"] }
+func (this maps) Swap( a , b int)  { this[a],this[b] = this[b],this[a] }
+
+
+// Functions passed to Each need this signature
+// - if what's passed to Each is map[T]T, the signature means: (val T, key T, obj map[T]T) for each key of obj
+// - if what's passed to Each is []T, the signature means: (val T, index.(int) T, obj.([]T) T) for each key of obj
 type eachlistiterator func(T,T,T) bool
+// Functions passed to Map need this signature
 type mapiterator func(T,T,T) T
 
 const EachContinue bool = false
 const EachBreak    bool = true
 
 
-
-func New(obj T) *Underscore {
-	un := new(Underscore)
-	un.wrapped = obj
-	return un
-}
-
-
-// Is a given value an array?
-func IsString (obj T) bool {
-	v,_ := obj.(string)
-	return v != ""
-}
-
-// Is a given value an array?
-func IsArray (obj T) bool {
-	_,ok := obj.([]T)
-	return ok // v != nil
-}
-func IsArrayEach (obj T, idx T, list T) bool {
-	return IsArray(obj)
-}
-
-// Is a given value an array?
-func IsArrayOfMaps (obj T) bool {
-	v,_ := obj.([]map[T]T)
-	return v != nil
-}
-
-
-// Is a given variable a map
-func IsMap (obj T) bool {
-	v,_ := obj.(map[T]T) 
-	return v != nil
-}
-
-// Is a given value an array?
-func IsFunction(obj T) bool {
-	v,_ := obj.(func(T,T,T)T)
-	return v != nil
-}
-
-// Is a given value an array?
-func IsFunctionVariadic(obj T) bool {
-	v,_ := obj.(func(...T)T)
-	return v != nil
-}
-
-// Is a given array, string, or object empty?
-// An "empty" object has no enumerable own-properties.
-func IsEmpty (obj T) bool {
-	if obj == nil {
-		return true
+// Create a safe reference to the Underscore object for use below.
+func New(obj ...T) *Underscore {
+	if obj != nil {
+		if _,ok := obj[0].(*Underscore) ; ok {
+			return obj[0].(*Underscore)
+		}
+		un := new(Underscore)
+		un.wrapped = obj[0]
+		return un
 	}
-	if IsArray(obj) {
-		return len(obj.([]T)) == 0
-	}
-	if IsMap(obj) {
-		return len(obj.(map[T]T)) == 0
-	}
-	if IsString(obj) {
-		return len(obj.(string)) == 0
-	}
-	return false
+	return new(Underscore)
 }
 
+const VERSION string = "1.5.2" 
 
+// Collection Functions
+// --------------------
 
+// The cornerstone, an `each` implementation, aka `forEach`.
+// Handles objects and arrays
 
 func Each(elemslist_or_map T, iterator eachlistiterator ) {
 	if elemslist_or_map == nil || IsEmpty(elemslist_or_map) {
@@ -119,7 +95,6 @@ func Each(elemslist_or_map T, iterator eachlistiterator ) {
 	
 }
 
-
 // Return the results of applying the iterator to each element.
 func Map(obj T, iterator func(T,T,T) T) []T {
 	results := make([]T,0)
@@ -135,6 +110,19 @@ func Map(obj T, iterator func(T,T,T) T) []T {
 	return results
 }
 var Collect func (obj T, iterator func(T,T,T) T) []T = Map
+func MapMap(obj []map[T]T, iterator func(T,T,T) map[T]T) []map[T]T {
+	results := make([]map[T]T,0)
+	if obj == nil {
+		return results
+	}
+	Each(obj, func (value T, index T, list T) bool {
+		if v := iterator(value,index,list); v != nil {
+			results = append( results, v )
+		}
+		return EachContinue
+	})
+	return results
+}
 
 
 const ReduceError = "Reduce of empty array with no initial value"
@@ -191,63 +179,6 @@ func ReduceRight (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) {
 
 var FoldR  func (obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) = ReduceRight
 
-func IdentityEach ( val T, index T, list T ) bool {
-	return val == val
-}
-func identityHasher ( val ...T ) T {
-	return val[0]
-}
-
-func IdentityIsTruthy( val T, index T, list T ) bool {
-	v,ok := val.(bool)
-	if ok {
-		return  v
-	}
-	sv,sok := val.(string)
-	if sok {
-		return  sv != ""
-	}
-	iv,iok := val.(int)
-	if iok {
-		return  iv != 0
-	}
-	return val != nil
-}
-
-func Identity ( val T, index T, list T ) T {
-	return val
-}
-
-// Determine if at least one element in the object matches a truth test.
-// Aliased as `some`.
-func Any (obj []T, opt_predicate ...func(val T,index T, list T)bool ) bool {
-	var predicate func(T,T,T)bool
-	if len(opt_predicate) == 0 {
-		predicate = IdentityEach
-	} else {
-		predicate = opt_predicate[0]
-	}	
-	anyresult := false
-	if obj == nil {
-		return anyresult
-	}
-
-	eachFunc := func (value T, index T, list T) bool {
-		if anyresult {
-			return EachBreak
-		}
-		anyresult = predicate(value, index, list)
-		if anyresult {
-			return EachBreak
-		}
-		return EachContinue
-	}
-	Each(obj, eachFunc)
-	return anyresult
-}
-var Some func(obj []T, opt_predicate ...func(val T,index T, list T)bool ) bool = Any
-
-
 // Return the first value which passes a truth test. 
 // Aliased as `detect`.
 func Find (obj []T, predicate func(T,T,T) bool ) T {
@@ -263,8 +194,6 @@ func Find (obj []T, predicate func(T,T,T) bool ) T {
 }
 
 var Detect func(obj []T, iterator func(T,T,T) bool ) T  = Find
-
-
 
 
 // Return all the elements that pass a truth test.
@@ -293,8 +222,8 @@ func Reject (obj []T, iterator eachlistiterator ) []T {
 	})
 }
 
-
-func Every (obj []T, opt_iterator ...eachlistiterator ) bool {
+// Determine whether all of the elements match a truth test.
+func Every (obj T, opt_iterator ...eachlistiterator ) bool {
 	var iterator eachlistiterator //func(T,int, []T)bool
 	if len(opt_iterator) == 0 {
 		iterator = IdentityEach
@@ -305,7 +234,7 @@ func Every (obj []T, opt_iterator ...eachlistiterator ) bool {
 	if obj == nil {
 		return result
 	}
-	Each(obj, func (value T, index T, list T) bool {
+	Each(obj.([]T), func (value T, index T, list T) bool {
 		result = result && iterator(value, index, list)
 		if ! result {
 			return EachBreak
@@ -315,12 +244,42 @@ func Every (obj []T, opt_iterator ...eachlistiterator ) bool {
 	return result
 }
 
-var All func(obj []T, opt_iterator ...eachlistiterator ) bool = Every
+var All func(obj T, opt_iterator ...eachlistiterator ) bool = Every
+
+
+// Determine if at least one element in the object matches a truth test.
+// Aliased as `some`.
+func Any (obj T, opt_predicate ...func(val T,index T, list T)bool ) bool {
+	var predicate func(T,T,T)bool
+	if len(opt_predicate) == 0 {
+		predicate = IdentityEach
+	} else {
+		predicate = opt_predicate[0]
+	}	
+	anyresult := false
+	if obj == nil {
+		return anyresult
+	}
+
+	eachFunc := func (value T, index T, list T) bool {
+		if anyresult {
+			return EachBreak
+		}
+		anyresult = predicate(value, index, list)
+		if anyresult {
+			return EachBreak
+		}
+		return EachContinue
+	}
+	Each(obj.([]T), eachFunc)
+	return anyresult
+}
+var Some func(obj T, opt_predicate ...func(val T,index T, list T)bool ) bool = Any
 
 
 // Determine if the array or object contains a given value (using `==`).
 // Aliased as `include`.
-func Contains (obj []T, target T, opt_comparator ...func(T,T)bool) bool {
+func Contains (obj T, target T, opt_comparator ...func(T,T)bool) bool {
 	if obj == nil {
 		return false
 	}
@@ -337,22 +296,21 @@ func Contains (obj []T, target T, opt_comparator ...func(T,T)bool) bool {
 	})
 }
 
-var Include func(obj []T, target T, opt_comparator ...func(T,T)bool) bool = Contains
+var Include func(obj T, target T, opt_comparator ...func(T,T)bool) bool = Contains
 
 
 
 // Invoke a method (with arguments) on every item in a collection.
-//func Invoke(obj []T, method func(...T)) {
-//	var args = slice.call(arguments, 2);
-//	var isFunc = IsFunction(method);
-//	return Map(obj, func(value T) {
-//		return (isFunc ? method : value[method]).apply(value, args);
-//	});
-//}
+func Invoke(obj T, method func( this T, thisArgs ...T) T, args ...T ) []T {
+	//var isFunc = IsFunction(method);
+	return Map(obj, func(value T, key T, origObj T) T {
+		return method(value, args)
+	})
+}
 
 
 // Convenience version of a common use case of `map`: fetching a property.
-func Pluck(obj []T, targetvalue T) []T {
+func Pluck(obj T, targetvalue T) []T {
 	return Map(obj, func(testvalue T, index T , origlist T) T { 
 		if IsMap(testvalue) {
 			return testvalue.(map[T]T)[targetvalue]
@@ -406,23 +364,57 @@ func FindWhere(obj []T, attrs map[T]T) T {
 	return Where(obj,attrs,true)
 }
 
-/* 
-TODO punting on these until I found a generic or better Go way of impl max/min
-SEE https://groups.google.com/forum/#!topic/golang-nuts/f32UN1TYiAI
+
 // Return the maximum element or (element-based computation).
-_.max = function(obj, iterator, context) {
-// Return the minimum element (or element-based computation).
-_.min = function(obj, iterator, context) {
-*/
+
+func intLessThan(a T,b T) bool {
+	return a.(int) < b.(int)
+}
+func Max(lessThan func(T,T)bool, args ...T) T {
+	val := args[0]
+	for _,v := range args {
+		if ! lessThan(v,val) {
+			val = v
+		}
+	}
+	return val
+}
+
+func MaxInt(args ...int) int {
+	val := args[0]
+	for _,v := range args {
+		if ! intLessThan(v,val) {
+			val = v
+		}
+	}
+	return val
+}
+
+// Return the minimum element or (element-based computation).
+func Min(lessThan func(T,T)bool, args ...T) T {
+	val := args[0]
+	for _,v := range args {
+		if lessThan(v,val) {
+			val = v
+		}
+	}
+	return val
+}
+
+func MinInt(args ...int) int {
+	val := args[0]
+	for _,v := range args {
+		if intLessThan(v,val) {
+			val = v
+		}
+	}
+	return val
+}
 
 // Shuffle an array, using the modern version of the
 // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
 func Shuffle(obj []T) []T {
 	shuffled := make([]T,len(obj))
-	//indices := rand.Perm(len(obj))
-	//for i,idx := range indices {
-		//shuffled[i],shuffled[idx] = obj[idx],obj[i]
-	//}
 	index := 0
 	var rand int
 	Each(obj, func(val,idx,list T) bool {
@@ -433,6 +425,19 @@ func Shuffle(obj []T) []T {
 		return EachContinue
 	})
 	return shuffled
+}
+
+// Sample **n** random values from a collection.
+// If **n** is not specified, returns a single random element.
+func Sample(obj T, opt_n ...int ) T {
+	if IsMap(obj) {
+		vals := Values( obj.(map[T]T) )
+		return vals[ Random( len(vals) ) ]
+	}
+	if opt_n == nil || len(opt_n) == 0 {
+		return obj.([]T)[ Random( len(obj.([]T)) ) ]
+	}
+	return Shuffle(obj.([]T))[0:MinInt(opt_n[0],len(obj.([]T)))]
 }
 
 // An internal function to generate lookup iterators
@@ -450,6 +455,51 @@ func lookupIterator (value T) func(obj T, idx T, list T) T {
 		return obj
 	}
 }
+
+type mapSorter struct {
+	maps []map[T]T
+	by func(a,b *map[T]T) bool
+}
+// Len is part of sort.Interface.
+func (s *mapSorter) Len() int {
+	return len(s.maps)
+}
+
+// Swap is part of sort.Interface.
+func (s *mapSorter) Swap(i, j int) {
+	s.maps[i], s.maps[j] = s.maps[j], s.maps[i]
+}
+
+// Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
+func (s *mapSorter) Less(i, j int) bool {
+	return s.by(&s.maps[i], &s.maps[j])
+}
+// Sort the object's values by a criterion produced by an iterator.
+func SortBy ( obj, value T, lessThan func(a,b *map[T]T)bool) []T {
+	iterator := lookupIterator(value)
+	mapped := &mapSorter{
+		MapMap(obj.([]map[T]T), func(value, index, list T) map[T]T {
+			return map[T]T{
+				"value":value,
+				"value":index,
+				"criteria":iterator(value, index, list),
+			}
+		}),
+		lessThan,
+			//return lessThan(a["criteria"],b["criteria"]) 
+		}
+	sort.Sort( mapped )//).sort(function(left, right) {
+		//var a = left.criteria
+		//var b = right.criteria
+		//if (a !== b) {
+		//if (a > b || a === void 0) return 1;
+		//if (a < b || b === void 0) return -1;
+		//}
+		//return left.index - right.index
+	//}
+	return Pluck(mapped.maps,"value")
+}
+
 
 
 // An internal function used for aggregate "group by" operations.
@@ -578,6 +628,33 @@ func ToArray( obj T ) []T {
 	}
 	fmt.Printf("Error: ToArray, got something I dont know what to do with %v\n",obj)
 	return nil
+}
+
+func IdentityEach ( val T, index T, list T ) bool {
+	return val == val
+}
+func identityHasher ( val ...T ) T {
+	return val[0]
+}
+
+func IdentityIsTruthy( val T, index T, list T ) bool {
+	v,ok := val.(bool)
+	if ok {
+		return  v
+	}
+	sv,sok := val.(string)
+	if sok {
+		return  sv != ""
+	}
+	iv,iok := val.(int)
+	if iok {
+		return  iv != 0
+	}
+	return val != nil
+}
+
+func Identity ( val T, index T, list T ) T {
+	return val
 }
 
 //Return the number of elements in an object.
@@ -1002,29 +1079,6 @@ func Range (start_stop_and_step ...int) []T {
     return retval
 }
 
-func maxIntLessThan(a T,b T) bool {
-	return a.(int) < b.(int)
-}
-func Max(lessThan func(T,T)bool, args ...T) T {
-	val := args[0]
-	for _,v := range args {
-		if ! lessThan(v,val) {
-			val = v
-		}
-	}
-	return val
-}
-
-func MaxInt(args ...int) int {
-	val := args[0]
-	for _,v := range args {
-		if ! maxIntLessThan(v,val) {
-			val = v
-		}
-	}
-	return val
-}
-
 
 // Function Functions
 
@@ -1298,6 +1352,75 @@ func (this *Underscore) Has(key T) bool {
 }
 
 // Utility Functions
+
+
+// Is a given value an array?
+func IsString (obj T) bool {
+	v,_ := obj.(string)
+	return v != ""
+}
+
+func (this *Underscore) IsString(obj ...T) bool {
+	if obj == nil {
+		return IsString(this.wrapped)
+	}
+	return IsString(obj[0])
+}
+
+// Is a given value an array?
+func IsArray (obj T) bool {
+	_,ok := obj.([]T)
+	return ok // v != nil
+}
+func IsArrayEach (obj T, idx T, list T) bool {
+	return IsArray(obj)
+}
+
+// Is a given value an array?
+func IsArrayOfMaps (obj T) bool {
+	v,_ := obj.([]map[T]T)
+	return v != nil
+}
+
+
+// Is a given variable a map
+func IsMap (obj T) bool {
+	v,_ := obj.(map[T]T) 
+	return v != nil
+}
+
+// Is a given value an array?
+func IsFunction(obj T) bool {
+	v,_ := obj.(func(T,T,T)T)
+	return v != nil
+}
+
+// Is a given value an array?
+func IsFunctionVariadic(obj T) bool {
+	v,_ := obj.(func(...T)T)
+	return v != nil
+}
+
+// Is a given array, string, or object empty?
+// An "empty" object has no enumerable own-properties.
+func IsEmpty (obj T) bool {
+	if obj == nil {
+		return true
+	}
+	if IsArray(obj) {
+		return len(obj.([]T)) == 0
+	}
+	if IsMap(obj) {
+		return len(obj.(map[T]T)) == 0
+	}
+	if IsString(obj) {
+		return len(obj.(string)) == 0
+	}
+	return false
+}
+func (this *Underscore) IsEmpty (obj T) bool {
+	return IsEmpty( this.wrapped )
+}
 
 // Keep the identity function around for default iterators.
 func (this *Underscore) Identity (value ...T) T {
