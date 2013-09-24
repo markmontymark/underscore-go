@@ -1,4 +1,4 @@
-// underscore.go
+
 // ported from ...
 //     Underscore.js 1.5.2
 //     http://underscorejs.org
@@ -117,6 +117,19 @@ func MapMap(obj []map[T]T, iterator func(T,T,T) map[T]T) []map[T]T {
 	}
 	Each(obj, func (value T, index T, list T) bool {
 		if v := iterator(value,index,list); v != nil {
+			results = append( results, v )
+		}
+		return EachContinue
+	})
+	return results
+}
+func mapForSortBy(obj T, iterator func(T,T,T) map[T]T) []map[T]T {
+	results := make([]map[T]T,0)
+	if obj == nil {
+		return results
+	}
+	Each(obj, func (value, index, list T) bool {
+		if v := iterator(value,index,list); v != nil && v["criteria"] != nil {
 			results = append( results, v )
 		}
 		return EachContinue
@@ -441,19 +454,45 @@ func Sample(obj T, opt_n ...int ) T {
 }
 
 // An internal function to generate lookup iterators
-func lookupIterator (value T) func(obj T, idx T, list T) T {
+func lookupIterator (value T) func(obj , idx , list T) T {
 	if IsFunction(value) { 
 		//fmt.Printf("lookupIterator got a func\n")
-		return value.(func(obj T, idx T, list T)T)
+		return value.(func(obj, idx, list T)T)
 	}
 	//fmt.Printf("lookupIterator didnt get a func\n")
-	return func(obj T, idx T, list T) T {
+	return func(obj, idx, list T) T {
 		//fmt.Printf("inlookup iterator, got obj %v, idx %v, list %v\n",obj,idx,list)
 		if IsMap(obj) {
 			return obj.(map[T]T)[value]
 		}
 		return obj
 	}
+}
+
+type sorter struct {
+	list []map[T]T
+	orderby func(a,b *map[T]T) bool
+}
+// Len is part of sort.Interface.
+func (s *sorter) Len() int {
+	return len(s.list)
+}
+
+// Swap is part of sort.Interface.
+func (s *sorter) Swap(i, j int) {
+	s.list[i], s.list[j] = s.list[j], s.list[i]
+}
+
+// Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
+func (s *sorter) Less(i, j int) bool {
+	return s.orderby( &s.list[i], &s.list[j])
+}
+
+func NewSorter(data, orderby T) *sorter {
+	this := new(sorter)
+	this.list = data.([]map[T]T)
+	this.orderby = orderby.(func(a,b *map[T]T)bool)
+	return this
 }
 
 type mapSorter struct {
@@ -464,42 +503,50 @@ type mapSorter struct {
 func (s *mapSorter) Len() int {
 	return len(s.maps)
 }
-
 // Swap is part of sort.Interface.
 func (s *mapSorter) Swap(i, j int) {
 	s.maps[i], s.maps[j] = s.maps[j], s.maps[i]
 }
-
 // Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
 func (s *mapSorter) Less(i, j int) bool {
 	return s.by(&s.maps[i], &s.maps[j])
 }
+
 // Sort the object's values by a criterion produced by an iterator.
 func SortBy ( obj, value T, lessThan func(a,b *map[T]T)bool) []T {
 	iterator := lookupIterator(value)
 	mapped := &mapSorter{
 		MapMap(obj.([]map[T]T), func(value, index, list T) map[T]T {
+			if value == nil {
+				return nil
+			}
 			return map[T]T{
 				"value":value,
-				"value":index,
+				"index":index,
 				"criteria":iterator(value, index, list),
 			}
 		}),
 		lessThan,
 			//return lessThan(a["criteria"],b["criteria"]) 
 		}
-	sort.Sort( mapped )//).sort(function(left, right) {
-		//var a = left.criteria
-		//var b = right.criteria
-		//if (a !== b) {
-		//if (a > b || a === void 0) return 1;
-		//if (a < b || b === void 0) return -1;
-		//}
-		//return left.index - right.index
-	//}
+	sort.Sort( mapped )
 	return Pluck(mapped.maps,"value")
 }
 
+// Sort the object's values by a criterion produced by an iterator.
+func SortBySorter ( obj, value T, orderby func(a,b *map[T]T)bool) []T {
+	iterator := lookupIterator(value)
+	mapped := mapForSortBy(obj, func(value, index, list T) map[T]T {
+			return map[T]T{
+				"value":value,
+				"index":index,
+				"criteria":iterator(value, index, list),
+			}
+		})
+	ss := NewSorter(mapped,orderby)
+	sort.Sort( ss )
+	return Pluck( ss.list,"value")
+}
 
 
 // An internal function used for aggregate "group by" operations.
@@ -655,6 +702,10 @@ func IdentityIsTruthy( val T, index T, list T ) bool {
 
 func Identity ( val T, index T, list T ) T {
 	return val
+}
+
+func IdentityMap ( val T, index T, list T ) map[T]T {
+	return val.(map[T]T)
 }
 
 //Return the number of elements in an object.

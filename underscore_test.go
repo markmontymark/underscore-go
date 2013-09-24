@@ -1174,7 +1174,6 @@ func TestSample( t *testing.T ){
 			return Contains(all_sampled2.([]T),val)
 		}))
 
-	fmt.Printf("sample one? %v\n", Sample(numbers))
 /*
     ok(_.contains(numbers, _.sample(numbers)), 'sampling a single element returns something from the array');
     strictEqual(_.sample([]), undefined, 'sampling empty array with no number returns undefined');
@@ -1190,16 +1189,20 @@ func TestSortBy( t *testing.T ) {
 	peopleSorted := SortBy(people, 
 		func(obj,b,c T) T{ return obj.(map[T]T)["age"] }, 
 		func(a,b *map[T]T) bool { 
-			fmt.Printf("in less than func with a %v, b %v\n",(*a)["criteria"],(*b)["criteria"])
 			return (*a)["criteria"].(int) < (*b)["criteria"].(int)
 		} )
-	asserts.Equals( t, "stooges sorted by age",
-		fmt.Sprintf("%v",peopleSorted), "[moe curly]")
-		//fmt.Sprintf("%v",Pluck(peopleSorted, "name")), "[moe curly]")
-/*
-	var list = [undefined, 4, 1, undefined, 3, 2];
-	equal(_.sortBy(list, _.identity).join(','), '1,2,3,4,,', 'sortBy with undefined values');
+	asserts.Equals( t, "stooges sorted by age, plucking just 'name'",
+		fmt.Sprintf("%v",Pluck(peopleSorted,"name")), "[moe curly]")
 
+	list := []T{nil, 4, 1, nil, 3, 2}
+	asserts.Equals( t, "SortBy with nil values", 
+		fmt.Sprintf("%v",
+			SortBySorter(list, Identity, func(a,b *map[T]T) bool {
+				return (*a)["criteria"].(int) < (*b)["criteria"].(int)
+			})),
+		"[1 2 3 4]")
+
+/*
 	var list = ["one", "two", "three", "four", "five"];
 	var sorted = _.sortBy(list, 'length');
 	equal(sorted.join(' '), 'one two four five three', 'sorted by length');
