@@ -262,7 +262,7 @@ var All func(obj T, opt_iterator ...eachlistiterator ) bool = Every
 
 // Determine if at least one element in the object matches a truth test.
 // Aliased as `some`.
-func Any (obj T, opt_predicate ...func(val T,index T, list T)bool ) bool {
+func Any (obj T, opt_predicate ...func(val,index,list T)bool ) bool {
 	var predicate func(T,T,T)bool
 	if len(opt_predicate) == 0 {
 		predicate = IdentityEach
@@ -274,20 +274,19 @@ func Any (obj T, opt_predicate ...func(val T,index T, list T)bool ) bool {
 		return anyresult
 	}
 
-	eachFunc := func (value T, index T, list T) bool {
+	Each(obj.([]T), func(val,index,list T) bool {
 		if anyresult {
 			return EachBreak
 		}
-		anyresult = predicate(value, index, list)
+		anyresult = predicate(val, index, list)
 		if anyresult {
 			return EachBreak
 		}
 		return EachContinue
-	}
-	Each(obj.([]T), eachFunc)
+	})
 	return anyresult
 }
-var Some func(obj T, opt_predicate ...func(val T,index T, list T)bool ) bool = Any
+var Some func(obj T, opt_predicate ...func(val,index,list T)bool ) bool = Any
 
 
 // Determine if the array or object contains a given value (using `==`).
@@ -840,14 +839,24 @@ func Flatten (array []T, opt_shallow ...bool) []T {
 
 // Return a version of the array that does not contain the specified value(s).
 func Without (toRemove []T, opt_from ...T) []T {
+	var comparator func (T,T)bool
 	if len(opt_from) == 0 {
 		return make([]T,0)
+	} else {
+		if v,ok := opt_from[ len(opt_from)-1].(func(T,T)bool) ; ok {
+			comparator = v
+		}
 	}
 	var rest []T = make([]T,0)
 	for _,from := range opt_from {
 		rest = append(rest,from)
 	}
-	return Difference( toRemove, rest )
+	if comparator == nil {
+		return Difference( toRemove, IdentityComparator, rest )
+	} else {
+		return Difference( toRemove, comparator, rest )
+	}
+
 }
 
 // Produce a duplicate-free version of the array. If the array has already
@@ -942,7 +951,7 @@ func Intersection(lessThan func(T,T)bool,opt_array ...T) []T {
 
 // Take the difference between one array and a number of other arrays.
 // Only the elements present in just the first array will remain.
-func Difference (toRemove []T, opt_from ...[]T) []T {
+func Difference (toRemove []T, comparator func(T,T)bool, opt_from ...[]T) []T {
 	if len(opt_from) == 0 {
 		return make([]T,0)
 	}
@@ -950,8 +959,8 @@ func Difference (toRemove []T, opt_from ...[]T) []T {
 	for _,from := range opt_from {
 		rest = flatten(from,true,rest)
 	}
-	return Filter(toRemove, func(value T, idx T, list T) bool { 
-		return ! Contains(rest, value) 
+	return Filter(toRemove, func(val,idx,list T) bool { 
+		return ! Contains(rest, val,comparator) 
 	})
 }
 
@@ -1411,9 +1420,13 @@ func IdentityIsTruthy( val T, index T, list T ) bool {
 	return val != nil
 }
 
-func Identity ( val T, index T, list T ) T {
+func Identity (val,index,list T ) T {
 	return val
-}
+} 
+
+func IdentityComparator (a,b T ) bool {
+	return a == b
+} 
 
 func IdentityMap ( val T, index T, list T ) map[T]T {
 	return val.(map[T]T)

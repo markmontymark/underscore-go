@@ -615,11 +615,11 @@ func TestFlatten( t *testing.T ) {
 
 
 func TestDifference( t *testing.T ) {
-    result := Difference([]T{1, 2, 3}, []T{2, 30, 40})
+    result := Difference([]T{1, 2, 3}, IdentityComparator, []T{2, 30, 40})
     asserts.Equals( t, "takes the difference of two arrays", 
 		fmt.Sprintf("%v",result), "[1 3]")
 
-    result2 := Difference([]T{1, 2, 3, 4}, []T{2, 30, 40}, []T{1, 11, 111})
+    result2 := Difference([]T{1, 2, 3, 4}, IdentityComparator, []T{2, 30, 40}, []T{1, 11, 111})
     asserts.Equals( t, "takes the difference of three arrays",
 		fmt.Sprintf("%v",result2), "[3 4]")
 }
@@ -627,10 +627,10 @@ func TestDifference( t *testing.T ) {
 func TestWithout( t *testing.T ) {
 
     list := []T{1, 2, 1, 0, 3, 1, 4}
-    asserts.Equals( t, "can remove all instances of func args from an object",
+    asserts.Equals( t, "can remove arbitrary ints from a list",
 		fmt.Sprintf("%v", Without(list, 0, 1)), "[2 3 4]")
 
-    asserts.Equals( t, "can remove all instances from an array of args from an object",
+    asserts.Equals( t, "can remove all instances from an array of args from a list",
 		fmt.Sprintf("%v", Without(list, []T{0, 1})), "[2 3 4]")
 
     list2 := []T{1, 2, "1", 0, 3, 1, 4}
@@ -646,12 +646,13 @@ func TestWithout( t *testing.T ) {
     asserts.Equals( t, "can remove all instances from an array of args from an object",
 		fmt.Sprintf("%v", Without(list2, []T{0, "1", 1})), "[2 3 4]")
 
-	/* TODO: fix ArrayOfMaps
-   listm := []T{ {"one" : 1}, {"two" : 2}}
-   asserts.Equals( t, "uses real object identity for comparisons.",
-		fmt.Sprintf("%v",Without(listm, map[T]T{"one" : 1})), "barg") //).length == 2, 
-   asserts.True("ditto", len(Without(listm, listm[0])) == 1)
-	*/
+	/* Kludgy comparator?, go can't compare maps via identity, so stringifying each */
+   listm := []T{ map[T]T{"one" : 1}, map[T]T{"two" : 2}}
+	retval := Without(listm, map[T]T{"one" : 1}, func(a,b T) bool {
+			return fmt.Sprintf("%v",a) == fmt.Sprintf("%v",b)	
+	})
+   asserts.Equals( t, "uses real object identity for comparisons.", fmt.Sprintf("%v",retval), "[map[two:2]]")
+   asserts.True( t, "ditto", len(retval) == 1)
 }
 
 
