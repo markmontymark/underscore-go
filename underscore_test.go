@@ -1202,32 +1202,38 @@ func TestSortBy( t *testing.T ) {
 			})),
 		"[1 2 3 4]")
 
-/*
-	var list = ["one", "two", "three", "four", "five"];
-	var sorted = _.sortBy(list, 'length');
-	equal(sorted.join(' '), 'one two four five three', 'sorted by length');
+	words := []T{"one", "two", "three", "four", "five"}
+	sorted := SortBySorter(words, 
+		func(obj,b,c T) T{ return len(obj.(string)) },
+		func(a,b *map[T]T) bool { return (*a)["criteria"].(int) < (*b)["criteria"].(int) })
+	asserts.Equals(t,"sorted by length", fmt.Sprintf("%v",sorted), 
+			"[one two four five three]")
 
-	function Pair(x, y) {
-	this.x = x;
-	this.y = y;
+	type Pair struct{
+		x,y int
 	}
 
-	var collection = [
-	new Pair(1, 1), new Pair(1, 2),
-	new Pair(1, 3), new Pair(1, 4),
-	new Pair(1, 5), new Pair(1, 6),
-	new Pair(2, 1), new Pair(2, 2),
-	new Pair(2, 3), new Pair(2, 4),
-	new Pair(2, 5), new Pair(2, 6),
-	new Pair(undefined, 1), new Pair(undefined, 2),
-	new Pair(undefined, 3), new Pair(undefined, 4),
-	new Pair(undefined, 5), new Pair(undefined, 6)
-	];
+	collection := []T{
+		&Pair{1, 1}, &Pair{1, 2},
+		&Pair{1, 3}, &Pair{1, 4},
+		&Pair{1, 5}, &Pair{1, 6},
+		&Pair{2, 1}, &Pair{2, 2},
+		&Pair{2, 3}, &Pair{2, 4},
+		&Pair{2, 5}, &Pair{2, 6},
+		&Pair{3, 1}, &Pair{3, 2},
+		&Pair{3, 3}, &Pair{3, 4},
+		&Pair{3, 5}, &Pair{3, 6},
+	}
 
-	var actual = _.sortBy(collection, function(pair) {
-	return pair.x;
-	});
+	actual := SortBySorter(collection, 
+		Identity,
+		func(a,b *map[T]T) bool { 
+			if (*a)["criteria"].(*Pair).x == (*b)["criteria"].(*Pair).x  {
+				return (*a)["criteria"].(*Pair).y < (*b)["criteria"].(*Pair).y
+			}
+			return (*a)["criteria"].(*Pair).x < (*b)["criteria"].(*Pair).x
+		})
 
-	deepEqual(actual, collection, 'sortBy should be stable');
-*/
+	asserts.Equals( t, "sortby should be stable",
+		fmt.Sprintf("%v",actual), fmt.Sprintf("%v",collection) )
 }
