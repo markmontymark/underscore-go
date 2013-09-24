@@ -571,12 +571,6 @@ func group (behavior func( result map[T]T, k T, v T)  ) func(o T,v T) map[T]T {
 }
 
 
-// Shortcut function for checking if an object has a given property directly
-// on itself (in other words, not on a prototype).
-func Has (obj T, key T) bool {
-	_,ok := obj.(map[T]T)[key]
-	return ok
-}
 
 // Groups the object's values by a criterion. Pass either a string attribute
 // to group by, or a function that returns the criterion.
@@ -596,6 +590,8 @@ var GroupBy = group(func(result map[T]T, key T, value T) {
 	}
 })
 
+// Indexes the object's values by a criterion, similar to `groupBy`, but for
+// when you know that your index values will be unique.
 var IndexBy = group( func(result map[T]T, key T, value T) {
 	if key == nil {
 		return
@@ -603,6 +599,9 @@ var IndexBy = group( func(result map[T]T, key T, value T) {
 	result[key] = value
 })
 
+// Counts instances of an object that group by a certain criterion. Pass
+// either a string attribute to count by, or a function that returns the
+// criterion.
 var CountBy = group( func(result map[T]T, key T, value T) {
 	if key == nil {
 		return
@@ -615,6 +614,8 @@ var CountBy = group( func(result map[T]T, key T, value T) {
    }
 })
 
+// Use a comparator function to figure out the smallest index at which
+// an object should be inserted so as to maintain order. Uses binary search.
 func SortedIndex (array T, obj T, lessThan func(T,T)bool, opt_iterator ...func(T,T,T)T) int {
 	var value T
 	var iterator func(T,T,T) T
@@ -677,37 +678,6 @@ func ToArray( obj T ) []T {
 	return nil
 }
 
-func IdentityEach ( val T, index T, list T ) bool {
-	return val == val
-}
-func identityHasher ( val ...T ) T {
-	return val[0]
-}
-
-func IdentityIsTruthy( val T, index T, list T ) bool {
-	v,ok := val.(bool)
-	if ok {
-		return  v
-	}
-	sv,sok := val.(string)
-	if sok {
-		return  sv != ""
-	}
-	iv,iok := val.(int)
-	if iok {
-		return  iv != 0
-	}
-	return val != nil
-}
-
-func Identity ( val T, index T, list T ) T {
-	return val
-}
-
-func IdentityMap ( val T, index T, list T ) map[T]T {
-	return val.(map[T]T)
-}
-
 //Return the number of elements in an object.
 func Size(obj T) int {
 	if IsEmpty( obj ) {
@@ -728,8 +698,9 @@ func Size(obj T) int {
 		fmt.Printf("TypeError (Size): what is this? %v\n",obj)
 		return math.MinInt64
 	}
-	
 }
+
+
 
 
 // Array Functions
@@ -771,6 +742,10 @@ var Head func(array []T) T = First
 var Take func(array []T) T = First
 
 
+// Returns everything but the last entry of the array.
+// Passing **n** will return all the values in
+// the array, excluding the last N.
+
 func Initial(array []T , opt_n ...int) []T {
 	if array == nil {
       return nil
@@ -788,6 +763,8 @@ func Initial(array []T , opt_n ...int) []T {
 }
 
 
+// Get the last element of an array. Passing **n** will return the last N
+// values in the array.
 func Last(array []T , opt_n ...int) []T {
 	if array == nil {
       return nil
@@ -808,8 +785,7 @@ func Last(array []T , opt_n ...int) []T {
 
 // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
 // Especially useful on the arguments object. Passing an **n** will return
-// the rest N values in the array. The **guard**
-// check allows it to work with `_.map`.
+// the rest N values in the array.
 func Rest (array []T) []T {
 	if array == nil {
 		return nil
@@ -818,10 +794,10 @@ func Rest (array []T) []T {
 	copy(dst, array[1:])
 	return dst
 }
-
 var Tail func(array []T) []T = Rest
 var Drop func(array []T) []T = Rest
 
+// Trim out all falsy values from an array.
 func Compact(array []T) []T {
 	return Filter(array,IdentityIsTruthy)
 }
@@ -861,21 +837,8 @@ func Flatten (array []T, opt_shallow ...bool) []T {
 }
 
 
-// Take the difference between one array and a number of other arrays.
-// Only the elements present in just the first array will remain.
-func Difference (toRemove []T, opt_from ...[]T) []T {
-	if len(opt_from) == 0 {
-		return make([]T,0)
-	}
-	var rest []T = make([]T,0)
-	for _,from := range opt_from {
-		rest = flatten(from,true,rest)
-	}
-	return Filter(toRemove, func(value T, idx T, list T) bool { 
-		return ! Contains(rest, value) 
-	})
-}
 
+// Return a version of the array that does not contain the specified value(s).
 func Without (toRemove []T, opt_from ...T) []T {
 	if len(opt_from) == 0 {
 		return make([]T,0)
@@ -977,58 +940,23 @@ func Intersection(lessThan func(T,T)bool,opt_array ...T) []T {
 	})
 }
 
-// Return the position of the first occurrence of an
-// item in an array, or -1 if the item is not included in the array.
-// If the array is large and already in sort order, pass `true`
-// for **isSorted** to use binary search.
-func IndexOf (array []T, item T, lessThan func(T,T) bool, isSorted ...bool) int {
-	if array == nil{
-		return -1
+// Take the difference between one array and a number of other arrays.
+// Only the elements present in just the first array will remain.
+func Difference (toRemove []T, opt_from ...[]T) []T {
+	if len(opt_from) == 0 {
+		return make([]T,0)
 	}
-	length := len(array)
-	if length == 0 {
-		return -1
+	var rest []T = make([]T,0)
+	for _,from := range opt_from {
+		rest = flatten(from,true,rest)
 	}
-	i := 0
-	// do binary search if isSorted = true
-   if len(isSorted) > 0 && isSorted[0] {
-		i = SortedIndex(array, item, lessThan )
-		if array[i] == item {
-			return i
-		} else {
-			return -1
-		}
-   }
-	for i,v := range array {
-		if v == item {
-			return i
-		}
-	}
-	return -1
+	return Filter(toRemove, func(value T, idx T, list T) bool { 
+		return ! Contains(rest, value) 
+	})
 }
 
-func LastIndexOf (array []T, item T, from ...int) int {
-	if array == nil {
-		return -1
-	}
-   var i int 
-	if from != nil {
-		i = from[0] 
-	} else {
-		i = len(array)
-	}
-	for i > 0 {
-		i -= 1
-		if array[i] == item {
-			return i
-		}
-	}
-	return -1
-}
-
-
-
-
+// Zip together multiple lists into a single array -- elements that share
+// an index go together.
 func Zip (arrays ...[]T ) []T {
 	if arrays == nil || len(arrays) == 0 {
 		return make([]T,0)
@@ -1057,6 +985,9 @@ func Zip (arrays ...[]T ) []T {
 	return retval	
 }
 
+// Converts lists into objects. Pass either a single array of `[key, value]`
+// pairs, or two parallel arrays of the same length -- one of keys, and one of
+// the corresponding values.
 func Object( pairs_or_two_arrays ...[]T ) map[T]T {
 	if pairs_or_two_arrays == nil {
 		return nil
@@ -1090,6 +1021,59 @@ func Object( pairs_or_two_arrays ...[]T ) map[T]T {
 	}
 	return retval
 }
+
+// Return the position of the first occurrence of an
+// item in an array, or -1 if the item is not included in the array.
+// If the array is large and already in sort order, pass `true`
+// for **isSorted** to use binary search.
+func IndexOf (array []T, item T, lessThan func(T,T) bool, isSorted ...bool) int {
+	if array == nil{
+		return -1
+	}
+	length := len(array)
+	if length == 0 {
+		return -1
+	}
+	i := 0
+	// do binary search if isSorted = true
+   if len(isSorted) > 0 && isSorted[0] {
+		i = SortedIndex(array, item, lessThan )
+		if array[i] == item {
+			return i
+		} else {
+			return -1
+		}
+   }
+	for i,v := range array {
+		if v == item {
+			return i
+		}
+	}
+	return -1
+}
+
+// Like IndexOf but do the search starting from the end moving backwards
+func LastIndexOf (array []T, item T, from ...int) int {
+	if array == nil {
+		return -1
+	}
+   var i int 
+	if from != nil {
+		i = from[0] 
+	} else {
+		i = len(array)
+	}
+	for i > 0 {
+		i -= 1
+		if array[i] == item {
+			return i
+		}
+	}
+	return -1
+}
+
+
+
 
 // Generate an integer Array containing an arithmetic progression. A port of
 // Underscore's range() which is a port of the native Python `range()` function. See
@@ -1404,6 +1388,36 @@ func (this *Underscore) Has(key T) bool {
 
 // Utility Functions
 
+func IdentityEach ( val T, index T, list T ) bool {
+	return val == val
+}
+func identityHasher ( val ...T ) T {
+	return val[0]
+}
+
+func IdentityIsTruthy( val T, index T, list T ) bool {
+	v,ok := val.(bool)
+	if ok {
+		return  v
+	}
+	sv,sok := val.(string)
+	if sok {
+		return  sv != ""
+	}
+	iv,iok := val.(int)
+	if iok {
+		return  iv != 0
+	}
+	return val != nil
+}
+
+func Identity ( val T, index T, list T ) T {
+	return val
+}
+
+func IdentityMap ( val T, index T, list T ) map[T]T {
+	return val.(map[T]T)
+}
 
 // Is a given value an array?
 func IsString (obj T) bool {
@@ -1478,6 +1492,14 @@ func (this *Underscore) Identity (value ...T) T {
 	return value[0]
 }
 
+// Shortcut function for checking if an object has a given property directly
+// on itself (in other words, not on a prototype).
+func Has (obj T, key T) bool {
+	_,ok := obj.(map[T]T)[key]
+	return ok
+}
+
+// Run a function **n** times.
 func Times (n int, iterator func(...T)T ) []T  {
 	if n < 0 {
 		return []T{}
