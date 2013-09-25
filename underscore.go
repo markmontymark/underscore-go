@@ -1619,3 +1619,51 @@ func (this *Underscore) SortBySorter ( value T, orderby func(a,b *map[T]T)bool) 
 	return this
 }
 
+func (this *Underscore) Reverse() *Underscore {
+	a := make([]T, len(this.wrapped.([]T)))
+	copy(a,this.wrapped.([]T))
+	for i, j := 0, len(a)-1; i < j; i, j = i+1, j-1 {
+		 a[i], a[j] = a[j], a[i]
+	}
+	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
+		return New( a )
+	} else {
+		this.wrapped = a
+		return this
+	}
+}
+
+func (this *Underscore) Concat(array []T) *Underscore {
+	a := append(this.wrapped.([]T), array...)
+	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
+		return New( a )
+	} else {
+		this.wrapped = a
+		return this
+	}
+}
+
+func (this *Underscore) Unshift(elems ...T) *Underscore {
+	for _,v := range this.wrapped.([]T) {
+		elems = append(elems,v)
+	}
+	//copy(elems,this.wrapped.([]T))
+	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
+		return New( elems )
+	} else {
+		this.wrapped = elems
+		return this
+	}
+}
+
+func (this *Underscore) Pop() *Underscore {
+	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
+		a,_ := this.wrapped.([]T)
+		return New( a[:len(a)-1] )
+	} else {
+		a := this.wrapped.([]T)
+		this.wrapped = a[:len(a)-1]
+		return this
+	}
+}
+

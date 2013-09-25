@@ -46,14 +46,26 @@ func TestChainingWorksInSmallStages(t *testing.T ) {
 	o := New([]T{1, 2, 3, 4}).Chain()
 	asserts.Equals( t, "first two elems", 
 		fmt.Sprintf("%v",o.Filter(func(i,d,l T) bool { return i.(int) < 3 }).Value()), "[1 2]")
+
 	asserts.Equals( t, "last two elems",  
 		fmt.Sprintf("%v",o.Filter(func(i,d,l T) bool { return i.(int) > 2 }).Value()), "[3 4]")
+
+	asserts.Equals( t, "which of the last two elems is odd",  
+		fmt.Sprintf("%v",
+			o.Filter(func(i,d,l T) bool { return i.(int) > 2 }).
+			  Filter(func(i,d,l T) bool { return i.(int) % 2 == 0 }).
+			Value()), "[4]")
+
+	asserts.Equals( t, "which of the last two elems is odd",  
+		fmt.Sprintf("%v",
+			o.Filter(func(i,d,l T) bool { return i.(int) < 5 }).
+			  Filter(func(i,d,l T) bool { return i.(int) % 2 == 1 }).
+			Value()), "[1 3]")
 }
 
-/*
 func TestReverseConcatUnshiftPopMap( t *testing.T ) {
     numbers1 := []T{1,2,3,4,5}
-    numbers2 = New(numbers1).
+    numbers2 := New(numbers1).
 		Chain().
 		Reverse().
 		Concat([]T{5, 5, 5}).
@@ -65,4 +77,3 @@ func TestReverseConcatUnshiftPopMap( t *testing.T ) {
 		fmt.Sprintf("%v",numbers2), "[34 10 8 6 4 2 10 10]")
 }
 
-*/
