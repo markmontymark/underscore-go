@@ -1596,3 +1596,26 @@ func (this *Underscore) Reduce ( iterator func(T,T,T,T) T, memo ...T) *Underscor
 	this.wrapped,_ = Reduce(this.wrapped.([]T),iterator,memo...)
 	return this
 }
+
+func (this *Underscore) Filter (iterator eachlistiterator ) *Underscore {
+	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
+		return New( Filter(this.wrapped.([]T),iterator) )
+	} else {
+		this.wrapped = Filter(this.wrapped.([]T),iterator)
+		return this
+	}
+}
+func (this *Underscore) Select (iterator eachlistiterator ) *Underscore {
+	this.wrapped = Filter(this.wrapped.([]T),iterator)
+	return this
+}
+func (this *Underscore) Reject ( iterator eachlistiterator ) *Underscore {
+	this.wrapped = Reject(this.wrapped.([]T),iterator)
+	return this
+}
+
+func (this *Underscore) SortBySorter ( value T, orderby func(a,b *map[T]T)bool) *Underscore {
+	this.wrapped = SortBySorter( this.wrapped, value, orderby)
+	return this
+}
+
