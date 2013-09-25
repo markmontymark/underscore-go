@@ -76,6 +76,13 @@ func Each(elemslist_or_map T, iterator eachlistiterator ) {
 			}
 		}
 
+	} else if IsStringArray( elemslist_or_map ) {
+		for i,elem := range elemslist_or_map.([]string) {
+			if iterator(elem, i, elemslist_or_map.([]string)) == EachBreak {
+				return
+			}
+		}
+
 	} else if IsArrayOfMaps( elemslist_or_map ) {
 		for i,elem := range elemslist_or_map.([]map[T]T) {
 			if iterator(elem, i, elemslist_or_map.([]map[T]T)) == EachBreak {
@@ -802,7 +809,8 @@ func Compact(array []T) []T {
 }
 
 // Internal implementation of a recursive `flatten` function.
-func flatten(input []T, shallow bool, output []T) []T {
+//func flatten(input []T, shallow bool, output []T) []T {
+func flatten(input T, shallow bool, output []T) []T {
 	//if shallow && Every(input, IsArrayEach) {
 	//	fmt.Printf("everything is array and shallow: %v\n",input)
 	//	output = append(output,input...)
@@ -811,12 +819,16 @@ func flatten(input []T, shallow bool, output []T) []T {
 	Each(input, func(value T, idx T, list T) bool  {
 		if IsArray(value) {
 			if shallow {
-				//fmt.Printf("output before: %v\n",output)
+				//fmt.Printf("shallow output before: %v\n",output)
 				output = append(output,value.([]T)...)
-				//fmt.Printf("output after : %v\n",output)
+				//fmt.Printf("shallow output after : %v\n",output)
 			} else {
+				//fmt.Printf("output before: %v\n",output)
 				output = flatten(value.([]T), shallow, output)
+				//fmt.Printf("output after : %v\n",output)
 			}
+		}	else if IsStringArray(value) {
+			output = flatten(value, shallow, output)
 		} else {
 			//fmt.Printf("is not array %v output before: %v\n",value, output)
 			output = append(output,value)
@@ -827,7 +839,8 @@ func flatten(input []T, shallow bool, output []T) []T {
 }
 
 // Flatten out an array, either recursively (by default), or just one level.
-func Flatten (array []T, opt_shallow ...bool) []T {
+//func Flatten (array []T, opt_shallow ...bool) []T {
+func Flatten (array T, opt_shallow ...bool) []T {
 	var shallow bool
 	if len(opt_shallow) > 0 {
 		shallow = opt_shallow[0]
@@ -1450,6 +1463,11 @@ func IsArray (obj T) bool {
 	_,ok := obj.([]T)
 	return ok // v != nil
 }
+// Is a given value an array?
+func IsStringArray (obj T) bool {
+	_,ok := obj.([]string)
+	return ok // v != nil
+}
 func IsArrayEach (obj T, idx T, list T) bool {
 	return IsArray(obj)
 }
@@ -1568,3 +1586,13 @@ func result (obj T) T {
 	return New(obj).Chain()
 }
 
+
+func (this *Underscore) Flatten ( opt_shallow ...bool) *Underscore {
+	this.wrapped = Flatten(this.wrapped.([]T), opt_shallow...)
+	return this
+}
+
+func (this *Underscore) Reduce ( iterator func(T,T,T,T) T, memo ...T) *Underscore {
+	this.wrapped,_ = Reduce(this.wrapped.([]T),iterator,memo...)
+	return this
+}
