@@ -1,6 +1,6 @@
 # underscore-go
 
-Attempting a Go port of Underscore.js
+A Go port of Underscore.js
 
 # setup
 
@@ -25,5 +25,16 @@ Attempting a Go port of Underscore.js
 	cd underscore-go/
 	go test
 
+# status
 
+	Most of the Underscore.js functionality is ported, finishing porting tests
+
+
+# todos
+
+ -	Finish porting tests from chaining.js, speed.js
+ - Add the rest of the public api as methods on a \*Underscore object
+ - Port Underscore.js functions like defer, throttle, debounce using setTimeout with go-routines and Go's Defer language support
+
+		
 
