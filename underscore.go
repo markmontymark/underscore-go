@@ -1299,7 +1299,7 @@ func Extend(objToExtend map[T]T, args ...T) map[T]T {
 }
 
  // Return a copy of the object only containing the whitelisted properties.
-func Pick (obj map[T]T, keysToKeep ...T) map[T]T {
+func Pick(obj map[T]T, keysToKeep ...T) map[T]T {
 	copy := map[T]T{}
 	Each(keysToKeep, func(keyToKeep,index,list T) bool {
 		if _,isList := keyToKeep.([]T) ; isList {
@@ -1380,11 +1380,10 @@ func (this *Underscore ) Chain () *Underscore {
 	this.ischained = true
 	return this
 }
-func (this *Underscore ) Map(fn func(T,T,T)T) *Underscore {
-	this.wrapped = Map(this.wrapped, fn)
-	return this
-}
 func (this *Underscore ) Max(lessThan func(T,T)bool) *Underscore {
+	if this.ischained {
+		return New(Max(lessThan, this.wrapped.([]T)...))
+	}
 	this.wrapped = Max(lessThan, this.wrapped.([]T)...)
 	return this
 }
@@ -1396,16 +1395,30 @@ func (this *Underscore ) Value() T {
 	return this.wrapped
 }
 
-func (this *Underscore) IsFinite(obj float64) bool {
-	return ! math.IsNaN(obj) && ! math.IsInf(obj,1) && ! math.IsInf(obj,-1)
+func (this *Underscore) IsFinite() *Underscore {
+	v,_ := this.wrapped.(float64)
+	if this.ischained {
+		return New( ! math.IsNaN(v) && ! math.IsInf(v,1) && ! math.IsInf(v,-1) )
+	}
+	this.wrapped = ! math.IsNaN(v) && ! math.IsInf(v,1) && ! math.IsInf(v,-1)
+	return this
 }
 
-func (this *Underscore) IsNaN(obj float64) bool {
-	return math.IsNaN(obj)
+func (this *Underscore) IsNaN() *Underscore {
+	v,_ := this.wrapped.(float64)
+	if this.ischained {
+		return New( math.IsNaN(v) )
+	}
+	this.wrapped = math.IsNaN(v)
+	return this
 }
 
-func (this *Underscore) Has(key T) bool {
-	return Has(this.wrapped,key)
+func (this *Underscore) Has(key T) *Underscore {
+	if this.ischained {
+		return New(Has(this.wrapped,key))
+	}
+	this.wrapped = Has(this.wrapped,key)
+	return this
 }
 
 // Utility Functions
@@ -1449,13 +1462,6 @@ func IdentityMap ( val T, index T, list T ) map[T]T {
 func IsString (obj T) bool {
 	v,_ := obj.(string)
 	return v != ""
-}
-
-func (this *Underscore) IsString(obj ...T) bool {
-	if obj == nil {
-		return IsString(this.wrapped)
-	}
-	return IsString(obj[0])
 }
 
 // Is a given value an array?
@@ -1586,13 +1592,30 @@ func result (obj T) T {
 	return New(obj).Chain()
 }
 
+// OOP-style Underscore
+
+
+func (this *Underscore) Map(iterator func(T,T,T) T) *Underscore {
+	if this.ischained {
+		return New( Map(this.wrapped, iterator  ) )
+	}	
+	this.wrapped = Map(this.wrapped, iterator )
+	return this
+}
 
 func (this *Underscore) Flatten ( opt_shallow ...bool) *Underscore {
+	if this.ischained {
+		return New( Flatten(this.wrapped.([]T), opt_shallow...) )
+	}	
 	this.wrapped = Flatten(this.wrapped.([]T), opt_shallow...)
 	return this
 }
 
 func (this *Underscore) Reduce ( iterator func(T,T,T,T) T, memo ...T) *Underscore {
+	if this.ischained {
+		v,_ := Reduce(this.wrapped.([]T),iterator,memo...)
+		return New(v)
+	}
 	this.wrapped,_ = Reduce(this.wrapped.([]T),iterator,memo...)
 	return this
 }
@@ -1600,16 +1623,24 @@ func (this *Underscore) Reduce ( iterator func(T,T,T,T) T, memo ...T) *Underscor
 func (this *Underscore) Filter (iterator eachlistiterator ) *Underscore {
 	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
 		return New( Filter(this.wrapped.([]T),iterator) )
-	} else {
-		this.wrapped = Filter(this.wrapped.([]T),iterator)
-		return this
 	}
-}
-func (this *Underscore) Select (iterator eachlistiterator ) *Underscore {
 	this.wrapped = Filter(this.wrapped.([]T),iterator)
 	return this
 }
+
+// Select is an alias for Filter
+func (this *Underscore) Select (iterator eachlistiterator ) *Underscore {
+	if this.ischained { 
+		return New(Filter(this.wrapped.([]T),iterator))
+	}
+	this.wrapped = Filter(this.wrapped.([]T),iterator)
+	return this
+}
+
 func (this *Underscore) Reject ( iterator eachlistiterator ) *Underscore {
+	if this.ischained {
+		return New( Reject(this.wrapped.([]T),iterator) )
+	}
 	this.wrapped = Reject(this.wrapped.([]T),iterator)
 	return this
 }
@@ -1627,43 +1658,377 @@ func (this *Underscore) Reverse() *Underscore {
 	}
 	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
 		return New( a )
-	} else {
-		this.wrapped = a
-		return this
 	}
+	this.wrapped = a
+	return this
 }
 
 func (this *Underscore) Concat(array []T) *Underscore {
 	a := append(this.wrapped.([]T), array...)
 	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
 		return New( a )
-	} else {
-		this.wrapped = a
-		return this
 	}
+	this.wrapped = a
+	return this
 }
 
 func (this *Underscore) Unshift(elems ...T) *Underscore {
 	for _,v := range this.wrapped.([]T) {
 		elems = append(elems,v)
 	}
-	//copy(elems,this.wrapped.([]T))
 	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
 		return New( elems )
-	} else {
-		this.wrapped = elems
-		return this
 	}
+	this.wrapped = elems
+	return this
+}
+
+func (this *Underscore) Shift() *Underscore {
+	a,_ := this.wrapped.([]T)
+	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
+		return New( a[0] )
+	}
+	this.wrapped = a[0]
+	return this
 }
 
 func (this *Underscore) Pop() *Underscore {
+	a,_ := this.wrapped.([]T)
+	retval := a[:len(a)-1]
 	if this.ischained { // this allows chaining_test.go's 'chaining works in small steps' test to pass
-		a,_ := this.wrapped.([]T)
-		return New( a[:len(a)-1] )
-	} else {
-		a := this.wrapped.([]T)
-		this.wrapped = a[:len(a)-1]
-		return this
+		return New( retval )
 	}
+	this.wrapped = retval
+	return this
+}
+
+
+func (this *Underscore) Clone () *Underscore {
+	if this.ischained {
+		return New( Clone( this.wrapped ))
+	}
+	this.wrapped = Clone( this.wrapped )
+	return this
+}
+
+func (this *Underscore) Compact () *Underscore {
+	v,_ := this.wrapped.([]T)
+	if this.ischained {
+		return New( Compact( v ))
+	}
+	this.wrapped = Compact( v )
+	return this
+}
+
+func (this *Underscore) Defaults (args ...T) *Underscore {
+// func Defaults(obj map[T]T , args ...T) map[T]T {
+	v,_ := this.wrapped.(map[T]T)
+	if this.ischained {
+		return New( Defaults( v, args... ))
+	}
+	this.wrapped = Defaults( v, args... )
+	return this
+}
+
+func (this *Underscore) Each (iterator eachlistiterator ) *Underscore {
+// func Each(elemslist_or_map T, iterator eachlistiterator ) {
+	Each( this.wrapped, iterator )
+	return this
+}
+
+func (this *Underscore) Extend (args ...T) *Underscore {
+// func Extend(objToExtend map[T]T, args ...T) map[T]T {
+	v,_ := this.wrapped.(map[T]T)
+	if this.ischained {
+		return New( Extend( v, args... ))
+	}
+	this.wrapped = Extend( v, args... )
+	return this
+}
+
+func (this *Underscore) FindWhere (attrs map[T]T) *Underscore {
+// func FindWhere(obj []T, attrs map[T]T) T {
+	v,_ := this.wrapped.([]T)
+	if this.ischained {
+		return New( FindWhere( v, attrs ))
+	}
+	this.wrapped = FindWhere( v, attrs )
+	return this
+}
+
+func (this *Underscore) First () *Underscore {
+// func First(array []T) T {
+	v,_ := this.wrapped.([]T)
+	if this.ischained {
+		return New( First( v))
+	}
+	this.wrapped = First( v)
+	return this
+}
+
+func (this *Underscore) Initial ( opt_n ...int) *Underscore {
+// func Initial(array []T , opt_n ...int) []T {
+	v,_ := this.wrapped.([]T)
+	if this.ischained {
+		return New( Initial( v, opt_n... ))
+	}
+	this.wrapped = Initial( v, opt_n... )
+	return this
+}
+
+func (this *Underscore) Intersection (lessThan func(T,T)bool,opt_array ...T) *Underscore {
+// func Intersection(lessThan func(T,T)bool,opt_array ...T) []T {
+	v,_ := this.wrapped.([]T)
+	if this.ischained {
+		return New( Intersection( lessThan, append(v,opt_array...) ))
+	}
+	this.wrapped = Intersection( lessThan, append(v,opt_array...) )
+	return this
+}
+
+func (this *Underscore) Invert () *Underscore {
+// func Invert(obj map[T]T) map[T]T {
+	v,_ := this.wrapped.(map[T]T)
+	if this.ischained {
+		return New( Invert( v ))
+	}
+	this.wrapped = Invert( v )
+	return this
+}
+
+func (this *Underscore) Invoke (method func( this T, thisArgs ...T) T, args ...T) *Underscore {
+// func Invoke(obj T, method func( this T, thisArgs ...T) T, args ...T ) []T {
+	if this.ischained {
+		return New( Invoke( this.wrapped, method, args... ))
+	}
+	this.wrapped = Invoke( this.wrapped, method, args... )
+	return this
+}
+
+func (this *Underscore) IsFunction () *Underscore {
+// func IsFunction(obj T) bool {
+	if this.ischained {
+		return New( IsFunction( this.wrapped ))
+	}
+	this.wrapped = IsFunction( this.wrapped )
+	return this
+}
+
+func (this *Underscore) IsFunctionVariadic () *Underscore {
+// func IsFunctionVariadic(obj T) bool {
+	if this.ischained {
+		return New( IsFunctionVariadic( this.wrapped ))
+	}
+	this.wrapped = IsFunctionVariadic( this.wrapped )
+	return this
+}
+
+// Is a given value an array?
+func (this *Underscore) IsArray() *Underscore {
+	if this.ischained {
+		return New( IsArray( this.wrapped ) )
+	}
+	this.wrapped = IsArray( this.wrapped )
+	return this
+}
+
+// Is a given value an array?
+func (this *Underscore) IsArrayOfMaps() *Underscore {
+	if this.ischained {
+		return New( IsArrayOfMaps( this.wrapped ) )
+	}
+	this.wrapped = IsArrayOfMaps( this.wrapped )
+	return this
+}
+
+
+// Is a given variable a map
+func (this *Underscore) IsMap() *Underscore{
+	if this.ischained {
+		return New( IsMap(this.wrapped ) )
+	}
+	this.wrapped = IsMap( this.wrapped )
+	return this
+}
+
+func (this *Underscore) IsString() *Underscore {
+	if this.ischained {
+		return New(IsString(this.wrapped))
+	}
+	this.wrapped = IsString(this.wrapped)
+	return this
+}
+
+// Is a given value an array?
+func (this *Underscore) IsStringArray() *Underscore {
+	if this.ischained {
+		return New( IsStringArray( this.wrapped ) )
+	}
+	this.wrapped = IsStringArray( this.wrapped )
+	return this
+}
+
+func (this *Underscore) Keys () *Underscore {
+// func Keys(obj map[T]T) []T {
+	v,_ := this.wrapped.(map[T]T)
+	if this.ischained {
+		return New( Keys( v ))
+	}
+	this.wrapped = Keys( v )
+	return this
+}
+
+func (this *Underscore) Last ( opt_n ...int) *Underscore {
+// func Last(array []T , opt_n ...int) []T {
+	v,_ := this.wrapped.([]T)
+	if this.ischained {
+		return New( Last( v, opt_n... ))
+	}
+	this.wrapped = Last( v, opt_n... )
+	return this
+}
+
+func (this *Underscore) MapMap ( iterator func(T,T,T) map[T]T ) *Underscore {
+// func MapMap(obj []map[T]T, iterator func(T,T,T) map[T]T) []map[T]T {
+	v,_ := this.wrapped.([]map[T]T)
+	if this.ischained {
+		return New( MapMap( v, iterator ))
+	}
+	this.wrapped = MapMap( v, iterator )
+	return this
+}
+
+func (this *Underscore) MaxInt () *Underscore {
+// func MaxInt(args ...int) int {
+	if this.ischained {
+		return New( MaxInt( this.wrapped.([]int)... ))
+	}
+	this.wrapped = MaxInt( this.wrapped.([]int)... )
+	return this
+}
+
+func (this *Underscore) Min (lessThan func(T,T)bool) *Underscore {
+// func Min(lessThan func(T,T)bool, args ...T) T {
+	if this.ischained {
+		return New( Min( lessThan, this.wrapped.([]T)... ))
+	}
+	this.wrapped = Min( lessThan, this.wrapped.([]T)... )
+	return this
+}
+
+func (this *Underscore) MinInt () *Underscore {
+// func MinInt(args ...int) int {
+	if this.ischained {
+		return New( MinInt( this.wrapped.([]int)... ))
+	}
+	this.wrapped = MinInt( this.wrapped.([]int)... )
+	return this
+}
+
+func (this *Underscore) Object () *Underscore {
+// func Object( pairs_or_two_arrays ...[]T ) map[T]T {
+	if this.ischained {
+		return New( Object( this.wrapped.([]T) ))
+	}
+	this.wrapped = Object( this.wrapped.([]T) )
+	return this
+}
+
+func (this *Underscore) Omit (keysToRemove ...T) *Underscore {
+// func Omit(obj map[T]T, keysToRemove ...T) map[T]T {
+	if this.ischained {
+		return New( Omit( this.wrapped.(map[T]T), keysToRemove...) )
+	}
+	this.wrapped = Omit( this.wrapped.(map[T]T), keysToRemove... )
+	return this
+}
+
+func (this *Underscore) Pairs () *Underscore {
+	if this.ischained {
+		return New( Pairs( this.wrapped.(map[T]T)) )
+	}
+	this.wrapped = Pairs( this.wrapped.(map[T]T) )
+	return this
+}
+
+func (this *Underscore) Pick( keysToKeep ...T) *Underscore {
+	if this.ischained {
+		return New( Pick( this.wrapped.(map[T]T), keysToKeep...))
+	}
+	this.wrapped = Pick( this.wrapped.(map[T]T), keysToKeep...)
+	return this
+}
+
+
+func (this *Underscore) Pluck (targetvalue T) *Underscore {
+// func Pluck(obj T, targetvalue T) []T {
+	if this.ischained {
+		return New( Pluck( this.wrapped, targetvalue ))
+	}
+	this.wrapped = Pluck( this.wrapped, targetvalue )
+	return this
+}
+
+func (this *Underscore) Sample (opt_n ...int) *Underscore {
+// func Sample(obj T, opt_n ...int ) T {
+	if this.ischained {
+		return New( Sample( this.wrapped, opt_n... ))
+	}
+	this.wrapped = Sample( this.wrapped, opt_n... )
+	return this
+}
+
+func (this *Underscore) Shuffle () *Underscore {
+// func Shuffle(obj []T) []T {
+	if this.ischained {
+		return New( Shuffle( this.wrapped.([]T) ))
+	}
+	this.wrapped = Shuffle( this.wrapped.([]T) )
+	return this
+}
+
+func (this *Underscore) Size () *Underscore {
+// func Size(obj T) int {
+	if this.ischained {
+		return New( Size( this.wrapped ))
+	}
+	this.wrapped = Size( this.wrapped )
+	return this
+}
+
+func (this *Underscore) ToArray () *Underscore {
+// func ToArray( obj T ) []T {
+	if this.ischained {
+		return New( ToArray( this.wrapped ))
+	}
+	this.wrapped = ToArray( this.wrapped )
+	return this
+}
+
+func (this *Underscore) Uniq (isSorted T /*bool or func*/, opt_iterator ...T) *Underscore {
+// func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
+	if this.ischained {
+		return New( Uniq( this.wrapped, isSorted, opt_iterator ))
+	}
+	this.wrapped = Uniq( this.wrapped, isSorted, opt_iterator )
+	return this
+}
+
+func (this *Underscore) Values () *Underscore {
+// func Values(obj map[T]T) []T {
+	if this.ischained {
+		return New( Values( this.wrapped.(map[T]T) ))
+	}
+	this.wrapped = Values( this.wrapped.(map[T]T) )
+	return this
+}
+
+func (this *Underscore) Where (attrs map[T]T, optReturnFirstFound ...bool) *Underscore {
+// func Where(obj []T, attrs map[T]T, optReturnFirstFound ...bool) T {
+	if this.ischained {
+		return New( Where( this.wrapped.([]T), attrs, optReturnFirstFound... ))
+	}
+	this.wrapped = Where( this.wrapped.([]T), attrs, optReturnFirstFound... )
+	return this
 }
 

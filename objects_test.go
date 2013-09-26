@@ -188,9 +188,8 @@ func TestIsStringWithArray( t *testing.T ) {
 func TestIsStringWithString( t *testing.T ) {
    scalar := "name"
    asserts.True( t, "Testing IsString function", IsString( scalar ) )
-   asserts.True( t, "Testing IsString method(T)", New().IsString( scalar ) )
-   asserts.True( t, "Testing New(scalar).IsString method()", New(scalar).IsString( ) )
-   asserts.False( t, "Testing New([]T{scalar}).IsString method()", New([]T{scalar}).IsString( ) )
+   asserts.True( t, "Testing New(scalar).IsString method()", New(scalar).IsString().Value().(bool) )
+   asserts.False( t, "Testing New([]T{scalar}).IsString method()", New([]T{scalar}).IsString().Value().(bool) )
 }
 
 func TestIsStringWithMap( t *testing.T ) {
