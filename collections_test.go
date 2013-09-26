@@ -295,6 +295,30 @@ func TestWhere(t *testing.T) {
 	asserts.Equals(t, "Find objects with b:2", "map[a:1 b:2]", fmt.Sprintf("%v", v))
 }
 
+func TestWhereOOP(t *testing.T) {
+/*
+	list := make([]T, 0)
+	list = append(list, map[T]T{"a": 1, "b": 2})
+	list = append(list, map[T]T{"a": 2, "b": 2})
+	list = append(list, map[T]T{"a": 1, "b": 3})
+	list = append(list, map[T]T{"a": 1, "b": 4})
+*/
+	list := []T{ map[T]T{"a": 1, "b": 2}, map[T]T{"a": 2, "b": 2}, map[T]T{"a": 1, "b": 3}, map[T]T{"a": 1, "b": 4} }
+
+	v := New(list).Chain().Where(map[T]T{"a": 1}).Value()
+	asserts.Equals(t, "Find objects with key a:1", "3", fmt.Sprintf("%v", len(v.([]T))))
+	asserts.Equals(t, "Last found has a b:4", "4", fmt.Sprintf("%v", v.([]T)[len(v.([]T))-1].(map[T]T)["b"]))
+
+	v2 := New(list).Chain().Where(map[T]T{"b": 2}).Value()
+	asserts.Equals(t, "Find objects with b:2", "2", fmt.Sprintf("%v", len(v2.([]T))))
+
+	v3 := New(list).Chain().Where(map[T]T{"b": 2}, true).Value()
+	asserts.Equals(t, "Find first object with b:2", "map[a:1 b:2]", fmt.Sprintf("%v", v3))
+
+	v4 := New(list).Chain().Where(map[T]T{"b": 2}, true).Value()
+	asserts.Equals(t, "Find first object with b:2 when chained", "map[a:1 b:2]", fmt.Sprintf("%v", v4))
+}
+
 func TestFindWhere(t *testing.T) {
 	list := make([]T, 0)
 	list = append(list, map[T]T{"a": 1, "b": 2})
