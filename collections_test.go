@@ -18,12 +18,14 @@ func TestEach(t *testing.T) {
 	sliceCollector := make([]string, 0)
 	silly := func(elem T, i T, list T) bool {
 		sliceCollector = append(sliceCollector, fmt.Sprintf("each: elem %d, index %v, list %v,", elem, i, list))
-		return EachContinue
+		return false
 	}
 
 	Each([]T{0, 3, 2, 1}, silly)
 
-	asserts.Equals(t, "Test Each(0,3,2,4)", "[each: elem 0, index 0, list [0 3 2 1], each: elem 3, index 1, list [0 3 2 1], each: elem 2, index 2, list [0 3 2 1], each: elem 1, index 3, list [0 3 2 1],]", fmt.Sprintf("%v", sliceCollector))
+	asserts.Equals(t, "Test Each(0,3,2,4)", 
+		"[each: elem 0, index 0, list [0 3 2 1], each: elem 3, index 1, list [0 3 2 1], each: elem 2, index 2, list [0 3 2 1], each: elem 1, index 3, list [0 3 2 1],]", 
+		fmt.Sprint(sliceCollector))
 }
 
 func TestMap(t *testing.T) {
@@ -38,9 +40,9 @@ func TestMap(t *testing.T) {
 	identityNestedKeyShorterMap := func(value T, key T, obj T) T { return value.(map[T]T)["b"] }
 
 	asserts.Equals(t, "testing map with array",
-		"[2 5 4 3]", fmt.Sprintf("%v", Map([]T{0, 3, 2, 1}, add2)))
+		"[2 5 4 3]", fmt.Sprint(Map([]T{0, 3, 2, 1}, add2)))
 	asserts.Equals(t, "testing collect with array",
-		"[2 5 4 3]", fmt.Sprintf("%v", Collect([]T{0, 3, 2, 1}, add2)))
+		"[2 5 4 3]", fmt.Sprint(Collect([]T{0, 3, 2, 1}, add2)))
 
 	amap := map[T]T{"a": 3, "b": 2, "c": 1}
 	list := make([]T, 0)
@@ -49,27 +51,27 @@ func TestMap(t *testing.T) {
 
 	asserts.Equals(t, "testing collectmap with map[string]int ",
 		"[3 2 1]",
-		fmt.Sprintf("%v", Collect(amap, identityValueMap)))
+		fmt.Sprint(Collect(amap, identityValueMap)))
 
 	asserts.Equals(t, "testing collectmap with map[string]int ",
 		"[map[a:3 b:2 c:1] map[a:1 d:4 e:5]]",
-		fmt.Sprintf("%v", Collect(list, identityValueMap)))
+		fmt.Sprint(Collect(list, identityValueMap)))
 
 	asserts.Equals(t, "testing collectmap with map[string]int ",
 		"[a b c]",
-		fmt.Sprintf("%v", Collect(amap, identityKeyMap)))
+		fmt.Sprint(Collect(amap, identityKeyMap)))
 
 	asserts.Equals(t, "testing collectmap with map[string]int ",
 		"[0 1]",
-		fmt.Sprintf("%v", Collect(list, identityKeyMap)))
+		fmt.Sprint(Collect(list, identityKeyMap)))
 
 	asserts.Equals(t, "testing collectmap with map[string]int ",
 		"[3 1]",
-		fmt.Sprintf("%v", Collect(list, identityNestedKeyMap)))
+		fmt.Sprint(Collect(list, identityNestedKeyMap)))
 
 	asserts.Equals(t, "testing collectmap with map[string]int ",
 		"[2]",
-		fmt.Sprintf("%v", Collect(list, identityNestedKeyShorterMap)))
+		fmt.Sprint(Collect(list, identityNestedKeyShorterMap)))
 }
 
 func TestReduce(t *testing.T) {
@@ -155,14 +157,14 @@ func TestFilter(t *testing.T) {
 	v := Filter(array, func(n T, i T, list T) bool {
 		return n.(int) > 2
 	})
-	asserts.Equals(t, "should return last two values: 3 4", fmt.Sprintf("%v", []T{3, 4}), fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return last two values: 3 4", fmt.Sprint([]T{3, 4}), fmt.Sprint(v))
 }
 func TestSelect_asFilterAlias(t *testing.T) {
 	array := []T{1, 2, 3, 4}
 	v := Select(array, func(n T, i T, list T) bool {
 		return n.(int) > 2
 	})
-	asserts.Equals(t, "should return last two values: 3 4", fmt.Sprintf("%v", []T{3, 4}), fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return last two values: 3 4", fmt.Sprint([]T{3, 4}), fmt.Sprint(v))
 }
 
 func TestReject(t *testing.T) {
@@ -170,7 +172,7 @@ func TestReject(t *testing.T) {
 	v := Reject(array, func(n T, i T, list T) bool {
 		return n.(int) > 2
 	})
-	asserts.Equals(t, "should return first two values: 1 2", fmt.Sprintf("%v", []T{1, 2}), fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return first two values: 1 2", fmt.Sprint([]T{1, 2}), fmt.Sprint(v))
 }
 
 func TestEvery(t *testing.T) {
@@ -178,12 +180,12 @@ func TestEvery(t *testing.T) {
 	v := Every(array, func(n T, i T, list T) bool {
 		return n.(int) < 5
 	})
-	asserts.Equals(t, "should return true as all values: 1 2 3 4 are less than 5", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as all values: 1 2 3 4 are less than 5", "true", fmt.Sprint(v))
 
 	v = Every(array, func(n T, i T, list T) bool {
 		return n.(int) < 4
 	})
-	asserts.Equals(t, "should return false as not all values are < 4", "false", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return false as not all values are < 4", "false", fmt.Sprint(v))
 }
 
 func TestAll(t *testing.T) {
@@ -191,12 +193,12 @@ func TestAll(t *testing.T) {
 	v := All(array, func(n T, i T, list T) bool {
 		return n.(int) < 5
 	})
-	asserts.Equals(t, "should return true as all values: 1 2 3 4 are less than 5", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as all values: 1 2 3 4 are less than 5", "true", fmt.Sprint(v))
 
 	v = All(array, func(n T, i T, list T) bool {
 		return n.(int) < 4
 	})
-	asserts.Equals(t, "should return false as not all values are < 4", "false", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return false as not all values are < 4", "false", fmt.Sprint(v))
 }
 
 func TestAny(t *testing.T) {
@@ -204,45 +206,45 @@ func TestAny(t *testing.T) {
 	v := Any(array, func(n T, i T, list T) bool {
 		return n.(int) < 5
 	})
-	asserts.Equals(t, "should return true as at least one value is less than 5", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as at least one value is less than 5", "true", fmt.Sprint(v))
 
 	v = Any(array, func(n T, i T, list T) bool {
 		return n.(int) < 4
 	})
-	asserts.Equals(t, "should return true as at least one value is less than 4", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as at least one value is less than 4", "true", fmt.Sprint(v))
 
 	v = Any(array, func(n T, i T, list T) bool {
 		return n.(int) < 3
 	})
-	asserts.Equals(t, "should return true as at least one value is less than 3", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as at least one value is less than 3", "true", fmt.Sprint(v))
 
 	v = Any(array, func(n T, i T, list T) bool {
 		return n.(int) < 2
 	})
-	asserts.Equals(t, "should return true as at least one value is less than 2", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as at least one value is less than 2", "true", fmt.Sprint( v))
 
 	v = Any(array, func(n T, i T, list T) bool {
 		return n.(int) < 1
 	})
-	asserts.Equals(t, "should return false as no value are less than 1", "false", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return false as no value are less than 1", "false", fmt.Sprint( v))
 }
 
 func TestInclude(t *testing.T) {
 	array := []T{1, 2, 3, 4}
 	v := Include(array, 1)
-	asserts.Equals(t, "should return true as array contains a 1", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as array contains a 1", "true", fmt.Sprint( v))
 
 	v = Include(array, 2)
-	asserts.Equals(t, "should return true as array contains a 1", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as array contains a 1", "true", fmt.Sprint( v))
 
 	v = Include(array, 3)
-	asserts.Equals(t, "should return true as array contains a 1", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as array contains a 1", "true", fmt.Sprint( v))
 
 	v = Include(array, 4)
-	asserts.Equals(t, "should return true as array contains a 1", "true", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return true as array contains a 1", "true", fmt.Sprint( v))
 
 	v = Include(array, 5)
-	asserts.Equals(t, "should return false as array doesnt contain a 5", "false", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "should return false as array doesnt contain a 5", "false", fmt.Sprint( v))
 }
 
 func TestInvoke(t *testing.T) {
@@ -251,7 +253,7 @@ func TestInvoke(t *testing.T) {
 		sort.Sort(item.(IntSlice))
 		return item
 	})
-	asserts.Equals(t, "each array sorted", fmt.Sprintf("%v", result),
+	asserts.Equals(t, "each array sorted", fmt.Sprint( result),
 		"[[1 5 7] [1 2 3]]")
 }
 
@@ -260,12 +262,12 @@ func TestPluck(t *testing.T) {
 	v := Pluck(people, "name")
 	asserts.Equals(t, "pulls names out of objects",
 		"[name name]",
-		fmt.Sprintf("%v", v))
+		fmt.Sprint( v))
 
 	v = Pluck(people, 30)
 	asserts.Equals(t, "pulls 30 out of list",
 		"[30]",
-		fmt.Sprintf("%v", v))
+		fmt.Sprint( v))
 
 	people = make([]T, 0)
 	people = append(people, map[T]T{"name": "moe", "age": 30})
@@ -273,7 +275,7 @@ func TestPluck(t *testing.T) {
 	v = Pluck(people, "name")
 	asserts.Equals(t, "pulls names out of objects",
 		"[moe curly]",
-		fmt.Sprintf("%v", v))
+		fmt.Sprint( v))
 }
 
 func TestWhere(t *testing.T) {
@@ -285,14 +287,14 @@ func TestWhere(t *testing.T) {
 	list = append(list, map[T]T{"a": 1, "b": 4})
 
 	v := Where(list, map[T]T{"a": 1})
-	asserts.Equals(t, "Find objects with key a:1", "3", fmt.Sprintf("%v", len(v.([]T))))
-	asserts.Equals(t, "Last found has a b:4", "4", fmt.Sprintf("%v", v.([]T)[len(v.([]T))-1].(map[T]T)["b"]))
+	asserts.Equals(t, "Find objects with key a:1", "3", fmt.Sprint( len(v.([]T))))
+	asserts.Equals(t, "Last found has a b:4", "4", fmt.Sprint( v.([]T)[len(v.([]T))-1].(map[T]T)["b"]))
 
 	v = Where(list, map[T]T{"b": 2})
-	asserts.Equals(t, "Find objects with b:2", "2", fmt.Sprintf("%v", len(v.([]T))))
+	asserts.Equals(t, "Find objects with b:2", "2", fmt.Sprint( len(v.([]T))))
 
 	v = Where(list, map[T]T{"b": 2}, true)
-	asserts.Equals(t, "Find objects with b:2", "map[a:1 b:2]", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "Find objects with b:2", "map[a:1 b:2]", fmt.Sprint( v))
 }
 
 func TestWhereOOP(t *testing.T) {
@@ -306,17 +308,17 @@ func TestWhereOOP(t *testing.T) {
 	list := []T{ map[T]T{"a": 1, "b": 2}, map[T]T{"a": 2, "b": 2}, map[T]T{"a": 1, "b": 3}, map[T]T{"a": 1, "b": 4} }
 
 	v := New(list).Chain().Where(map[T]T{"a": 1}).Value()
-	asserts.Equals(t, "Find objects with key a:1", "3", fmt.Sprintf("%v", len(v.([]T))))
-	asserts.Equals(t, "Last found has a b:4", "4", fmt.Sprintf("%v", v.([]T)[len(v.([]T))-1].(map[T]T)["b"]))
+	asserts.Equals(t, "Find objects with key a:1", "3", fmt.Sprint( len(v.([]T))))
+	asserts.Equals(t, "Last found has a b:4", "4", fmt.Sprint( v.([]T)[len(v.([]T))-1].(map[T]T)["b"]))
 
 	v2 := New(list).Chain().Where(map[T]T{"b": 2}).Value()
-	asserts.Equals(t, "Find objects with b:2", "2", fmt.Sprintf("%v", len(v2.([]T))))
+	asserts.Equals(t, "Find objects with b:2", "2", fmt.Sprint( len(v2.([]T))))
 
 	v3 := New(list).Chain().Where(map[T]T{"b": 2}, true).Value()
-	asserts.Equals(t, "Find first object with b:2", "map[a:1 b:2]", fmt.Sprintf("%v", v3))
+	asserts.Equals(t, "Find first object with b:2", "map[a:1 b:2]", fmt.Sprint( v3))
 
 	v4 := New(list).Chain().Where(map[T]T{"b": 2}, true).Value()
-	asserts.Equals(t, "Find first object with b:2 when chained", "map[a:1 b:2]", fmt.Sprintf("%v", v4))
+	asserts.Equals(t, "Find first object with b:2 when chained", "map[a:1 b:2]", fmt.Sprint( v4))
 }
 
 func TestFindWhere(t *testing.T) {
@@ -326,17 +328,17 @@ func TestFindWhere(t *testing.T) {
 	list = append(list, map[T]T{"a": 1, "b": 3})
 	list = append(list, map[T]T{"a": 1, "b": 4})
 	v := FindWhere(list, map[T]T{"a": 1})
-	asserts.Equals(t, "Find first object with key a:1", "map[a:1 b:2]", fmt.Sprintf("%v", v))
+	asserts.Equals(t, "Find first object with key a:1", "map[a:1 b:2]", fmt.Sprint( v))
 }
 
 func TestMax(t *testing.T) {
 	list := []int{2, 3, 4, 9, 5, 6, 7, 8}
-	asserts.Equals(t, "Find max element in array", "9", fmt.Sprintf("%v", MaxInt(list...)))
+	asserts.Equals(t, "Find max element in array", "9", fmt.Sprint( MaxInt(list...)))
 }
 
 func TestMin(t *testing.T) {
 	list := []int{2, 3, 4, 9, 5, 6, 7, 8}
-	asserts.Equals(t, "Find min element in array", "2", fmt.Sprintf("%v", MinInt(list...)))
+	asserts.Equals(t, "Find min element in array", "2", fmt.Sprint( MinInt(list...)))
 }
 
 func TestSortBy(t *testing.T) {
@@ -347,11 +349,11 @@ func TestSortBy(t *testing.T) {
 			return (*a)["criteria"].(int) < (*b)["criteria"].(int)
 		})
 	asserts.Equals(t, "stooges sorted by age, plucking just 'name'",
-		fmt.Sprintf("%v", Pluck(peopleSorted, "name")), "[moe curly]")
+		fmt.Sprint( Pluck(peopleSorted, "name")), "[moe curly]")
 
 	list := []T{nil, 4, 1, nil, 3, 2}
 	asserts.Equals(t, "SortBy with nil values",
-		fmt.Sprintf("%v",
+		fmt.Sprint(
 			SortBySorter(list, Identity, func(a, b *map[T]T) bool {
 				return (*a)["criteria"].(int) < (*b)["criteria"].(int)
 			})),
@@ -361,7 +363,7 @@ func TestSortBy(t *testing.T) {
 	sorted := SortBySorter(words,
 		func(obj, b, c T) T { return len(obj.(string)) },
 		func(a, b *map[T]T) bool { return (*a)["criteria"].(int) < (*b)["criteria"].(int) })
-	asserts.Equals(t, "sorted by length", fmt.Sprintf("%v", sorted),
+	asserts.Equals(t, "sorted by length", fmt.Sprint( sorted),
 		"[one two four five three]")
 
 	type Pair struct {
@@ -390,7 +392,7 @@ func TestSortBy(t *testing.T) {
 		})
 
 	asserts.Equals(t, "sortby should be stable",
-		fmt.Sprintf("%v", actual), fmt.Sprintf("%v", collection))
+		fmt.Sprint( actual), fmt.Sprint( collection))
 }
 
 func TestGroupBy(t *testing.T) {
@@ -400,25 +402,25 @@ func TestGroupBy(t *testing.T) {
 		//fmt.Printf("group by func, returning %v\n", (val.(int) % 2) )
 		return obj.(int) % 2
 	})
-	asserts.Equals(t, "group ints ", "parity map[1:[1 3 5 1] 0:[2 4 6]]",
-		fmt.Sprintf("parity %v", data))
-	asserts.Equals(t, "group evens ", "[2 4 6]", fmt.Sprintf("%v", data[0]))
+	asserts.Equals(t, "group ints ", "map[1:[1 3 5 1] 0:[2 4 6]]",
+		fmt.Sprint(data))
+	asserts.Equals(t, "group evens ", "[2 4 6]", fmt.Sprint( data[0]))
 
 	data2 := []T{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
 	grouped := GroupBy(data2, func(obj T, key T, val T) T { return len(obj.(string)) })
 
 	asserts.Equals(t, "grouping words of length 3",
-		fmt.Sprintf("%v", grouped[3]), "[one two six ten]")
+		fmt.Sprint( grouped[3]), "[one two six ten]")
 	asserts.Equals(t, "grouping words of length 4",
-		fmt.Sprintf("%v", grouped[4]), "[four five nine]")
+		fmt.Sprint( grouped[4]), "[four five nine]")
 	asserts.Equals(t, "grouping words of length 5",
-		fmt.Sprintf("%v", grouped[5]), "[three seven eight]")
+		fmt.Sprint( grouped[5]), "[three seven eight]")
 
 	data3 := []map[T]T{{"a": 1, "b": 2}, {"b": 3}, {"a": 4, "c": 5}, {"a": 1, "b": 7, "c": 8}}
 	grouped3 := GroupBy(data3, func(obj T, key T, val T) T {
 		return obj.(map[T]T)["a"]
 	})
-	asserts.Equals(t, "group by an object keys value", "map[1:[map[a:1 b:2] map[a:1 b:7 c:8]] 4:[map[a:4 c:5]]]", fmt.Sprintf("%v", grouped3))
+	asserts.Equals(t, "group by an object keys value", "map[1:[map[a:1 b:2] map[a:1 b:7 c:8]] 4:[map[a:4 c:5]]]", fmt.Sprint( grouped3))
 }
 
 //TODO add more 'indexBy' tests from collections.js
@@ -427,7 +429,7 @@ func TestIndexBy(t *testing.T) {
 	grouped := IndexBy(data, func(obj T, key T, val T) T {
 		return obj.(map[T]T)["a"]
 	})
-	asserts.Equals(t, "index by an object keys value", "map[1:map[a:1 b:7 c:8] 4:map[a:4 c:5]]", fmt.Sprintf("%v", grouped))
+	asserts.Equals(t, "index by an object keys value", "map[1:map[a:1 b:7 c:8] 4:map[a:4 c:5]]", fmt.Sprint( grouped))
 }
 
 //TODO add more 'countBy' tests from collections.js
@@ -436,7 +438,7 @@ func TestCountBy(t *testing.T) {
 	grouped := CountBy(data, func(obj T, key T, val T) T {
 		return obj.(map[T]T)["a"]
 	})
-	asserts.Equals(t, "count by an object keys value", "map[1:2 4:1]", fmt.Sprintf("%v", grouped))
+	asserts.Equals(t, "count by an object keys value", "map[1:2 4:1]", fmt.Sprint( grouped))
 }
 
 func TestSortedIndex(t *testing.T) {
@@ -505,10 +507,10 @@ func TestSample(t *testing.T) {
 
 func TestToArray(t *testing.T) {
 	a := []T{1, 2, 3}
-	asserts.Equals(t, "Clone an array", fmt.Sprintf("%v", a), fmt.Sprintf("%v", ToArray(a)))
+	asserts.Equals(t, "Clone an array", fmt.Sprint( a), fmt.Sprint( ToArray(a)))
 	b := map[T]T{"one": 1, "two": 2, "three": 3}
 	numbers := ToArray(b)
-	asserts.Equals(t, "object flattened into array", "[1 2 3]", fmt.Sprintf("%v", numbers))
+	asserts.Equals(t, "object flattened into array", "[1 2 3]", fmt.Sprint( numbers))
 }
 
 func TestSize(t *testing.T) {

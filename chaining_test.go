@@ -39,25 +39,25 @@ func TestSelectRejectSortBy(t *testing.T) {
 		}).
 		Value()
 	asserts.Equals(t, "filtered and reversed the numbers",
-		fmt.Sprintf("%v", numbers2), "[10 6 2]")
+		fmt.Sprint( numbers2), "[10 6 2]")
 }
 
 func TestChainingWorksInSmallStages(t *testing.T) {
 	o := New([]T{1, 2, 3, 4}).Chain()
 	asserts.Equals(t, "first two elems",
-		fmt.Sprintf("%v", o.Filter(func(i, d, l T) bool { return i.(int) < 3 }).Value()), "[1 2]")
+		fmt.Sprint( o.Filter(func(i, d, l T) bool { return i.(int) < 3 }).Value()), "[1 2]")
 
 	asserts.Equals(t, "last two elems",
-		fmt.Sprintf("%v", o.Filter(func(i, d, l T) bool { return i.(int) > 2 }).Value()), "[3 4]")
+		fmt.Sprint( o.Filter(func(i, d, l T) bool { return i.(int) > 2 }).Value()), "[3 4]")
 
 	asserts.Equals(t, "which of the last two elems is odd",
-		fmt.Sprintf("%v",
+		fmt.Sprint(
 			o.Filter(func(i, d, l T) bool { return i.(int) > 2 }).
 				Filter(func(i, d, l T) bool { return i.(int)%2 == 0 }).
 				Value()), "[4]")
 
 	asserts.Equals(t, "which of the last two elems is odd",
-		fmt.Sprintf("%v",
+		fmt.Sprint(
 			o.Filter(func(i, d, l T) bool { return i.(int) < 5 }).
 				Filter(func(i, d, l T) bool { return i.(int)%2 == 1 }).
 				Value()), "[1 3]")
@@ -74,5 +74,5 @@ func TestReverseConcatUnshiftPopMap(t *testing.T) {
 		Map(func(n, i, list T) T { return n.(int) * 2 }).
 		Value()
 	asserts.Equals(t, "can chain together array functions",
-		fmt.Sprintf("%v", numbers2), "[34 10 8 6 4 2 10 10]")
+		fmt.Sprint( numbers2), "[34 10 8 6 4 2 10 10]")
 }

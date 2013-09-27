@@ -9,47 +9,47 @@ import (
 
 func TestKeys(t *testing.T) {
 	data := Keys(map[T]T{"a": 1, "b": 4, "c": 6})
-	asserts.Equals(t, "keys of a map", "[a b c]", fmt.Sprintf("%v", data))
+	asserts.Equals(t, "keys of a map", "[a b c]", fmt.Sprint( data))
 
 	nodata := Keys(map[T]T{})
-	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprintf("%v", nodata))
+	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint( nodata))
 
 	var nildata map[T]T = nil
 	nilretval := Keys(nildata)
-	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprintf("%v", nilretval))
+	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint( nilretval))
 }
 
 func TestValues(t *testing.T) {
 	data := Values(map[T]T{"a": 1, "b": 4, "c": 6})
-	asserts.Equals(t, "values of a map", "[1 4 6]", fmt.Sprintf("%v", data))
+	asserts.Equals(t, "values of a map", "[1 4 6]", fmt.Sprint( data))
 
 	data2 := Values(map[T]T{"a": 1, "b": 1, "c": 6})
-	asserts.Equals(t, "values of a map", "[1 1 6]", fmt.Sprintf("%v", data2))
+	asserts.Equals(t, "values of a map", "[1 1 6]", fmt.Sprint( data2))
 
 	nodata := Values(map[T]T{})
-	asserts.Equals(t, "values of an empty map", "[]", fmt.Sprintf("%v", nodata))
+	asserts.Equals(t, "values of an empty map", "[]", fmt.Sprint( nodata))
 
 	var nildata map[T]T = nil
 	nilretval := Values(nildata)
-	asserts.Equals(t, "values of an empty map", "[]", fmt.Sprintf("%v", nilretval))
+	asserts.Equals(t, "values of an empty map", "[]", fmt.Sprint( nilretval))
 }
 
 func TestPairs(t *testing.T) {
 	asserts.Equals(t, "can convert an object into pairs",
-		fmt.Sprintf("%v", Pairs(map[T]T{"one": 1, "two": 2})),
-		fmt.Sprintf("%v", []T{[]T{"one", 1}, []T{"two", 2}}))
+		fmt.Sprint( Pairs(map[T]T{"one": 1, "two": 2})),
+		fmt.Sprint( []T{[]T{"one", 1}, []T{"two", 2}}))
 
 	asserts.Equals(t, "... even when one of them is length",
-		fmt.Sprintf("%v", Pairs(map[T]T{"one": 1, "two": 2, "length": 3})),
-		fmt.Sprintf("%v", []T{[]T{"one", 1}, []T{"two", 2}, []T{"length", 3}}))
+		fmt.Sprint( Pairs(map[T]T{"one": 1, "two": 2, "length": 3})),
+		fmt.Sprint( []T{[]T{"one", 1}, []T{"two", 2}, []T{"length", 3}}))
 
 }
 
 func TestInvert(t *testing.T) {
 	obj := map[T]T{"first": "Moe", "second": "Larry", "third": "Curly"}
-	asserts.Equals(t, "can invert an object", fmt.Sprintf("%v", Keys(Invert(obj))), "[Moe Larry Curly]")
+	asserts.Equals(t, "can invert an object", fmt.Sprint( Keys(Invert(obj))), "[Moe Larry Curly]")
 	asserts.Equals(t, "two inverts gets you back where you started",
-		fmt.Sprintf("%v", Invert(Invert(obj))), fmt.Sprintf("%v", obj))
+		fmt.Sprint( Invert(Invert(obj))), fmt.Sprint( obj))
 }
 
 func TestExtend(t *testing.T) {
@@ -65,15 +65,15 @@ func TestExtend(t *testing.T) {
 
 	result := Extend(map[T]T{"x": "x"}, map[T]T{"a": "a"}, map[T]T{"b": "b"})
 	asserts.Equals(t, "can extend from multiple source objects",
-		fmt.Sprintf("%v", result), fmt.Sprintf("%v", map[T]T{"x": "x", "a": "a", "b": "b"}))
+		fmt.Sprint( result), fmt.Sprint( map[T]T{"x": "x", "a": "a", "b": "b"}))
 
 	result2 := Extend(map[T]T{"x": "x"}, map[T]T{"a": "a", "x": 2}, map[T]T{"a": "b"})
 	asserts.Equals(t, "extending from multiple source objects last property trumps",
-		fmt.Sprintf("%v", result2), fmt.Sprintf("%v", map[T]T{"x": 2, "a": "b"}))
+		fmt.Sprint( result2), fmt.Sprint( map[T]T{"x": 2, "a": "b"}))
 
 	result3 := Extend(map[T]T{}, map[T]T{"a": 0, "b": nil})
 	asserts.Equals(t, "extend copies undefined values",
-		fmt.Sprintf("%v", Keys(result3)), "[a b]")
+		fmt.Sprint( Keys(result3)), "[a b]")
 
 	result4 := map[T]T{}
 	result5 := Extend(result4, nil, 0, map[T]T{"a": 1})
@@ -85,27 +85,27 @@ func TestExtend(t *testing.T) {
 func TestPick(t *testing.T) {
 	result := Pick(map[T]T{"a": 1, "b": 2, "c": 3}, "a", "c")
 	asserts.Equals(t, "can restrict properties to those named",
-		fmt.Sprintf("%v", result), fmt.Sprintf("%v", map[T]T{"a": 1, "c": 3}))
+		fmt.Sprint( result), fmt.Sprint( map[T]T{"a": 1, "c": 3}))
 
 	result2 := Pick(map[T]T{"a": 1, "b": 2, "c": 3}, []T{"b", "c"})
 	asserts.Equals(t, "can restrict properties to those named in an array",
-		fmt.Sprintf("%v", result2), fmt.Sprintf("%v", map[T]T{"b": 2, "c": 3}))
+		fmt.Sprint( result2), fmt.Sprint( map[T]T{"b": 2, "c": 3}))
 
 	result3 := Pick(map[T]T{"a": 1, "b": 2, "c": 3}, []T{"a"}, "b")
 	asserts.Equals(t, "can restrict properties to those named in mixed args",
-		fmt.Sprintf("%v", result3), fmt.Sprintf("%v", map[T]T{"a": 1, "b": 2}))
+		fmt.Sprint( result3), fmt.Sprint( map[T]T{"a": 1, "b": 2}))
 }
 
 func TestOmit(t *testing.T) {
 	result := Omit(map[T]T{"a": 1, "b": 2, "c": 3}, "b")
 	asserts.Equals(t, "can omit a single named property",
-		fmt.Sprintf("%v", result), fmt.Sprintf("%v", map[T]T{"a": 1, "c": 3}))
+		fmt.Sprint( result), fmt.Sprint( map[T]T{"a": 1, "c": 3}))
 	result2 := Omit(map[T]T{"a": 1, "b": 2, "c": 3}, "a", "c")
 	asserts.Equals(t, "can omit several named properties",
-		fmt.Sprintf("%v", result2), fmt.Sprintf("%v", map[T]T{"b": 2}))
+		fmt.Sprint( result2), fmt.Sprint( map[T]T{"b": 2}))
 	result3 := Omit(map[T]T{"a": 1, "b": 2, "c": 3}, []T{"b", "c"})
 	asserts.Equals(t, "can omit properties named in an array",
-		fmt.Sprintf("%v", result3), fmt.Sprintf("%v", map[T]T{"a": 1}))
+		fmt.Sprint( result3), fmt.Sprint( map[T]T{"a": 1}))
 }
 
 func TestDefaults(t *testing.T) {
@@ -150,9 +150,9 @@ func TestClone(t *testing.T) {
 
 	var cloneArray []T
 	cloneArray = Clone(moe["lucky"]).([]T)
-	asserts.Equals(t, "clone an array", fmt.Sprintf("%v", cloneArray), fmt.Sprintf("%v", moe["lucky"]))
+	asserts.Equals(t, "clone an array", fmt.Sprint( cloneArray), fmt.Sprint( moe["lucky"]))
 	cloneArray = append(cloneArray, 10101)
-	asserts.NotEquals(t, "clone an array is shallow?", fmt.Sprintf("%v", cloneArray), fmt.Sprintf("%v", moe["lucky"]))
+	asserts.NotEquals(t, "clone an array is shallow?", fmt.Sprint( cloneArray), fmt.Sprint( moe["lucky"]))
 }
 
 // TODO: missing TestIsEqual from objects.js

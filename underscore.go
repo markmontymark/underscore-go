@@ -1,9 +1,10 @@
-// ported from ...
+// ported from Underscore.js version 1.5.2, here's its copyright notice for attribution's sake
+//
 //     Underscore.js 1.5.2
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 //     Underscore may be freely distributed under the MIT license.
-
+//
 package underscore
 
 import (
@@ -13,31 +14,37 @@ import (
 	"sort"
 )
 
+// Custom type T is a shorthand for interface{} to save myself from RMI or carpal tunnel syndrome
 type T interface{}
 
+// An interface that provides a Value() for use by the Underscore custom type for stringifying its this.wrapped value
 type Valuer interface {
 	Value() T
 }
 
+// An Underscore custom type for OOP-style usage, as opposed to functional use.
+// OOP-style example: list:= []T{"i",10,5.3}; fmt.Sprint( New(list).Filter(       func(v T,b T,c T) bool { _,ok:=v.(int);return ok}) ) -> [5]
+// vs Functional    : list:= []T{"i",10,5.3}; fmt.Sprint(           Filter( list, func(v T,b T,c T) bool { _,ok:=v.(int);return ok} ) ) -> [5]
 type Underscore struct {
 	ischained bool
 	wrapped   T
 	Valuer
+	fmt.Stringer
 }
 
-//func (this *Underscore) String ()string{
-	//return fmt.Sprintf("%v",this.wrapped)
-//}
-
-type sortedMap struct {
-	value    T
-	index    T
-	criteria T
+// Stringifying when using OOP-style, ie fmt.Sprintf("%v",New([]{"i",1,2})) -> [i 1 2] 
+// will take whatever is wrapped and pass that to the %v fmt printf specifier
+func (this *Underscore) String ()string{
+	return fmt.Sprint(this.wrapped)
 }
+
+// Not just a Yeah Yeah Yeahs song, but also a shorthand for a list of maps
 type maps []map[T]T
 
+// Implement Len to allow maps custom type to be sortable with sort.Sort()
 func (this maps) Len() int { return len(this) }
 
+// Implement Len to allow maps custom type to be sortable with sort.Sort()
 //func (this maps) Less ( a , b int) bool { return this[a]["criteria"] < this[b]["criteria"] }
 func (this maps) Swap(a, b int) { this[a], this[b] = this[b], this[a] }
 
@@ -49,10 +56,16 @@ type eachlistiterator func(T, T, T) bool
 // Functions passed to Map need this signature
 type mapiterator func(T, T, T) T
 
-const EachContinue bool = false
-const EachBreak bool = true
+// private constant for use by Each function
+// returnning false from a function passed to Each means keep iterating
+const eachContinue bool = false
 
-// Create a safe reference to the Underscore object for use below.
+// private constant for use by Each function
+// returnning true from a function passed to Each means stop iterating
+const eachBreak bool = true
+
+// Create a eference to the Underscore object for use below.
+// whatever you passed to New() gets saved in a member variable, wrapped
 func New(obj ...T) *Underscore {
 	if obj != nil {
 		if _, ok := obj[0].(*Underscore); ok {
@@ -65,6 +78,7 @@ func New(obj ...T) *Underscore {
 	return new(Underscore)
 }
 
+// Mirroring the version we started porting from, 1.5.2
 const VERSION string = "1.5.2"
 
 // Collection Functions
@@ -72,7 +86,6 @@ const VERSION string = "1.5.2"
 
 // The cornerstone, an `each` implementation, aka `forEach`.
 // Handles objects and arrays
-
 func Each(elemslist_or_map T, iterator eachlistiterator) {
 	if elemslist_or_map == nil || IsEmpty(elemslist_or_map) {
 		return
@@ -80,28 +93,28 @@ func Each(elemslist_or_map T, iterator eachlistiterator) {
 
 	if IsArray(elemslist_or_map) {
 		for i, elem := range elemslist_or_map.([]T) {
-			if iterator(elem, i, elemslist_or_map.([]T)) == EachBreak {
+			if iterator(elem, i, elemslist_or_map.([]T)) == eachBreak {
 				return
 			}
 		}
 
 	} else if IsStringArray(elemslist_or_map) {
 		for i, elem := range elemslist_or_map.([]string) {
-			if iterator(elem, i, elemslist_or_map.([]string)) == EachBreak {
+			if iterator(elem, i, elemslist_or_map.([]string)) == eachBreak {
 				return
 			}
 		}
 
 	} else if IsArrayOfMaps(elemslist_or_map) {
 		for i, elem := range elemslist_or_map.([]map[T]T) {
-			if iterator(elem, i, elemslist_or_map.([]map[T]T)) == EachBreak {
+			if iterator(elem, i, elemslist_or_map.([]map[T]T)) == eachBreak {
 				return
 			}
 		}
 
 	} else if IsMap(elemslist_or_map) {
 		for k, v := range elemslist_or_map.(map[T]T) {
-			if iterator(v, k, elemslist_or_map.(map[T]T)) == EachBreak {
+			if iterator(v, k, elemslist_or_map.(map[T]T)) == eachBreak {
 				return
 			}
 		}
@@ -111,7 +124,8 @@ func Each(elemslist_or_map T, iterator eachlistiterator) {
 
 }
 
-// Return the results of applying the iterator to each element.
+// Return the results of applying an iterator to each element.
+// Aliased as Collect
 func Map(obj T, iterator func(T, T, T) T) []T {
 	results := make([]T, 0)
 	if obj == nil {
@@ -121,14 +135,16 @@ func Map(obj T, iterator func(T, T, T) T) []T {
 		if v := iterator(value, index, list); v != nil {
 			results = append(results, v)
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return results
 }
 
+// Return the results of applying an iterator to each element.
+// Aka Map
 var Collect func(obj T, iterator func(T, T, T) T) []T = Map
 
-func MapMap(obj []map[T]T, iterator func(T, T, T) map[T]T) []map[T]T {
+func mapMap(obj []map[T]T, iterator func(T, T, T) map[T]T) []map[T]T {
 	results := make([]map[T]T, 0)
 	if obj == nil {
 		return results
@@ -137,7 +153,7 @@ func MapMap(obj []map[T]T, iterator func(T, T, T) map[T]T) []map[T]T {
 		if v := iterator(value, index, list); v != nil {
 			results = append(results, v)
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return results
 }
@@ -150,15 +166,20 @@ func mapForSortBy(obj T, iterator func(T, T, T) map[T]T) []map[T]T {
 		if v := iterator(value, index, list); v != nil && v["criteria"] != nil {
 			results = append(results, v)
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return results
 }
 
+// Error message for Reduce function, which is returned if you end up calling Reduce like this:
+// Reduce( []T{},nil), which mirrors what Underscore.js did. I don't know -- I could see returning
+// an empty list or nil and not considering either an error at the library level, user-level could
+// deem []T{} or nil as "error" and do its own thing
 const ReduceError = "Reduce of empty array with no initial value"
 
-// **Reduce** builds up a single result from a list of values, aka `inject`,
-// or `foldl`.
+// **Reduce** builds up a single result from a list of values
+// Aliased as `Inject`
+// Aliased as `FoldL`
 func Reduce(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) {
 	initial := len(memo) > 0
 	if obj == nil {
@@ -171,7 +192,7 @@ func Reduce(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) {
 		} else {
 			memo[0] = iterator(memo[0], value, index, list)
 		}
-		return EachContinue
+		return eachContinue
 	})
 	if !initial {
 		return nil, ReduceError
@@ -179,10 +200,18 @@ func Reduce(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) {
 	return memo[0], ""
 }
 
+// **Inject** builds up a single result from a list of values
+// Aliased as `Reduce`
+// Aliased as `FoldL`
 var Inject func(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) = Reduce
+
+// **FoldL** builds up a single result from a list of values
+// Aliased as `Reduce`
+// Aliased as `Inject`
 var FoldL func(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) = Reduce
 
-// The right-associative version of reduce, also known as `foldr`.
+// The right-associative version of reduce
+// Aliased `FoldR`
 func ReduceRight(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) {
 	initial := len(memo) > 0
 	if obj == nil {
@@ -198,7 +227,7 @@ func ReduceRight(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) {
 		} else {
 			memo[0] = iterator(memo[0], list.([]T)[index.(int)], index, list)
 		}
-		return EachContinue
+		return eachContinue
 	})
 	if !initial {
 		return nil, ReduceError
@@ -206,26 +235,30 @@ func ReduceRight(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) {
 	return memo[0], ""
 }
 
+// The right-associative version of reduce
+// Aliased as `ReduceRight`
 var FoldR func(obj []T, iterator func(T, T, T, T) T, memo ...T) (T, string) = ReduceRight
 
 // Return the first value which passes a truth test.
-// Aliased as `detect`.
+// Aliased as `Detect`.
 func Find(obj []T, predicate func(T, T, T) bool) T {
 	var result T
 	Any(obj, func(value T, index T, list T) bool {
 		if predicate(value, index, list) {
 			result = value
-			return EachBreak
+			return eachBreak
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return result
 }
 
+// Return the first value which passes a truth test.
+// Aliased as `Find`
 var Detect func(obj []T, iterator func(T, T, T) bool) T = Find
 
 // Return all the elements that pass a truth test.
-// Aliased as `select`.
+// Aliased as `Select`.
 func Filter(obj []T, iterator eachlistiterator) []T {
 	results := make([]T, 0)
 	if obj == nil || len(obj) == 0 {
@@ -235,11 +268,13 @@ func Filter(obj []T, iterator eachlistiterator) []T {
 		if iterator(value, index, list) {
 			results = append(results, value)
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return results
 }
 
+// Return all the elements that pass a truth test.
+// Aliased as `Filter`.
 var Select func(obj []T, iterator eachlistiterator) []T = Filter
 
 // Return all the elements for which a truth test fails.
@@ -250,6 +285,7 @@ func Reject(obj []T, iterator eachlistiterator) []T {
 }
 
 // Determine whether all of the elements match a truth test.
+// Aliased as `All`
 func Every(obj T, opt_iterator ...eachlistiterator) bool {
 	var iterator eachlistiterator //func(T,int, []T)bool
 	if len(opt_iterator) == 0 {
@@ -264,17 +300,19 @@ func Every(obj T, opt_iterator ...eachlistiterator) bool {
 	Each(obj.([]T), func(value T, index T, list T) bool {
 		result = result && iterator(value, index, list)
 		if !result {
-			return EachBreak
+			return eachBreak
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return result
 }
 
+// Determine whether all of the elements match a truth test.
+// Aliased as `Every`
 var All func(obj T, opt_iterator ...eachlistiterator) bool = Every
 
 // Determine if at least one element in the object matches a truth test.
-// Aliased as `some`.
+// Aliased as `Some`.
 func Any(obj T, opt_predicate ...func(val, index, list T) bool) bool {
 	var predicate func(T, T, T) bool
 	if len(opt_predicate) == 0 {
@@ -289,21 +327,23 @@ func Any(obj T, opt_predicate ...func(val, index, list T) bool) bool {
 
 	Each(obj.([]T), func(val, index, list T) bool {
 		if anyresult {
-			return EachBreak
+			return eachBreak
 		}
 		anyresult = predicate(val, index, list)
 		if anyresult {
-			return EachBreak
+			return eachBreak
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return anyresult
 }
 
+// Determine if at least one element in the object matches a truth test.
+// Aliased as `Any`.
 var Some func(obj T, opt_predicate ...func(val, index, list T) bool) bool = Any
 
 // Determine if the array or object contains a given value (using `==`).
-// Aliased as `include`.
+// Aliased as `Include`.
 func Contains(obj T, target T, opt_comparator ...func(T, T) bool) bool {
 	if obj == nil {
 		return false
@@ -321,6 +361,8 @@ func Contains(obj T, target T, opt_comparator ...func(T, T) bool) bool {
 	})
 }
 
+// Determine if the array or object contains a given value (using `==`).
+// Aliased as `Contains`.
 var Include func(obj T, target T, opt_comparator ...func(T, T) bool) bool = Contains
 
 // Invoke a method (with arguments) on every item in a collection.
@@ -382,11 +424,12 @@ func FindWhere(obj []T, attrs map[T]T) T {
 	return Where(obj, attrs, true)
 }
 
-// Return the maximum element or (element-based computation).
-
+// Internal function for comparing ints
 func intLessThan(a T, b T) bool {
 	return a.(int) < b.(int)
 }
+
+// Return the maximum element or (element-based computation).
 func Max(lessThan func(T, T) bool, args ...T) T {
 	val := args[0]
 	for _, v := range args {
@@ -397,6 +440,7 @@ func Max(lessThan func(T, T) bool, args ...T) T {
 	return val
 }
 
+// Return the maximum element or (element-based computation), int-specific version
 func MaxInt(args ...int) int {
 	val := args[0]
 	for _, v := range args {
@@ -418,6 +462,7 @@ func Min(lessThan func(T, T) bool, args ...T) T {
 	return val
 }
 
+// Return the minimum element or (element-based computation), int-specific version
 func MinInt(args ...int) int {
 	val := args[0]
 	for _, v := range args {
@@ -439,7 +484,7 @@ func Shuffle(obj []T) []T {
 		index += 1
 		shuffled[index-1] = shuffled[rand]
 		shuffled[rand] = val
-		return EachContinue
+		return eachContinue
 	})
 	return shuffled
 }
@@ -500,22 +545,24 @@ func NewSorter(data, orderby T) *sorter {
 	return this
 }
 
+// A custom type, a list of maps and a (sort)by function, for use in SortBy
 type mapSorter struct {
 	maps []map[T]T
 	by   func(a, b *map[T]T) bool
 }
 
-// Len is part of sort.Interface.
+// Implementing Len for the sort.Interface
 func (s *mapSorter) Len() int {
 	return len(s.maps)
 }
 
-// Swap is part of sort.Interface.
+// Implementing Swap for the sort.Interface
 func (s *mapSorter) Swap(i, j int) {
 	s.maps[i], s.maps[j] = s.maps[j], s.maps[i]
 }
 
-// Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
+// Implementing Less for the sort.Interface
+// It is implemented by calling the "by" closure in the sorter.
 func (s *mapSorter) Less(i, j int) bool {
 	return s.by(&s.maps[i], &s.maps[j])
 }
@@ -524,7 +571,7 @@ func (s *mapSorter) Less(i, j int) bool {
 func SortBy(obj, value T, lessThan func(a, b *map[T]T) bool) []T {
 	iterator := lookupIterator(value)
 	mapped := &mapSorter{
-		MapMap(obj.([]map[T]T), func(value, index, list T) map[T]T {
+		mapMap(obj.([]map[T]T), func(value, index, list T) map[T]T {
 			if value == nil {
 				return nil
 			}
@@ -535,7 +582,6 @@ func SortBy(obj, value T, lessThan func(a, b *map[T]T) bool) []T {
 			}
 		}),
 		lessThan,
-		//return lessThan(a["criteria"],b["criteria"])
 	}
 	sort.Sort(mapped)
 	return Pluck(mapped.maps, "value")
@@ -571,7 +617,7 @@ func group(behavior func(result map[T]T, k T, v T)) func(o T, v T) map[T]T {
 			key := iterator(value, index, obj)
 			//_,ok := result[key]
 			behavior(result, key, value)
-			return EachContinue
+			return eachContinue
 		})
 		return result
 	}
@@ -827,7 +873,7 @@ func flatten(input T, shallow bool, output []T) []T {
 			//fmt.Printf("is not array %v output before: %v\n",value, output)
 			output = append(output, value)
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return output
 }
@@ -915,7 +961,7 @@ func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
 				seen = append(seen, value)
 				results = append(results, array[index.(int)])
 			}
-			return EachContinue
+			return eachContinue
 		})
 	}
 	if isAM {
@@ -929,7 +975,7 @@ func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
 				seen = append(seen, value)
 				results = append(results, value)
 			}
-			return EachContinue
+			return eachContinue
 		})
 	}
 	return results
@@ -1274,12 +1320,12 @@ func Invert(obj map[T]T) map[T]T {
 func Extend(objToExtend map[T]T, args ...T) map[T]T {
 	Each(args, func(objToCopy, key, list T) bool {
 		if !IsMap(objToCopy) {
-			return EachContinue
+			return eachContinue
 		}
 		for k, v := range objToCopy.(map[T]T) {
 			objToExtend[k] = v
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return objToExtend
 }
@@ -1297,7 +1343,7 @@ func Pick(obj map[T]T, keysToKeep ...T) map[T]T {
 		} else if v, ok := obj[keyToKeep]; ok {
 			copy[keyToKeep] = v
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return copy
 }
@@ -1318,14 +1364,14 @@ func Omit(obj map[T]T, keysToRemove ...T) map[T]T {
 func Defaults(obj map[T]T, args ...T) map[T]T {
 	Each(args, func(val, idx, list T) bool {
 		if !IsMap(val) {
-			return EachContinue
+			return eachContinue
 		}
 		for k, v := range val.(map[T]T) {
 			if _, ok := obj[k]; !ok {
 				obj[k] = v
 			}
 		}
-		return EachContinue
+		return eachContinue
 	})
 	return obj
 }
@@ -1555,12 +1601,7 @@ func (this *Underscore) RandomFloat64(min float64, optmax ...float64) float64 {
 	return RandomFloat64(min, optmax...)
 }
 
-// Helper function to continue chaining intermediate results.
-//func result(obj T) T {
-	//return New(obj).Chain()
-//}
-
-// OOP-style Underscore
+// OOP-style funcs for Underscore
 
 func (this *Underscore) Map(iterator func(T, T, T) T) (*Underscore) {
 	return this.result( Map(this.wrapped, iterator))
@@ -1586,6 +1627,10 @@ func (this *Underscore) Select(iterator eachlistiterator) (*Underscore) {
 
 func (this *Underscore) Reject(iterator eachlistiterator) (*Underscore) {
 	return this.result( Reject(this.wrapped.([]T), iterator))
+}
+
+func (this *Underscore) SortBy(value T, orderby func(a, b *map[T]T) bool) (*Underscore) {
+	return this.result( SortBy(this.wrapped, value, orderby))
 }
 
 func (this *Underscore) SortBySorter(value T, orderby func(a, b *map[T]T) bool) (*Underscore) {
@@ -1717,10 +1762,6 @@ func (this *Underscore) Keys() (*Underscore) {
 func (this *Underscore) Last(opt_n ...int) (*Underscore) {
 	v, _ := this.wrapped.([]T)
 	return this.result( Last(v, opt_n...))
-}
-
-func (this *Underscore) MapMap(iterator func(T, T, T) map[T]T) (*Underscore) {
-	return this.result( MapMap(this.wrapped.([]map[T]T), iterator))
 }
 
 func (this *Underscore) MaxInt() (*Underscore) {

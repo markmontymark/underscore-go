@@ -22,19 +22,19 @@ func init() {
 func TestPartial(t *testing.T) {
 
 	funk := func(args ...T) T {
-		return fmt.Sprintf("%v", args)
+		return fmt.Sprint( args)
 	}
 
 	passAB := Partial(funk, "a", "b")
 
 	asserts.Equals(t, "can partially apply",
-		fmt.Sprintf("%v", passAB("c", "d")), "[a b c d]")
+		fmt.Sprint( passAB("c", "d")), "[a b c d]")
 
 	asserts.Equals(t, "can partially apply",
-		fmt.Sprintf("%v", passAB("e", "f")), "[a b e f]")
+		fmt.Sprint( passAB("e", "f")), "[a b e f]")
 
 	asserts.Equals(t, "can partially apply",
-		fmt.Sprintf("%v", passAB("1", 2)), "[a b 1 2]")
+		fmt.Sprint( passAB("1", 2)), "[a b 1 2]")
 }
 
 // XXX: missing bindAll - wont add
@@ -106,7 +106,7 @@ func TestWrap(t *testing.T) {
 	ret := wrapped([]T{"whats", "your"}, "vector", "victor")
 	_, ok := ret.([]T)[0].(func(...T) T)
 	asserts.True(t, "noop test first arg is a func", ok)
-	asserts.Equals(t, "noop test, rest of args", fmt.Sprintf("%v", ret.([]T)[1:]),
+	asserts.Equals(t, "noop test, rest of args", fmt.Sprint( ret.([]T)[1:]),
 		"[[whats your] vector victor]")
 }
 
