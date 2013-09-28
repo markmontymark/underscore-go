@@ -538,7 +538,7 @@ func (s *sorter) Less(i, j int) bool {
 	return s.orderby(&s.list[i], &s.list[j])
 }
 
-func NewSorter(data, orderby T) *sorter {
+func newSorter(data, orderby T) *sorter {
 	this := new(sorter)
 	this.list = data.([]map[T]T)
 	this.orderby = orderby.(func(a, b *map[T]T) bool)
@@ -597,7 +597,7 @@ func SortBySorter(obj, value T, orderby func(a, b *map[T]T) bool) []T {
 			"criteria": iterator(value, index, list),
 		}
 	})
-	ss := NewSorter(mapped, orderby)
+	ss := newSorter(mapped, orderby)
 	sort.Sort(ss)
 	return Pluck(ss.list, "value")
 }
@@ -753,9 +753,10 @@ func Size(obj T) int {
 
 // Array Functions
 
-// Get the first element of an array. Passing **n** will return the first N
-// values in the array. Aliased as `head` and `take`. The **guard** check
-// allows it to work with `_.map`.
+// Get the first n element(s) of an array. Passing **n** will return the first N
+// values in the array. 
+// Aliased as HeadN
+// Aliased as TakeN
 func FirstN(array []T, n int, opt_guard ...bool) []T {
 	if array == nil {
 		return nil
@@ -776,9 +777,22 @@ func FirstN(array []T, n int, opt_guard ...bool) []T {
 	}
 }
 
+// Get the first n element(s) of an array. Passing **n** will return the first N
+// values in the array. 
+// Aliased as FirstN
+// Aliased as TakeN
 var HeadN func(array []T, n int, opt_guard ...bool) []T = FirstN
+
+// Get the first n element(s) of an array. Passing **n** will return the first N
+// values in the array. 
+// Aliased as FirstN
+// Aliased as HeadN
 var TakeN func(array []T, n int, opt_guard ...bool) []T = FirstN
 
+// Get the first element of an array. Passing **n** will return the first N
+// values in the array. 
+// Aliased as Head
+// Aliased as Take
 func First(array []T) T {
 	if array == nil {
 		return nil
@@ -786,13 +800,21 @@ func First(array []T) T {
 	return array[0]
 }
 
+// Get the first element of an array. Passing **n** will return the first N
+// values in the array. 
+// Aliased as First
+// Aliased as Take
 var Head func(array []T) T = First
+
+// Get the first element of an array. Passing **n** will return the first N
+// values in the array. 
+// Aliased as First
+// Aliased as Head
 var Take func(array []T) T = First
 
 // Returns everything but the last entry of the array.
 // Passing **n** will return all the values in
 // the array, excluding the last N.
-
 func Initial(array []T, opt_n ...int) []T {
 	if array == nil {
 		return nil
@@ -831,6 +853,8 @@ func Last(array []T, opt_n ...int) []T {
 // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
 // Especially useful on the arguments object. Passing an **n** will return
 // the rest N values in the array.
+// Aliased as Tail
+// Aliased as Drop
 func Rest(array []T) []T {
 	if array == nil {
 		return nil
@@ -840,7 +864,18 @@ func Rest(array []T) []T {
 	return dst
 }
 
+// Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
+// Especially useful on the arguments object. Passing an **n** will return
+// the rest N values in the array.
+// Aliased as Rest
+// Aliased as Drop
 var Tail func(array []T) []T = Rest
+
+// Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
+// Especially useful on the arguments object. Passing an **n** will return
+// the rest N values in the array.
+// Aliased as Rest
+// Aliased as Tail
 var Drop func(array []T) []T = Rest
 
 // Trim out all falsy values from an array.
@@ -912,7 +947,7 @@ func Without(toRemove []T, opt_from ...T) []T {
 
 // Produce a duplicate-free version of the array. If the array has already
 // been sorted, you have the option of using a faster algorithm.
-// Aliased as `unique`.
+// Aliased as `Unique`.
 func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
 	var array []T
 	var arrayofmaps []map[T]T
@@ -981,6 +1016,9 @@ func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
 	return results
 }
 
+// Produce a duplicate-free version of the array. If the array has already
+// been sorted, you have the option of using a faster algorithm.
+// Aliased as `Uniq`.
 var Unique func(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T = Uniq
 
 // Produce an array that contains the union: each distinct element from all of
@@ -1603,41 +1641,99 @@ func (this *Underscore) RandomFloat64(min float64, optmax ...float64) float64 {
 
 // OOP-style funcs for Underscore
 
-func (this *Underscore) Map(iterator func(T, T, T) T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Every
+// Aliased as Every
+func (this *Underscore) All(obj T, opt_iterator ...eachlistiterator) *Underscore {
+	return this.result( Every(this.wrapped, opt_iterator...))
+}
+
+// OOP-style support, add method to *Underscore, see func Any
+// Aliased as Some
+func (this *Underscore) Any(opt_predicate ...func(val, index, list T) bool) *Underscore {
+	return this.result( Any(this.wrapped,opt_predicate...))
+}
+
+// OOP-style support, add method to *Underscore, see func Contains
+// Aliased as Include
+func (this *Underscore) Contains(target T, opt_comparator ...func(T, T) bool) *Underscore {
+	return this.result( Contains(this.wrapped, target, opt_comparator...))
+}
+
+// OOP-style support, add method to *Underscore, see func Map
+func (this *Underscore) Map(iterator func(T, T, T) T) *Underscore {
 	return this.result( Map(this.wrapped, iterator))
 }
 
-func (this *Underscore) Flatten(opt_shallow ...bool) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Collect
+func (this *Underscore) Collect(iterator func(T, T, T) T) *Underscore {
+	return this.result( Collect(this.wrapped, iterator))
+}
+
+// OOP-style support, add method to *Underscore, see func Flatten
+func (this *Underscore) Flatten(opt_shallow ...bool) *Underscore {
 	return this.result( Flatten(this.wrapped.([]T), opt_shallow...))
 }
 
-func (this *Underscore) Reduce(iterator func(T, T, T, T) T, memo ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Reduce
+func (this *Underscore) Reduce(iterator func(T, T, T, T) T, memo ...T) *Underscore {
 	v,_ := Reduce(this.wrapped.([]T), iterator, memo...)
 	return this.result( v )
 }
 
-func (this *Underscore) Filter(iterator eachlistiterator) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Inject
+func (this *Underscore) Inject(iterator func(T, T, T, T) T, memo ...T) *Underscore {
+	v,_ := Inject(this.wrapped.([]T), iterator, memo...)
+	return this.result( v )
+}
+
+// OOP-style support, add method to *Underscore, see func FoldL
+func (this *Underscore) FoldL(iterator func(T, T, T, T) T, memo ...T) *Underscore {
+	v,_ := FoldL(this.wrapped.([]T), iterator, memo...)
+	return this.result( v )
+}
+
+
+// OOP-style support, add method to *Underscore, see func ReduceRight
+func (this *Underscore) ReduceRight(iterator func(T, T, T, T) T, memo ...T) *Underscore {
+	v,_ := ReduceRight(this.wrapped.([]T), iterator, memo...)
+	return this.result( v )
+}
+
+// OOP-style support, add method to *Underscore, see func FoldR
+func (this *Underscore) FoldR(iterator func(T, T, T, T) T, memo ...T) *Underscore {
+	v,_ := FoldR(this.wrapped.([]T), iterator, memo...)
+	return this.result( v )
+}
+
+// OOP-style support, add method to *Underscore, see func Filter
+// Aliased as Select
+func (this *Underscore) Filter(iterator eachlistiterator) *Underscore {
 	return this.result( Filter(this.wrapped.([]T), iterator))
 }
 
-// Select is an alias for Filter
-func (this *Underscore) Select(iterator eachlistiterator) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Select
+// Aliased as Filter
+func (this *Underscore) Select(iterator eachlistiterator) *Underscore {
 	return this.result( Filter(this.wrapped.([]T), iterator))
 }
 
-func (this *Underscore) Reject(iterator eachlistiterator) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Reject
+func (this *Underscore) Reject(iterator eachlistiterator) *Underscore {
 	return this.result( Reject(this.wrapped.([]T), iterator))
 }
 
-func (this *Underscore) SortBy(value T, orderby func(a, b *map[T]T) bool) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func SortBy
+func (this *Underscore) SortBy(value T, orderby func(a, b *map[T]T) bool) *Underscore {
 	return this.result( SortBy(this.wrapped, value, orderby))
 }
 
-func (this *Underscore) SortBySorter(value T, orderby func(a, b *map[T]T) bool) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func SortBySorter
+func (this *Underscore) SortBySorter(value T, orderby func(a, b *map[T]T) bool) *Underscore {
 	return this.result( SortBySorter(this.wrapped, value, orderby))
 }
 
-func (this *Underscore) Reverse() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Reverse
+func (this *Underscore) Reverse() *Underscore {
 	a := make([]T, len(this.wrapped.([]T)))
 	copy(a, this.wrapped.([]T))
 	for i, j := 0, len(a)-1; i < j; i, j = i+1, j-1 {
@@ -1646,186 +1742,366 @@ func (this *Underscore) Reverse() (*Underscore) {
 	return this.result( a)
 }
 
-func (this *Underscore) Concat(array []T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Concat
+func (this *Underscore) Concat(array []T) *Underscore {
 	a := append(this.wrapped.([]T), array...)
 	return this.result( a)
 }
 
-func (this *Underscore) Unshift(elems ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Difference 
+func (this *Underscore) Difference(comparator func(T, T) bool, opt_from ...[]T) *Underscore {
+	return this.result( Difference( this.wrapped.([]T), comparator, opt_from...))
+}
+
+// OOP-style support, add method to *Underscore, see func Drop
+// Aliased as Rest
+// Aliased as Tail
+func (this *Underscore) Drop() *Underscore {
+	return this.result( Rest(this.wrapped.([]T)))
+}
+
+// OOP-style support, add method to *Underscore, see func Unshift
+func (this *Underscore) Unshift(elems ...T) *Underscore {
 	for _, v := range this.wrapped.([]T) {
 		elems = append(elems, v)
 	}
 	return this.result( elems)
 }
 
-func (this *Underscore) Shift() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Shift
+func (this *Underscore) Shift() *Underscore {
 	a, _ := this.wrapped.([]T)
 	return this.result( a[0])
 }
 
-func (this *Underscore) Pop() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Pop
+func (this *Underscore) Pop() *Underscore {
 	a, _ := this.wrapped.([]T)
 	retval := a[:len(a)-1]
 	return this.result( retval)
 }
 
-func (this *Underscore) Clone() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Clone
+func (this *Underscore) Clone() *Underscore {
 	return this.result( Clone(this.wrapped))
 }
 
-func (this *Underscore) Compact() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Compacts
+func (this *Underscore) Compact() *Underscore {
 	v, _ := this.wrapped.([]T)
 	return this.result( Compact(v))
 }
 
-func (this *Underscore) Defaults(args ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Defaults
+func (this *Underscore) Defaults(args ...T) *Underscore {
 	v, _ := this.wrapped.(map[T]T)
 	return this.result( Defaults(v, args...))
 }
 
-func (this *Underscore) Each(iterator eachlistiterator) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Each
+func (this *Underscore) Each(iterator eachlistiterator) *Underscore {
 	Each(this.wrapped, iterator)
 	return this
 }
 
-func (this *Underscore) Extend(args ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func GroupBy
+func (this *Underscore) GroupBy (fn func( v T)map[T]T ) *Underscore {
+	GroupBy(this.wrapped, fn)
+	return this
+}
+
+// OOP-style support, add method to *Underscore, see func IndexBy
+func (this *Underscore) IndexBy (fn func( v T)map[T]T ) *Underscore {
+	IndexBy(this.wrapped, fn)
+	return this
+}
+
+// OOP-style support, add method to *Underscore, see func CountBy
+func (this *Underscore) CountBy (fn func( v T)map[T]T ) *Underscore {
+	CountBy(this.wrapped, fn)
+	return this
+}
+
+
+// OOP-style support, add method to *Underscore, see func Every
+// Aliased as All
+func (this *Underscore) Every(obj T, opt_iterator ...eachlistiterator) *Underscore {
+	return this.result( Every(this.wrapped, opt_iterator...))
+}
+
+// OOP-style support, add method to *Underscore, see func Extend
+func (this *Underscore) Extend(args ...T) *Underscore {
 	v, _ := this.wrapped.(map[T]T)
 	return this.result( Extend(v, args...))
 }
 
-func (this *Underscore) FindWhere(attrs map[T]T) (*Underscore) {
+
+// OOP-style support, add method to *Underscore, see func Detect
+// Aliased as Find
+func (this *Underscore) Detect(predicate func(T, T, T) bool) *Underscore {
+	v, _ := this.wrapped.([]T)
+	return this.result( Detect(v, predicate))
+}
+
+// OOP-style support, add method to *Underscore, see func Find
+// Aliased as Detect
+func (this *Underscore) Find(predicate func(T, T, T) bool) *Underscore {
+	v, _ := this.wrapped.([]T)
+	return this.result( Find(v, predicate))
+}
+
+// OOP-style support, add method to *Underscore, see func FindWhere
+func (this *Underscore) FindWhere(attrs map[T]T) *Underscore {
 	v, _ := this.wrapped.([]T)
 	return this.result( FindWhere(v, attrs))
 }
 
-func (this *Underscore) First() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func First
+// Aliased as Head
+// Aliased as Take
+func (this *Underscore) First() *Underscore {
 	v, _ := this.wrapped.([]T)
 	return this.result( First(v))
 }
 
-func (this *Underscore) Initial(opt_n ...int) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Head
+// Aliased as First
+// Aliased as Take
+func (this *Underscore) Head() *Underscore {
+	v, _ := this.wrapped.([]T)
+	return this.result( First(v))
+}
+
+// OOP-style support, add method to *Underscore, see func Take
+// Aliased as First
+// Aliased as Head
+func (this *Underscore) Take() *Underscore {
+	v, _ := this.wrapped.([]T)
+	return this.result( First(v))
+}
+
+// OOP-style support, add method to *Underscore, see func FirstN
+// Aliased as HeadN
+// Aliased as TakeN
+func (this *Underscore) FirstN(n int, opt_guard ...bool) *Underscore {
+	v, _ := this.wrapped.([]T)
+	return this.result( FirstN(v,n,opt_guard...))
+}
+
+// OOP-style support, add method to *Underscore, see func HeadN
+// Aliased as FirstN
+// Aliased as TakeN
+func (this *Underscore) HeadN(n int, opt_guard ...bool) *Underscore {
+	v, _ := this.wrapped.([]T)
+	return this.result( FirstN(v,n,opt_guard...))
+}
+
+// OOP-style support, add method to *Underscore, see func Contains
+// Aliased as Contains
+func (this *Underscore) Include(target T, opt_comparator ...func(T, T) bool) *Underscore {
+	return this.result( Contains(this.wrapped, target, opt_comparator...))
+}
+
+// OOP-style support, add method to *Underscore, see func IndexOf
+func (this *Underscore) IndexOf(item T, lessThan func(T, T) bool, isSorted ...bool) *Underscore {
+	return this.result( IndexOf( this.wrapped.([]T), item, lessThan, isSorted...))
+}
+
+// OOP-style support, add method to *Underscore, see func Initial
+func (this *Underscore) Initial(opt_n ...int) *Underscore {
 	v, _ := this.wrapped.([]T)
 	return this.result( Initial(v, opt_n...))
 }
 
-func (this *Underscore) Intersection(lessThan func(T, T) bool, opt_array ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Intersection
+func (this *Underscore) Intersection(lessThan func(T, T) bool, opt_array ...T) *Underscore {
 	v, _ := this.wrapped.([]T)
 	return this.result( Intersection(lessThan, append(v, opt_array...)))
 }
 
-func (this *Underscore) Invert() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Invert
+func (this *Underscore) Invert() *Underscore {
 	v, _ := this.wrapped.(map[T]T)
 	return this.result( Invert(v))
 }
 
-func (this *Underscore) Invoke(method func(this T, thisArgs ...T) T, args ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Invoke
+func (this *Underscore) Invoke(method func(this T, thisArgs ...T) T, args ...T) *Underscore {
 	return this.result( Invoke(this.wrapped, method, args...))
 }
 
-func (this *Underscore) IsFunction() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func IsFunction
+func (this *Underscore) IsFunction() *Underscore {
 	return this.result( IsFunction(this.wrapped))
 }
 
-func (this *Underscore) IsFunctionVariadic() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func IsFunctionVariadic
+func (this *Underscore) IsFunctionVariadic() *Underscore {
 	return this.result( IsFunctionVariadic(this.wrapped))
 }
 
-// Is a given value an array?
-func (this *Underscore) IsArray() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func IsArray
+func (this *Underscore) IsArray() *Underscore {
 	return this.result( IsArray(this.wrapped))
 }
 
-// Is a given value an array?
-func (this *Underscore) IsArrayOfMaps() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func IsArrayOfMaps
+func (this *Underscore) IsArrayOfMaps() *Underscore {
 	return this.result( IsArrayOfMaps(this.wrapped))
 }
 
-// Is a given variable a map
-func (this *Underscore) IsMap() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func IsMap
+func (this *Underscore) IsMap() *Underscore {
 	return this.result( IsMap(this.wrapped))
 }
 
-func (this *Underscore) IsString() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func IsString
+func (this *Underscore) IsString() *Underscore {
 	return this.result( IsString(this.wrapped))
 }
 
-// Is a given value an array?
-func (this *Underscore) IsStringArray() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func IsStringArray
+func (this *Underscore) IsStringArray() *Underscore {
 	return this.result( IsStringArray(this.wrapped))
 }
 
-func (this *Underscore) Keys() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Keys
+func (this *Underscore) Keys() *Underscore {
 	v, _ := this.wrapped.(map[T]T)
 	return this.result( Keys(v))
 }
 
-func (this *Underscore) Last(opt_n ...int) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Last
+func (this *Underscore) Last(opt_n ...int) *Underscore {
 	v, _ := this.wrapped.([]T)
 	return this.result( Last(v, opt_n...))
 }
 
-func (this *Underscore) MaxInt() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func IndexOf
+func (this *Underscore) LastIndexOf(item T, from ...int) *Underscore {
+	return this.result(  LastIndexOf( this.wrapped.([]T), item, from...))
+}
+
+// OOP-style support, add method to *Underscore, see func MaxInt
+func (this *Underscore) MaxInt() *Underscore {
 	return this.result( MaxInt(this.wrapped.([]int)...))
 }
 
-func (this *Underscore) Min(lessThan func(T, T) bool) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Min
+func (this *Underscore) Min(lessThan func(T, T) bool) *Underscore {
 	return this.result( Min(lessThan, this.wrapped.([]T)...))
 }
 
-func (this *Underscore) MinInt() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func MinInt
+func (this *Underscore) MinInt() *Underscore {
 	return this.result( MinInt(this.wrapped.([]int)...))
 }
 
-func (this *Underscore) Object() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Object
+func (this *Underscore) Object() *Underscore {
 	return this.result( Object(this.wrapped.([]T)))
 }
 
-func (this *Underscore) Omit(keysToRemove ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Omit
+func (this *Underscore) Omit(keysToRemove ...T) *Underscore {
 	return this.result( Omit(this.wrapped.(map[T]T), keysToRemove...))
 }
 
-func (this *Underscore) Pairs() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Pairs
+func (this *Underscore) Pairs() *Underscore {
 	return this.result( Pairs(this.wrapped.(map[T]T)))
 }
 
-func (this *Underscore) Pick(keysToKeep ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Pick
+func (this *Underscore) Pick(keysToKeep ...T) *Underscore {
 	return this.result( Pick(this.wrapped.(map[T]T), keysToKeep...))
 }
 
-func (this *Underscore) Pluck(targetvalue T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Pluck
+func (this *Underscore) Pluck(targetvalue T) *Underscore {
 	return this.result( Pluck(this.wrapped, targetvalue))
 }
 
-func (this *Underscore) Sample(opt_n ...int) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Rest
+// Aliased as Tail
+// Aliased as Drop
+func (this *Underscore) Rest() *Underscore {
+	return this.result( Rest(this.wrapped.([]T)))
+}
+
+// OOP-style support, add method to *Underscore, see func Sample
+func (this *Underscore) Sample(opt_n ...int) *Underscore {
 	return this.result( Sample(this.wrapped, opt_n...))
 }
 
-func (this *Underscore) Shuffle() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Shuffle
+func (this *Underscore) Shuffle() *Underscore {
 	return this.result( Shuffle(this.wrapped.([]T)))
 }
 
-func (this *Underscore) Size() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Size
+func (this *Underscore) Size() *Underscore {
 	return this.result( Size(this.wrapped))
 }
 
-func (this *Underscore) ToArray() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Some
+// Aliased as Any
+func (this *Underscore) Some (opt_predicate ...func(val, index, list T) bool) *Underscore {
+	return this.result( Any(this.wrapped,opt_predicate...))
+}
+
+// OOP-style support, add method to *Underscore, see func Rest
+// Aliased as Tail
+// Aliased as Drop
+func (this *Underscore) Tail() *Underscore {
+	return this.result( Rest(this.wrapped.([]T)))
+}
+
+// OOP-style support, add method to *Underscore, see func ToArray
+func (this *Underscore) ToArray() *Underscore {
 	return this.result( ToArray(this.wrapped))
 }
 
-func (this *Underscore) Uniq(isSorted T /*bool or func*/, opt_iterator ...T) (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Union
+func (this *Underscore) Union(opt_array ...T) *Underscore {
+	args := this.wrapped.([]T)
+	return this.result( Union( append(args,opt_array...) ))
+}
+
+// OOP-style support, add method to *Underscore, see func Uniq
+// Aliased as Unique
+func (this *Underscore) Uniq(isSorted T /*bool or func*/, opt_iterator ...T) *Underscore {
 	return this.result(Uniq(this.wrapped, isSorted, opt_iterator))
 }
 
-func (this *Underscore) Values() (*Underscore) {
+// OOP-style support, add method to *Underscore, see func Unique
+// Aliased as Uniq
+func (this *Underscore) Unique(isSorted T /*bool or func*/, opt_iterator ...T) *Underscore {
+	return this.result(Unique(this.wrapped, isSorted, opt_iterator))
+}
+
+// OOP-style support, add method to *Underscore, see func Values
+func (this *Underscore) Values() *Underscore {
 	return this.result(Values(this.wrapped.(map[T]T)))
 }
 
+// OOP-style support, add method to *Underscore, see func Without
+func (this *Underscore) Without(opt_from ...T) *Underscore {
+	return this.result( Without(this.wrapped.([]T), opt_from...) )
+}
+
+// OOP-style support, add method to *Underscore, see func Where
 func (this *Underscore) Where(attrs map[T]T, optReturnFirstFound ...bool) *Underscore {
 	return this.result( Where(this.wrapped.([]T),attrs, optReturnFirstFound...))
 }
 
+// OOP-style support, add method to *Underscore, see func Zip
+func (this *Underscore) Zip() *Underscore {
+	return this.result( Zip( this.wrapped.([]T) ))
+}
+
 // Helper function to continue chaining intermediate results.
-func (this *Underscore) result(obj T) (*Underscore) {
+func (this *Underscore) result(obj T) *Underscore {
 	if this.ischained {
 		return New(obj).Chain()
 	}
