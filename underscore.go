@@ -978,10 +978,8 @@ func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
 		} else if isAM {
 			initialA = Map(arrayofmaps, iterator)
 		}
-	} else {
-		if isA {
-			initialA = array
-		}
+	} else if isA {
+		initialA = array
 	}
 	results := make([]T, 0)
 	seen := make([]T, 0)
