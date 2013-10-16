@@ -1,0 +1,113 @@
+by							 	func						(a,b *map[T]T) bool
+comparator = opt_iterator[0].(func(T,T)bool)
+comparator = opt_iterator[1].(func(T,T)bool)
+func 							After 					(times int, fn func(...T)T) func(...T)T {
+func 							Any 						(obj T, opt_predicate ...func(val T,index T, list T)bool ) bool {
+func 							Clone						(obj T ) T {
+func 							Compact					(array []T) []T {
+func 							Compose 					(funcs ...T) func(...T)T {
+func 							Contains 				(obj T, target T, opt_comparator ...func(T,T)bool) bool {
+func 							Defaults					(obj map[T]T , args ...T) map[T]T {
+func 							Difference 				(toRemove []T, opt_from ...[]T) []T {
+func 							Each						(elemslist_or_map T, iterator eachlistiterator ) {
+func 							Every 					(obj T, opt_iterator ...eachlistiterator ) bool {
+func 							Extend					(objToExtend map[T]T, args ...T) map[T]T {
+func 							Filter 					(obj []T, iterator eachlistiterator ) []T {
+func 							Find 						(obj []T, predicate func(T,T,T) bool ) T {
+func 							FindWhere				(obj []T, attrs map[T]T) T {
+func 							First						(array []T) T {
+func 							FirstN 					(array []T, n int, opt_guard ...bool) []T {
+func 							Flatten 					(array []T, opt_shallow ...bool) []T {
+func 							flatten					(input []T, shallow bool, output []T) []T {
+func 							group (behavior 		func( result map[T]T, k T, v T)  ) func(o T,v T) map[T]T {
+func 							Has 						(obj, key T) bool {
+func 							IdentityEach 			(val,index,list T ) bool {
+func 							identityHasher 		(val ...T ) T {
+func 							IdentityIsTruthy		(val,index,list T ) bool {
+func 							IdentityMap 			(val,index,list T ) map[T]T {
+func 							Identity 				(val,index,list T ) T {
+func 							IndexOf 					(array []T, item T, lessThan func(T,T) bool, isSorted ...bool) int {
+func 							Initial					(array []T , opt_n ...int) []T {
+func 							Intersection			(lessThan func(T,T)bool,opt_array ...T) []T {
+func 							intLessThan				(a T,b T) bool {
+func 							Invert					(obj map[T]T) map[T]T {
+func 							Invoke					(obj T, method func( this T, thisArgs ...T) T, args ...T ) []T {
+func 							IsArrayEach 			(obj T, idx T, list T) bool {
+func 							IsArray 					(obj T) bool {
+func 							IsArrayOfMaps 			(obj T) bool {
+func 							IsEmpty 					(obj T) bool {
+func 							IsFunction				(obj T) bool {
+func 							IsFunctionVariadic	(obj T) bool {
+func 							IsMap 					(obj T) bool {
+func 							IsString 				(obj T) bool {
+func 							Keys						(obj map[T]T) []T {
+func 							Last						(array []T , opt_n ...int) []T {
+func 							LastIndexOf 			(array []T, item T, from ...int) int {
+func 							lookupIterator 		(value T) func(obj , idx , list T) T {
+func 							mapForSortBy			(obj T, iterator func(T,T,T) map[T]T) []map[T]T {
+func 							MapMap					(obj []map[T]T, iterator func(T,T,T) map[T]T) []map[T]T {
+func 							Map						(obj T, iterator func(T,T,T) T) []T {
+func 							MaxInt					(args ...int) int {
+func 							Max						(lessThan func(T,T)bool, args ...T) T {
+func 							Memoize 					(fn func(...T) T, opt_hasher ...func(...T) T ) func(...T) T {
+func 							MinInt					(args ...int) int {
+func 							Min						(lessThan func(T,T)bool, args ...T) T {
+func 							New						(obj ...T) *Underscore {
+func 							NewSorter				(data, orderby T) *sorter {
+func 							Object					(pairs_or_two_arrays ...[]T ) map[T]T {
+func 							Omit						(obj map[T]T, keysToRemove ...T) map[T]T {
+func 							Once 						(fn func(...T) T ) func(...T) T {
+func 							Pairs 					(obj map[T]T) []T {
+func 							Partial 					(fn func(...T) T , savedArgs ...T) func(...T) T {
+func 							Pick 						(obj map[T]T, keysToKeep ...T) map[T]T {
+func 							Pluck						(obj T, targetvalue T) []T {
+func 							RandomFloat64 			(min float64,optmax ...float64) float64 {
+func 							Random 					(min int,optmax ...int) int {
+func 							Range 					(start_stop_and_step ...int) []T {
+func 							Reduce 					(obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) {
+func 							ReduceRight 			(obj []T, iterator func(T,T,T,T) T, memo ...T) (T,string) {
+func 							Reject 					(obj []T, iterator eachlistiterator ) []T {
+func 							Rest 						(array []T) []T {
+func 							Result 					(obj, propertyName T ) T {
+func 							result 					(obj T) T {
+func 							Sample					(obj T, opt_n ...int ) T {
+func 							Shuffle					(obj []T) []T {
+func 							Size						(obj T) int {
+func 							SortBy	 				(obj, value T, lessThan func(a,b *map[T]T)bool) []T {
+func 							SortBySorter 			(obj, value T, orderby func(a,b *map[T]T)bool) []T {
+func 							SortedIndex 			(array T, obj T, lessThan func(T,T)bool, opt_iterator ...func(T,T,T)T) int {
+func 							Tap						(obj T, fn func(...T)T) T {
+func (this *Underscore) Chain 					() *Underscore {
+func (this *Underscore) Has						(key T) bool {
+func (this *Underscore) Identity 				(value ...T) T {
+func (this *Underscore) IsEmpty 					(obj T) bool {
+func (this *Underscore) IsFinite					(obj float64) bool {
+func (this *Underscore) IsNaN						(obj float64) bool {
+func (this *Underscore) IsString					(obj ...T) bool {
+func (this *Underscore) Map						(fn func(T,T,T)T) 	*Underscore {
+func (this *Underscore) Max						(fn func(T,T)bool) 	*Underscore {
+func (this *Underscore) RandomFloat64 			(min float64,optmax ...float64) float64 {
+func (this *Underscore) Random 					(min int,optmax ...int) int {
+func (this *Underscore) Tap						(fn func(...T)T) *Underscore {
+func (this *Underscore) Times 					(iterator func(...T)T  )  []T {
+func (this *Underscore) Value						() T {
+func 							Times 					(n int, iterator func(...T)T ) []T  {
+func 							ToArray					(obj T ) []T {
+func 							Union 					(opt_array ...T) []T {
+func 							Uniq						(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
+func 							Values					(obj map[T]T) []T {
+func 							Where						(obj []T, attrs map[T]T, optReturnFirstFound ...bool) T {
+func 							Without 					(toRemove []T, opt_from ...T) []T {
+func 							Wrap 						(fn func(...T)T, wrapper func(...T)T) func(...T)T {
+func 							Zip 						(arrays ...[]T ) []T {
+iterator =   opt_iterator[0].(func(T,T,T)T)
+orderby 						func						(a,b *map[T]T) bool
+type 							eachlistiterator 		func(T,T,T) bool
+type 							mapiterator 			func(T,T,T) T
+var 							comparator 				func(T,T) bool
+var 							CountBy = group( 		func(result map[T]T, key T, value T) {
+var 							GroupBy = group(		func(result map[T]T, key T, value T) {
+var 							IndexBy = group( 		func(result map[T]T, key T, value T) {
+var 							hasher func				(...T) T
+var 							iterator 				func(T,T,T) T
+var predicate 											func(T,T,T)bool
