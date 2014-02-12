@@ -19,22 +19,31 @@ A Go port of Underscore.js
 	gvm use go1.1.2
 
 
-# testing
+# Testing
 
 	git clone git@github.com/markmontymark/underscore-go.git
 	cd underscore-go/
 	go test
 
-# status
+# TODO
 
-	Most of the Underscore.js functionality is ported, finishing porting tests
+ -	Port speed.js to speed_test.go
+ - Port Underscore.js functions like defer, throttle, debounce (those using setTimeout) with go-routines and Go's Defer language support
 
+# Example usage (pulled from
 
-# todos
+ - adapted from arrays_test.go
 
- -	Finish porting tests from chaining.js, speed.js
- - Add the rest of the public api as methods on a \*Underscore object
- - Port Underscore.js functions like defer, throttle, debounce using setTimeout with go-routines and Go's Defer language support
+		package main
 
-		
+		import "fmt"
+		import "underscore"
+
+		func main () {
+			num := 35
+			numbers2 := []underscore.T{10, 20, 30, 40, 50}
+			if v := underscore.IndexOf(numbers2, num, func (a underscore.T, b underscore.T) bool { return a.(int) < b.(int)}, true); v == -1 {
+				fmt.Println("35 is not in the list")
+			}
+		}
 
