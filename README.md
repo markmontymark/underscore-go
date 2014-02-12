@@ -47,3 +47,5 @@ A Go port of Underscore.js
 			}
 		}
 
+	- Copy the above code in a file, runme.go, and then on the command line, `go run runme.go`
+
