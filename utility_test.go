@@ -36,25 +36,25 @@ func TestTimes(t *testing.T) {
 		vals = append(vals, i...)
 		return nil
 	})
-	asserts.Equals(t, "is 0 indexed", fmt.Sprint( vals), "[0 1 2]")
+	asserts.Equals(t, "is 0 indexed", fmt.Sprint(vals), "[0 1 2]")
 
 	vals2 := []T{}
 	New(3).Times(func(i ...T) T {
 		vals2 = append(vals2, i...)
 		return i[0]
 	})
-	asserts.Equals(t, "works as a wrapper", fmt.Sprint( vals2), "[0 1 2]")
+	asserts.Equals(t, "works as a wrapper", fmt.Sprint(vals2), "[0 1 2]")
 
 	// collects return values
 	asserts.Equals(t, "collects return values",
-		fmt.Sprint( New(3).Times(func(i ...T) T { return i[0] })), "[0 1 2]")
+		fmt.Sprint(New(3).Times(func(i ...T) T { return i[0] })), "[0 1 2]")
 
 	asserts.Equals(t, "zero times retval is empty array",
-		fmt.Sprint( Times(0, New(nil).Identity)), "[]")
+		fmt.Sprint(Times(0, New(nil).Identity)), "[]")
 	asserts.Equals(t, " -1 times retval is empty array",
-		fmt.Sprint( Times(-1, New(nil).Identity)), "[]")
+		fmt.Sprint(Times(-1, New(nil).Identity)), "[]")
 	asserts.Equals(t, " -Infinity times retval is empty array",
-		fmt.Sprint( Times(int(math.Inf(-1)), New(nil).Identity)),
+		fmt.Sprint(Times(int(math.Inf(-1)), New(nil).Identity)),
 		"[]")
 }
 

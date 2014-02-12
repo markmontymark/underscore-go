@@ -9,59 +9,59 @@ import (
 
 func TestKeysOOP(t *testing.T) {
 	data := New(map[T]T{"a": 1, "b": 4, "c": 6}).Chain().Keys().Value()
-	asserts.Equals(t, "keys of a map", "[a b c]", fmt.Sprint( data))
+	asserts.Equals(t, "keys of a map", "[a b c]", fmt.Sprint(data))
 
 	nodata := New(map[T]T{}).Chain().Keys().Value()
-	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint( nodata))
+	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint(nodata))
 
 	var nildata map[T]T = nil
 	nilretval := New(nildata).Chain().Keys().Value()
-	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint( nilretval))
+	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint(nilretval))
 }
 
 func TestKeysOOPChain(t *testing.T) {
 	data := New(map[T]T{"a": 1, "b": 4, "c": 6}).Chain().Keys().Value()
-	asserts.Equals(t, "keys of a map", "[a b c]", fmt.Sprint( data))
+	asserts.Equals(t, "keys of a map", "[a b c]", fmt.Sprint(data))
 
 	nodata := New(map[T]T{}).Chain().Keys().Value()
-	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint( nodata))
+	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint(nodata))
 
 	var nildata map[T]T = nil
 	nilretval := New(nildata).Chain().Keys().Value()
-	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint( nilretval))
+	asserts.Equals(t, "keys of an empty map", "[]", fmt.Sprint(nilretval))
 }
 
 func TestValuesOOP(t *testing.T) {
 	data := New(map[T]T{"a": 1, "b": 4, "c": 6}).Chain().Values().Value()
-	asserts.Equals(t, "values of a map", "[1 4 6]", fmt.Sprint( data))
+	asserts.Equals(t, "values of a map", "[1 4 6]", fmt.Sprint(data))
 
 	data2 := New(map[T]T{"a": 1, "b": 1, "c": 6}).Chain().Values().Value()
-	asserts.Equals(t, "values of a map", "[1 1 6]", fmt.Sprint( data2))
+	asserts.Equals(t, "values of a map", "[1 1 6]", fmt.Sprint(data2))
 
 	nodata := New(map[T]T{}).Chain().Values().Value()
-	asserts.Equals(t, "values of an empty map", "[]", fmt.Sprint( nodata))
+	asserts.Equals(t, "values of an empty map", "[]", fmt.Sprint(nodata))
 
 	var nildata map[T]T = nil
 	nilretval := New(nildata).Chain().Values().Value()
-	asserts.Equals(t, "values of an empty map", "[]", fmt.Sprint( nilretval))
+	asserts.Equals(t, "values of an empty map", "[]", fmt.Sprint(nilretval))
 }
 
 func TestPairsOOP(t *testing.T) {
 	asserts.Equals(t, "can convert an object into pairs",
-		fmt.Sprint( New(map[T]T{"one": 1, "two": 2}).Chain().Pairs().Value()),
-		fmt.Sprint( []T{[]T{"one", 1}, []T{"two", 2}}))
+		fmt.Sprint(New(map[T]T{"one": 1, "two": 2}).Chain().Pairs().Value()),
+		fmt.Sprint([]T{[]T{"one", 1}, []T{"two", 2}}))
 
 	asserts.Equals(t, "... even when one of them is length",
-		fmt.Sprint( New(map[T]T{"one": 1, "two": 2, "length": 3}).Chain().Pairs().Value()),
-		fmt.Sprint( []T{[]T{"one", 1}, []T{"two", 2}, []T{"length", 3}}))
+		fmt.Sprint(New(map[T]T{"one": 1, "two": 2, "length": 3}).Chain().Pairs().Value()),
+		fmt.Sprint([]T{[]T{"one", 1}, []T{"two", 2}, []T{"length", 3}}))
 
 }
 
 func TestInvertOOP(t *testing.T) {
 	obj := map[T]T{"first": "Moe", "second": "Larry", "third": "Curly"}
-	asserts.Equals(t, "can invert an object", fmt.Sprint( New(obj).Chain().Invert().Keys().Value()), "[Moe Larry Curly]")
+	asserts.Equals(t, "can invert an object", fmt.Sprint(New(obj).Chain().Invert().Keys().Value()), "[Moe Larry Curly]")
 	asserts.Equals(t, "two inverts gets you back where you started",
-		fmt.Sprint( New(obj).Chain().Invert().Invert().Value()), fmt.Sprint( obj))
+		fmt.Sprint(New(obj).Chain().Invert().Invert().Value()), fmt.Sprint(obj))
 }
 
 func TestExtendOOP(t *testing.T) {
@@ -77,18 +77,18 @@ func TestExtendOOP(t *testing.T) {
 
 	result := New(map[T]T{"x": "x"}).Chain().Extend(map[T]T{"a": "a"}, map[T]T{"b": "b"}).Value()
 	asserts.Equals(t, "can extend from multiple source objects",
-		fmt.Sprint( result), fmt.Sprint( map[T]T{"x": "x", "a": "a", "b": "b"}))
+		fmt.Sprint(result), fmt.Sprint(map[T]T{"x": "x", "a": "a", "b": "b"}))
 
 	result2 := New(map[T]T{"x": "x"}).Chain().Extend(map[T]T{"a": "a", "x": 2}, map[T]T{"a": "b"}).Value()
 	asserts.Equals(t, "extending from multiple source objects last property trumps",
-		fmt.Sprint( result2), fmt.Sprint( map[T]T{"x": 2, "a": "b"}))
+		fmt.Sprint(result2), fmt.Sprint(map[T]T{"x": 2, "a": "b"}))
 
 	result3 := New(map[T]T{}).Chain().Extend(map[T]T{"a": 0, "b": nil}).Keys().Value()
 	asserts.Equals(t, "extend copies undefined values",
-		fmt.Sprint( result3), "[a b]")
+		fmt.Sprint(result3), "[a b]")
 
 	result4 := New(map[T]T{})
-	result5 := result4.Extend(nil, 0, map[T]T{"a": 1})//.Value()
+	result5 := result4.Extend(nil, 0, map[T]T{"a": 1}) //.Value()
 	asserts.IntEquals(t, "should not error on `null` or `undefined` sources",
 		result5.Value().(map[T]T)["a"].(int), 1)
 
@@ -97,27 +97,27 @@ func TestExtendOOP(t *testing.T) {
 func TestPickOOP(t *testing.T) {
 	result := New(map[T]T{"a": 1, "b": 2, "c": 3}).Chain().Pick("a", "c").Value()
 	asserts.Equals(t, "can restrict properties to those named",
-		fmt.Sprint( result), fmt.Sprint( map[T]T{"a": 1, "c": 3}))
+		fmt.Sprint(result), fmt.Sprint(map[T]T{"a": 1, "c": 3}))
 
 	result2 := New(map[T]T{"a": 1, "b": 2, "c": 3}).Chain().Pick([]T{"b", "c"}).Value()
 	asserts.Equals(t, "can restrict properties to those named in an array",
-		fmt.Sprint( result2), fmt.Sprint( map[T]T{"b": 2, "c": 3}))
+		fmt.Sprint(result2), fmt.Sprint(map[T]T{"b": 2, "c": 3}))
 
 	result3 := New(map[T]T{"a": 1, "b": 2, "c": 3}).Chain().Pick([]T{"a"}, "b").Value()
 	asserts.Equals(t, "can restrict properties to those named in mixed args",
-		fmt.Sprint( result3), fmt.Sprint( map[T]T{"a": 1, "b": 2}))
+		fmt.Sprint(result3), fmt.Sprint(map[T]T{"a": 1, "b": 2}))
 }
 
 func TestOmitOOP(t *testing.T) {
 	result := New(map[T]T{"a": 1, "b": 2, "c": 3}).Chain().Omit("b").Value()
 	asserts.Equals(t, "can omit a single named property",
-		fmt.Sprint( result), fmt.Sprint( map[T]T{"a": 1, "c": 3}))
+		fmt.Sprint(result), fmt.Sprint(map[T]T{"a": 1, "c": 3}))
 	result2 := New(map[T]T{"a": 1, "b": 2, "c": 3}).Chain().Omit("a", "c").Value()
 	asserts.Equals(t, "can omit several named properties",
-		fmt.Sprint( result2), fmt.Sprint( map[T]T{"b": 2}))
+		fmt.Sprint(result2), fmt.Sprint(map[T]T{"b": 2}))
 	result3 := New(map[T]T{"a": 1, "b": 2, "c": 3}).Chain().Omit([]T{"b", "c"}).Value()
 	asserts.Equals(t, "can omit properties named in an array",
-		fmt.Sprint( result3), fmt.Sprint( map[T]T{"a": 1}))
+		fmt.Sprint(result3), fmt.Sprint(map[T]T{"a": 1}))
 }
 
 func TestDefaultsOOP(t *testing.T) {
@@ -161,9 +161,9 @@ func TestCloneOOP(t *testing.T) {
 
 	var cloneArray []T
 	cloneArray = New(moe["lucky"]).Clone().Value().([]T)
-	asserts.Equals(t, "clone an array", fmt.Sprint( cloneArray), fmt.Sprint( moe["lucky"]))
+	asserts.Equals(t, "clone an array", fmt.Sprint(cloneArray), fmt.Sprint(moe["lucky"]))
 	cloneArray = append(cloneArray, 10101)
-	asserts.NotEquals(t, "clone an array is shallow?", fmt.Sprint( cloneArray), fmt.Sprint( moe["lucky"]))
+	asserts.NotEquals(t, "clone an array is shallow?", fmt.Sprint(cloneArray), fmt.Sprint(moe["lucky"]))
 }
 
 // TODO: missing TestIsEqual from objects.js
@@ -238,16 +238,16 @@ func TestTapOOP(t *testing.T) {
 	asserts.IntEquals(t, "passes tapped object to interceptor", intercepted.(int), 1)
 	asserts.IntEquals(t, "returns tapped object", returned.(int), 1)
 
-	returned2 := New([]T{1, 2, 3}).Chain().Map(func(val, idx, list T) T { return val.(int) * 2 }).Max(func(a T, b T) bool { return a.(int) < b.(int) }).Tap(interceptor)//.Value()
+	returned2 := New([]T{1, 2, 3}).Chain().Map(func(val, idx, list T) T { return val.(int) * 2 }).Max(func(a T, b T) bool { return a.(int) < b.(int) }).Tap(interceptor) //.Value()
 
 	asserts.True(t, "can use tapped objects in a chain",
 		returned2.Value().(int) == 6 && intercepted.(int) == 6)
 
-	returned3 := New([]T{1}).Chain().Map(func(val, idx, list T) T { return val.(int) * 2 }).Max(func(a T, b T) bool { return a.(int) < b.(int) }).Tap(interceptor)//.Value()
+	returned3 := New([]T{1}).Chain().Map(func(val, idx, list T) T { return val.(int) * 2 }).Max(func(a T, b T) bool { return a.(int) < b.(int) }).Tap(interceptor) //.Value()
 	asserts.True(t, "can use tapped scalar in a chain",
 		returned3.Value().(int) == 2 && intercepted.(int) == 2)
 
-	returned4 := New(map[T]T{"a": 1}).Chain().Map(func(val, idx, list T) T { return val.(int) * 2 }).Max(func(a T, b T) bool { return a.(int) < b.(int) }).Tap(interceptor)//.Value()
+	returned4 := New(map[T]T{"a": 1}).Chain().Map(func(val, idx, list T) T { return val.(int) * 2 }).Max(func(a T, b T) bool { return a.(int) < b.(int) }).Tap(interceptor) //.Value()
 	asserts.True(t, "can use tapped scalar in a chain",
 		returned4.Value().(int) == 2 && intercepted.(int) == 2)
 }
