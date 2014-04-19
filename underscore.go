@@ -12,6 +12,7 @@ import (
 	"math"
 	"math/rand"
 	"sort"
+	"time"
 )
 
 // Custom type T is a shorthand for interface{} to save myself from RMI or carpal tunnel syndrome
@@ -1260,6 +1261,26 @@ func Once(fn func(...T) T) func(...T) T {
 	}
 }
 
+// Returns a function that will only be executed after being called N times.
+func After(times int, fn func(...T) T) func(...T) T {
+	return func(args ...T) T {
+		if times < 0 {
+			times = 0
+		} else {
+			times -= 1
+		}
+		if times < 1 {
+			return fn(args...)
+		}
+		return nil
+	}
+}
+
+//Returns an int64 timestamp for the current time, using the fastest method available in the runtime. Useful for implementing timing/animation functions.
+func Now() int64 {
+	return time.Now().Unix()
+}
+
 // Returns the first function passed as an argument to the second,
 // allowing you to adjust arguments, run code before and after, and
 // conditionally execute the original function.
@@ -1292,20 +1313,6 @@ func Compose(funcs ...T) func(...T) T {
 	}
 }
 
-// Returns a function that will only be executed after being called N times.
-func After(times int, fn func(...T) T) func(...T) T {
-	return func(args ...T) T {
-		if times < 0 {
-			times = 0
-		} else {
-			times -= 1
-		}
-		if times < 1 {
-			return fn(args...)
-		}
-		return nil
-	}
-}
 
 // Map Functions
 
@@ -2054,6 +2061,11 @@ func (this *Underscore) Tail() *Underscore {
 // OOP-style support, add method to *Underscore, see func ToArray
 func (this *Underscore) ToArray() *Underscore {
 	return this.result(ToArray(this.wrapped))
+}
+
+// OOP-style support, add method to *Underscore, see func ToArray
+func (this *Underscore) Now() *Underscore {
+	return this.result(Now())
 }
 
 // OOP-style support, add method to *Underscore, see func Union

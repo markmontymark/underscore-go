@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"testing"
+	"time"
 )
 
 func TestKeysOOP(t *testing.T) {
@@ -250,6 +251,12 @@ func TestTapOOP(t *testing.T) {
 	returned4 := New(map[T]T{"a": 1}).Chain().Map(func(val, idx, list T) T { return val.(int) * 2 }).Max(func(a T, b T) bool { return a.(int) < b.(int) }).Tap(interceptor) //.Value()
 	asserts.True(t, "can use tapped scalar in a chain",
 		returned4.Value().(int) == 2 && intercepted.(int) == 2)
+}
+
+func TestNowOOP(t *testing.T) {
+	diff := New().Chain().Now().Value().(int64) - time.Now().Unix()
+	asserts.True(t, "Now called in OOP style, in a chain",
+		diff <= 0 && diff >= -5)
 }
 
 // TODO:  missing TestHas from objects.js "has"

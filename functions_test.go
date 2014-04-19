@@ -4,6 +4,7 @@ import (
 	"./lib/asserts"
 	"fmt"
 	"testing"
+	"time"
 )
 
 var fib func(...T) T
@@ -150,4 +151,10 @@ func TestAfter(t *testing.T) {
 		testAfter(0, 0), 0)
 	asserts.IntEquals(t, "after(0) should fire when first invoked",
 		testAfter(0, 1), 1)
+}
+
+
+func TestNow(t *testing.T) {
+	diff := Now() - time.Now().Unix()
+	asserts.True(t, "Produces the correct time in milliseconds", diff <= 0 && diff > -5 );//within 5ms
 }
