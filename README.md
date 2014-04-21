@@ -4,7 +4,9 @@ A Go port of Underscore.js
 
 # setup
 
-## Install gvm
+
+
+## install Go with gvm
 
 	git clone git@github.com:moovweb/gvm.git
 	cd gvm/
@@ -15,12 +17,15 @@ A Go port of Underscore.js
 ## Install go
 
 	gvm listall
-	gvm install go1.1.2
-	gvm use go1.1.2
+	gvm install go1.2.1
+	gvm use go1.2.1
 
 
 # Testing
 
+	git clone git@github.com/markmontymark/asserts.git
+	cd asserts/
+	go install
 	git clone git@github.com/markmontymark/underscore-go.git
 	cd underscore-go/
 	go test
