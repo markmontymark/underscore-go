@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 	"time"
+_	 "os"
 )
 
 var fib func(...T) T
@@ -53,10 +54,6 @@ func TestMemoize(t *testing.T) {
 	asserts.Equals(t, "blah blah", fastO("toString").(string), "toString")
 }
 
-// XXX: missing delay - wont add
-// XXX: missing defer - wont add
-// XXX: missing throttle - wont add
-// XXX: missing debounce - wont add
 
 func TestOnce(t *testing.T) {
 	num := 0
@@ -158,3 +155,293 @@ func TestNow(t *testing.T) {
 	diff := Now() - time.Now().Unix()
 	asserts.True(t, "Produces the correct time in milliseconds", diff <= 0 && diff > -5 );//within 5ms
 }
+
+func TestDelay(t *testing.T) {
+	delayed := false
+	Delay(func(){ delayed = true }, 100)
+	Delay(func(){
+		asserts.False( t, "didn't delay the function quite yet", delayed) },
+		50)
+	Delay(func(){
+		asserts.True( t, "delayed the function", delayed) },
+		150)
+	select {
+		case <-time.After(300 * time.Millisecond):
+		break
+	}
+}
+
+/*
+// XXX: missing defer, in progress
+func TestDefer(t *testing.T) {
+	deferred := false
+	Defer(func(boole bool){ deferred = boole; }, true)
+	Delay(func(){ asserts.Ok(t, deferred, "deferred the function")  }, 50)
+}
+
+// XXX: missing debounce, in progress
+func TestDebounce(t *testing.T) {
+	counter := 0
+	incr := func(){ counter += 1 }
+	debouncedIncr = Debounce(incr, 32)
+	debouncedIncr()
+	debouncedIncr()
+	Delay(debouncedIncr, 16)
+	Delay(func(){ asserts.IntEquals(t, counter, 1, "incr was debounced") },
+		96)
+}
+
+func TestDebounceASAP(t *testing.T) {
+	counter := 0
+	incr := func() (counter int) { counter += 1; return }
+	debouncedIncr := Debounce(incr, 64, true)
+	a := DebouncedIncr()
+	b := DebouncedIncr()
+	asserts.IntEquals(a, 1)
+	asserts.IntEquals(b, 1)
+	asserts.IntEquals(t, "incr was called immediately",1,counter)
+	Delay(debouncedIncr, 16)
+	Delay(debouncedIncr, 32)
+	Delay(debouncedIncr, 48)
+	Delay(func(){ asserts.IntEquals(t, "Incr was debounced", counter, 1) },
+		128)
+}
+
+func TestDebounceASAPRecursively(t *testing.T) {
+	counter := 0
+	debouncedIncr := Debounce(func(){
+			counter += 1
+			if counter < 10 {
+				debouncedIncr()
+			}
+		}, 32, true)
+	debouncedIncr()
+	asserts.IntEquals(t, "incr was called immediately", counter, 1)
+	Delay(func(){ asserts.IntEquals( t, "Incr was debounced, recursively", counter, 1) },
+		96)
+}
+
+func TestDebounceAfterSystemTimeIsMuckedWith(t *testing.T) {
+    counter := 0
+    origNowFunc := Now
+    debouncedIncr := Debounce(func(){ counter += 1 }, 100, true)
+    debouncedIncr();
+    asserts.IntEquals(t, "Incr called immediately",counter, 1)
+    underscore.Now = func() {
+      return new Date(2013, 0, 1, 1, 1, 1);
+    }
+
+	Delay(func() {
+		debouncedIncr()
+		asserts.IntEquals(t, "incr was debounced successfully", counter, 2)
+		Now = origNowFunc },
+		200)
+  }
+
+// XXX missing throttle, in progress
+func TestThrottle(t *testing.T) {
+	myfunc := func(args ...T){//arg1, arg2 string) {
+		now := time.Now().UnixNano()
+		if args == nil {
+			fmt.Fprintf(os.Stderr,"now(%d) in myfunc( no args )\n",now)
+		} else {
+			fmt.Fprintf(os.Stderr,"now(%d) in myfunc( %v, %v)\n",now, args[0], args[1])
+		}
+	}
+	myfuncThrottled := Throttle(myfunc, 1000,map[string]bool{"leading":true,"trailing":false})
+	for i := 0; i < 10; i++ {
+		myfunc(fmt.Sprint("%d",i), fmt.Sprint("as string %d",i))
+	}
+	for i := 0; i < 10; i++ {
+		myfuncThrottled(fmt.Sprint("%d",i), fmt.Sprint("as string %d",i))
+	}
+}
+
+
+syncTest('throttle', 2, function() {
+    var counter = 0;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 32);
+    throttledIncr(); throttledIncr();
+
+    equal(counter, 1, 'incr was called immediately');
+    _.delay(function(){ equal(counter, 2, 'incr was throttled'); start(); }, 64);
+  });
+
+  asyncTest('throttle arguments', 2, function() {
+    var value = 0;
+    var update = function(val){ value = val; };
+    var throttledUpdate = _.throttle(update, 32);
+    throttledUpdate(1); throttledUpdate(2);
+    _.delay(function(){ throttledUpdate(3); }, 64);
+    equal(value, 1, 'updated to latest value');
+    _.delay(function(){ equal(value, 3, 'updated to latest value'); start(); }, 96);
+  });
+
+  asyncTest('throttle once', 2, function() {
+    var counter = 0;
+    var incr = function(){ return ++counter; };
+    var throttledIncr = _.throttle(incr, 32);
+    var result = throttledIncr();
+    _.delay(function(){
+      equal(result, 1, 'throttled functions return their value');
+      equal(counter, 1, 'incr was called once'); start();
+    }, 64);
+  });
+
+  asyncTest('throttle twice', 1, function() {
+    var counter = 0;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 32);
+    throttledIncr(); throttledIncr();
+    _.delay(function(){ equal(counter, 2, 'incr was called twice'); start(); }, 64);
+  });
+
+  asyncTest('more throttling', 3, function() {
+    var counter = 0;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 30);
+    throttledIncr(); throttledIncr();
+    ok(counter == 1);
+    _.delay(function(){
+      ok(counter == 2);
+      throttledIncr();
+      ok(counter == 3);
+      start();
+    }, 85);
+  });
+
+
+ asyncTest('throttle repeatedly with results', 6, function() {
+    var counter = 0;
+    var incr = function(){ return ++counter; };
+    var throttledIncr = _.throttle(incr, 100);
+    var results = [];
+    var saveResult = function() { results.push(throttledIncr()); };
+    saveResult(); saveResult();
+    _.delay(saveResult, 50);
+    _.delay(saveResult, 150);
+    _.delay(saveResult, 160);
+    _.delay(saveResult, 230);
+    _.delay(function() {
+      equal(results[0], 1, 'incr was called once');
+      equal(results[1], 1, 'incr was throttled');
+      equal(results[2], 1, 'incr was throttled');
+      equal(results[3], 2, 'incr was called twice');
+      equal(results[4], 2, 'incr was throttled');
+      equal(results[5], 3, 'incr was called trailing');
+      start();
+    }, 300);
+  });
+
+  asyncTest('throttle triggers trailing call when invoked repeatedly', 2, function() {
+    var counter = 0;
+    var limit = 48;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 32);
+
+    var stamp = new Date;
+    while ((new Date - stamp) < limit) {
+      throttledIncr();
+    }
+    var lastCount = counter;
+    ok(counter > 1);
+
+    _.delay(function() {
+      ok(counter > lastCount);
+      start();
+    }, 96);
+  });
+
+  asyncTest('throttle does not trigger leading call when leading is set to false', 2, function() {
+    var counter = 0;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 60, {leading: false});
+
+    throttledIncr(); throttledIncr();
+    ok(counter === 0);
+
+    _.delay(function() {
+      ok(counter == 1);
+      start();
+    }, 96);
+  });
+
+asyncTest('more throttle does not trigger leading call when leading is set to false', 3, function() {
+    var counter = 0;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 100, {leading: false});
+
+    throttledIncr();
+    _.delay(throttledIncr, 50);
+    _.delay(throttledIncr, 60);
+    _.delay(throttledIncr, 200);
+    ok(counter === 0);
+
+    _.delay(function() {
+      ok(counter == 1);
+    }, 250);
+
+    _.delay(function() {
+      ok(counter == 2);
+      start();
+    }, 350);
+  });
+
+  asyncTest('one more throttle with leading: false test', 2, function() {
+    var counter = 0;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 100, {leading: false});
+
+    var time = new Date;
+    while (new Date - time < 350) throttledIncr();
+    ok(counter <= 3);
+
+    _.delay(function() {
+      ok(counter <= 4);
+      start();
+    }, 200);
+  });
+
+  asyncTest('throttle does not trigger trailing call when trailing is set to false', 4, function() {
+    var counter = 0;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 60, {trailing: false});
+
+    throttledIncr(); throttledIncr(); throttledIncr();
+    ok(counter === 1);
+
+    _.delay(function() {
+      ok(counter == 1);
+
+      throttledIncr(); throttledIncr();
+      ok(counter == 2);
+
+      _.delay(function() {
+        ok(counter == 2);
+        start();
+      }, 96);
+    }, 96);
+  });
+
+  asyncTest('throttle continues to function after system time is set backwards', 2, function() {
+    var counter = 0;
+    var incr = function(){ counter++; };
+    var throttledIncr = _.throttle(incr, 100);
+    var origNowFunc = _.now;
+
+    throttledIncr();
+    ok(counter == 1);
+    _.now = function () {
+      return new Date(2013, 0, 1, 1, 1, 1);
+    };
+
+    _.delay(function() {
+      throttledIncr();
+      ok(counter == 2);
+      start();
+      _.now = origNowFunc;
+    }, 200);
+  });
+
+*/

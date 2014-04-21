@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"sort"
 	"time"
+_	"os"
 )
 
 // Custom type T is a shorthand for interface{} to save myself from RMI or carpal tunnel syndrome
@@ -1243,6 +1244,90 @@ func Memoize(fn func(...T) T, opt_hasher ...func(...T) T) func(...T) T {
 		memo[key] = fn(args...)
 		return memo[key]
 	}
+}
+
+//delay_.delay(function, wait, *arguments) 
+//Much like setTimeout, invokes function after wait milliseconds. If you pass the optional arguments, they will be forwarded on to the function when it is invoked.
+//
+//var log = _.bind(console.log, console);
+//_.delay(log, 1000, 'logged later');
+//=> 'logged later' // Appears after one second.
+func Delay(fn func(), waitMilliseconds int64, savedArgs ...T) {
+	go (func() {
+		timer := time.NewTimer( time.Duration( waitMilliseconds * 1000000 ))
+		for {
+			select {
+				case <-timer.C:
+				timer.Stop()
+				fn()
+				break
+			}
+		}
+	})()
+
+/*
+		func() {
+			//for {
+			//<-timer.C
+				//timer.Stop()
+				//fmt.Fprintf( os.Stdout, "about to call fn\n")
+				fn()
+			//}
+		})
+*/
+}
+
+//throttle_.throttle(function, wait, [options]) 
+//Creates and returns a new, throttled version of the passed function, that, when invoked repeatedly, will only actually call the original function at most once per every wait milliseconds. Useful for rate-limiting events that occur faster than you can keep up with.
+//
+//By default, throttle will execute the function as soon as you call it for the first time, and, if you call it again any number of times during the wait period, as soon as that period is over. If you'd like to disable the leading-edge call, pass {leading: false}, and if you'd like to disable the execution on the trailing-edge, pass 
+//{trailing: false}.
+//
+//throttled := Throttle(updatePosition, 100)
+//$(window).scroll(throttled);
+func ThrottleNano(fn func(...T), waitNanoseconds int64, options ...map[string]bool) func(...T) {
+	var last int64 //:= time.Now().UnixNano()
+	callLeading := true
+	callTrailing := true
+	var calltimer *time.Timer
+	if options != nil {
+		if v,ok := options[0]["leading"] ; ok {
+			callLeading = v
+		}
+		if v,ok := options[0]["trailing"] ; ok {
+			callTrailing = v
+		}
+	}
+	if callLeading {
+		fn()
+	}
+	return func(args ...T) {
+		now := time.Now().UnixNano()
+		diff := now - last
+		if diff >= waitNanoseconds {
+			if calltimer != nil {
+				calltimer.Stop()
+				calltimer = nil
+			}
+			last = now
+			fn(args...)
+		} else {
+			if calltimer == nil {
+				calltimer = time.NewTimer(time.Duration(waitNanoseconds))
+				<-calltimer.C
+				last = now
+				if callTrailing {
+					fn(args...)
+				}
+				calltimer.Stop()
+				calltimer = nil
+			}
+		}
+	}
+}
+
+func Throttle(fn func(...T), waitMilliseconds int64, options ...map[string]bool) func(...T) {
+	return ThrottleNano(fn, waitMilliseconds * 1000000, options...)
 }
 
 // Returns a function that will be executed at most one time, no matter how
