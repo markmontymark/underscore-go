@@ -34,12 +34,14 @@ func True (t *testing.T, name string , got bool ) {
       t.Errorf("Failed %s\ngot\n%s\n\nexpected\n%s\n\n", name, got, true)
    }
 }
+var Ok func (*testing.T, string , bool ) = True
 
 func False (t *testing.T, name string , got bool ) {
    if got {
       t.Errorf("Failed %s\ngot\n%s\n\nexpected\n%s\n\n", name, got, false)
    }
 }
+var NotOk func (*testing.T, string , bool ) = False
 
 func Nil (t *testing.T, name string , got ...interface{}) {
    if got == nil {
