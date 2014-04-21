@@ -1,7 +1,7 @@
 package underscore
 
 import (
-	"./lib/asserts"
+	"github.com/markmontymark/asserts"
 	"fmt"
 	"testing"
 	"time"
@@ -19,7 +19,7 @@ func init() {
 	}
 }
 
-// XXX: missing bind - wont add
+// XXX: missing bind
 
 func TestPartial(t *testing.T) {
 
@@ -39,7 +39,7 @@ func TestPartial(t *testing.T) {
 		fmt.Sprint(passAB("1", 2)), "[a b 1 2]")
 }
 
-// XXX: missing bindAll - wont add
+// XXX: missing bindAll
 
 func TestMemoize(t *testing.T) {
 	asserts.IntEquals(t, "a memoized version of fibonacci produces identical results",
@@ -165,20 +165,29 @@ func TestDelay(t *testing.T) {
 	Delay(func(){
 		asserts.True( t, "delayed the function", delayed) },
 		150)
+
+	// wait for Delay calls above to run their course
 	select {
 		case <-time.After(300 * time.Millisecond):
 		break
 	}
 }
 
-/*
-// XXX: missing defer, in progress
+
 func TestDefer(t *testing.T) {
 	deferred := false
-	Defer(func(boole bool){ deferred = boole; }, true)
-	Delay(func(){ asserts.Ok(t, deferred, "deferred the function")  }, 50)
+	func(){
+		defer func(boole bool){ deferred = boole }(true)
+		Delay(func(){ asserts.Ok(t, "deferred the function", deferred)  }, 50)
+	}()
+	// wait for Delay calls above to run their course
+	select {
+		case <-time.After(100 * time.Millisecond):
+		break
+	}
 }
 
+/*
 // XXX: missing debounce, in progress
 func TestDebounce(t *testing.T) {
 	counter := 0

@@ -1,7 +1,7 @@
 package underscore
 
 import (
-	"./lib/asserts"
+	"github.com/markmontymark/asserts"
 	"fmt"
 	"sort"
 	"testing"
