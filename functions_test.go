@@ -1,9 +1,13 @@
 package underscore
 
+// TODO, for the new debounce, throttle, delay tests, I'm using a DelayAndWait func added to underscore, 
+//  but perhaps it would be better to append all delay channels to one channel slice, and block in one place
+// in this file, instead of blocking in the DelayAndWait call.  
+
 import (
 	"github.com/markmontymark/asserts"
 	"fmt"
-	_"sync"
+	_ "sync"
 	"testing"
 	"time"
 	_ "os"
@@ -153,8 +157,8 @@ func TestAfter(t *testing.T) {
 
 
 func TestNow(t *testing.T) {
-	diff := Now() - time.Now().Unix()
-	asserts.True(t, "Produces the correct time in milliseconds", diff <= 0 && diff > -5 );//within 5ms
+	diff := Now() - time.Now().UnixNano()
+	asserts.True(t, "Produces the correct time in milliseconds", diff <= 0 && diff > -50 );//within 50ns
 }
 
 func TestDelay(t *testing.T) {
@@ -165,7 +169,7 @@ func TestDelay(t *testing.T) {
 		return delayed },
 		50)
 	Delay(func() T {
-		asserts.True( t, "delayed the function", delayed) 
+		asserts.True( t, "delayed the function", delayed)
 		return delayed
 	},
 		150)
@@ -226,13 +230,10 @@ func TestDebounceASAP(t *testing.T) {
 	Delay(debouncedIncr, 16)
 	Delay(debouncedIncr, 32)
 	Delay(debouncedIncr, 48)
-	//Delay(func(){ asserts.IntEquals(t, "Incr was debounced", counter, 1) },
-	//	128)
-	select {
-		case <-time.After(128 * time.Millisecond):
+	DelayAndWait(func () T {
 			asserts.IntEquals(t, "incr was debounced", counter, 1)
-		break
-	}
+		return counter
+	},128)
 }
 
 func TestDebounceASAPRecursively(t *testing.T) {
@@ -286,40 +287,37 @@ func TestThrottle(t *testing.T){
 	counter := 0
 	incr := func(...T) T { counter += 1; return counter}
 	throttledIncr := Throttle(incr, 32)
-	/* a := throttledIncr().(int)
-	b := throttledIncr()/*.(int); */
 	throttledIncr()
 	throttledIncr()
    asserts.IntEquals(t, "incr was called immediately", counter, 1)
-	select {
-		case <-time.After(96 * time.Millisecond):
-			throttledIncr();
-			asserts.IntEquals(t, "incr was throttled", counter, 2)
-		break
+	DelayAndWait(func () T {
+		asserts.IntEquals(t, "incr was throttled", counter, 2)
+		return counter
+	},64)
+}
+
+func TestThrottleWithArgs (t *testing.T){
+	var value int = 0
+	update := func(val ...T) T {
+		if len(val) > 0 {
+			value = (val[0]).(int)
+		}
+		return value
 	}
+	throttledUpdate := Throttle(update, 32)
+	throttledUpdate(1)
+	throttledUpdate(2)
+	Delay(func() T {
+		throttledUpdate(3)
+		return value
+	}, 85)
+	asserts.IntEquals(t, "updated to first value", value, 1)
+	DelayAndWait(func() T {
+		asserts.IntEquals(t, "updated to latest value", value, 3)
+		return nil }, 100)
 }
 
 /*
-syncTest('throttle', 2, function() {
-    var counter = 0;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 32);
-    throttledIncr(); throttledIncr();
-
-    equal(counter, 1, 'incr was called immediately');
-    _.delay(function(){ equal(counter, 2, 'incr was throttled'); start(); }, 64);
-  });
-
-  asyncTest('throttle arguments', 2, function() {
-    var value = 0;
-    var update = function(val){ value = val; };
-    var throttledUpdate = _.throttle(update, 32);
-    throttledUpdate(1); throttledUpdate(2);
-    _.delay(function(){ throttledUpdate(3); }, 64);
-    equal(value, 1, 'updated to latest value');
-    _.delay(function(){ equal(value, 3, 'updated to latest value'); start(); }, 96);
-  });
-
   asyncTest('throttle once', 2, function() {
     var counter = 0;
     var incr = function(){ return ++counter; };

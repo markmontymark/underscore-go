@@ -254,9 +254,9 @@ func TestTapOOP(t *testing.T) {
 }
 
 func TestNowOOP(t *testing.T) {
-	diff := New().Chain().Now().Value().(int64) - time.Now().Unix()
+	diff := New().Chain().Now().Value().(int64) - time.Now().UnixNano()
 	asserts.True(t, "Now called in OOP style, in a chain",
-		diff <= 0 && diff >= -5)
+		diff <= 0 && diff >= -500)
 }
 
 // TODO:  missing TestHas from objects.js "has"

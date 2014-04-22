@@ -12,8 +12,10 @@ import (
 	"math"
 	"math/rand"
 	"sort"
+	"sync"
 	"time"
 _	"os"
+	
 )
 
 // Custom type T is a shorthand for interface{} to save myself from RMI or carpal tunnel syndrome
@@ -1255,13 +1257,12 @@ func Memoize(fn func(...T) T, opt_hasher ...func(...T) T) func(...T) T {
 func DelayNano(fn func() T, waitNanoseconds int64, savedArgs ...T) {
 	go (func() {
 		timer := time.NewTimer( time.Duration( waitNanoseconds))
-		for {
-			select {
-				case <-timer.C:
+		select {
+			case <-timer.C:
 				timer.Stop()
+				timer = nil
 				fn()
 				break
-			}
 		}
 	})()
 }
@@ -1269,6 +1270,17 @@ func Delay(fn func() T, waitMilliseconds int64, savedArgs ...T) {
 	DelayNano(fn, waitMilliseconds * 1000000, savedArgs...)
 }
 
+func DelayAndWait(fn func() T, waitMilliseconds int64, savedArgs ...T) T {
+	var retval T
+   var wg sync.WaitGroup
+   wg.Add(1)
+   Delay(func() T {
+      retval = fn()
+      wg.Done()
+      return nil }, 500)
+   wg.Wait()
+	return retval
+}
 
 //debounce_.debounce(function, wait, [immediate]) 
 //Creates and returns a new debounced version of the passed function which will postpone its execution until after wait milliseconds have elapsed since the last time it was invoked. Useful for implementing behavior that should only happen after the input has stopped arriving. For example: rendering a preview of a Markdown comment, recalculating a layout after the window has stopped being resized, and so on.
@@ -1335,39 +1347,6 @@ func Debounce(fn func() T, waitMilliseconds int64, immediate ...bool) func() T {
 //
 //throttled := Throttle(updatePosition, 100)
 //$(window).scroll(throttled);
-
-/*
-_.throttle = function(fn func(...T), wait, options) {
-    var context, args, result;
-    var timeout = null;
-    var previous = 0;
-    options || (options = {});
-    var later = function() {
-      previous = options.leading === false ? 0 : _.now();
-      timeout = null;
-      result = func.apply(context, args);
-      context = args = null;
-    };
-    return function() {
-      var now = _.now();
-      if (!previous && options.leading === false) previous = now;
-      var remaining = wait - (now - previous);
-      context = this;
-      args = arguments;
-      if (remaining <= 0 || remaining > wait) {
-        clearTimeout(timeout);
-        timeout = null;
-        previous = now;
-        result = func.apply(context, args);
-        context = args = null;
-      } else if (!timeout && options.trailing !== false) {
-        timeout = setTimeout(later, remaining);
-      }
-      return result;
-    };
-  };
-*/
-
 func ThrottleNano (fn func(...T) T, waitN int64 , options ...map[string]bool) func(...T) T {
 	var result T
 	var timeout *time.Timer
@@ -1390,7 +1369,7 @@ func ThrottleNano (fn func(...T) T, waitN int64 , options ...map[string]bool) fu
 			timeout.Stop()
 			//timeout = nil, TODO, setting to nil throws panic
 		}
-		result = fn(args)
+		result = fn(args...)
 		return result
 	}
 	return func(args ...T) T {
@@ -1455,7 +1434,10 @@ func After(times int, fn func(...T) T) func(...T) T {
 
 //Returns an int64 timestamp for the current time, using the fastest method available in the runtime. Useful for implementing timing/animation functions.
 func Now() int64 {
-	return time.Now().Unix()
+	return time.Now().UnixNano()
+}
+func NowNano() int64 {
+	return time.Now().UnixNano()
 }
 
 // Returns the first function passed as an argument to the second,
@@ -2243,6 +2225,11 @@ func (this *Underscore) ToArray() *Underscore {
 // OOP-style support, add method to *Underscore, see func ToArray
 func (this *Underscore) Now() *Underscore {
 	return this.result(Now())
+}
+
+// OOP-style support, add method to *Underscore, see func ToArray
+func (this *Underscore) NowNano() *Underscore {
+	return this.result(NowNano())
 }
 
 // OOP-style support, add method to *Underscore, see func Union
