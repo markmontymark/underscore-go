@@ -3,9 +3,10 @@ package underscore
 import (
 	"github.com/markmontymark/asserts"
 	"fmt"
+	_"sync"
 	"testing"
 	"time"
-_	 "os"
+	_ "os"
 )
 
 var fib func(...T) T
@@ -281,27 +282,24 @@ func TestDebounceAfterSystemTimeIsMuckedWith(t *testing.T) {
   }
 */
 
-/*
-// XXX missing throttle, in progress
-func TestThrottle(t *testing.T) {
-	myfunc := func(args ...T){//arg1, arg2 string) {
-		now := time.Now().UnixNano()
-		if args == nil {
-			fmt.Fprintf(os.Stderr,"now(%d) in myfunc( no args )\n",now)
-		} else {
-			fmt.Fprintf(os.Stderr,"now(%d) in myfunc( %v, %v)\n",now, args[0], args[1])
-		}
-	}
-	myfuncThrottled := Throttle(myfunc, 1000,map[string]bool{"leading":true,"trailing":false})
-	for i := 0; i < 10; i++ {
-		myfunc(fmt.Sprint("%d",i), fmt.Sprint("as string %d",i))
-	}
-	for i := 0; i < 10; i++ {
-		myfuncThrottled(fmt.Sprint("%d",i), fmt.Sprint("as string %d",i))
+func TestThrottle(t *testing.T){
+	counter := 0
+	incr := func(...T) T { counter += 1; return counter}
+	throttledIncr := Throttle(incr, 32)
+	/* a := throttledIncr().(int)
+	b := throttledIncr()/*.(int); */
+	throttledIncr()
+	throttledIncr()
+   asserts.IntEquals(t, "incr was called immediately", counter, 1)
+	select {
+		case <-time.After(96 * time.Millisecond):
+			throttledIncr();
+			asserts.IntEquals(t, "incr was throttled", counter, 2)
+		break
 	}
 }
 
-
+/*
 syncTest('throttle', 2, function() {
     var counter = 0;
     var incr = function(){ counter++; };

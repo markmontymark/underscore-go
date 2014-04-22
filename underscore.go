@@ -1335,48 +1335,90 @@ func Debounce(fn func() T, waitMilliseconds int64, immediate ...bool) func() T {
 //
 //throttled := Throttle(updatePosition, 100)
 //$(window).scroll(throttled);
-func ThrottleNano(fn func(...T), waitNanoseconds int64, options ...map[string]bool) func(...T) {
-	var last int64 //:= time.Now().UnixNano()
-	callLeading := true
-	callTrailing := true
-	var calltimer *time.Timer
-	if options != nil {
-		if v,ok := options[0]["leading"] ; ok {
-			callLeading = v
-		}
-		if v,ok := options[0]["trailing"] ; ok {
-			callTrailing = v
-		}
+
+/*
+_.throttle = function(fn func(...T), wait, options) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    options || (options = {});
+    var later = function() {
+      previous = options.leading === false ? 0 : _.now();
+      timeout = null;
+      result = func.apply(context, args);
+      context = args = null;
+    };
+    return function() {
+      var now = _.now();
+      if (!previous && options.leading === false) previous = now;
+      var remaining = wait - (now - previous);
+      context = this;
+      args = arguments;
+      if (remaining <= 0 || remaining > wait) {
+        clearTimeout(timeout);
+        timeout = null;
+        previous = now;
+        result = func.apply(context, args);
+        context = args = null;
+      } else if (!timeout && options.trailing !== false) {
+        timeout = setTimeout(later, remaining);
+      }
+      return result;
+    };
+  };
+*/
+
+func ThrottleNano (fn func(...T) T, waitN int64 , options ...map[string]bool) func(...T) T {
+	var result T
+	var timeout *time.Timer
+	var previous int64
+	var leading bool = true
+	var trailing bool = true
+	if len(options) > 0 {
+		v,ok := options[0]["leading"]
+		leading = ok && v
+		v,ok = options[0]["trailing"]
+		trailing = ok && v
 	}
-	if callLeading {
-		fn()
-	}
-	return func(args ...T) {
-		now := time.Now().UnixNano()
-		diff := now - last
-		if diff >= waitNanoseconds {
-			if calltimer != nil {
-				calltimer.Stop()
-				calltimer = nil
-			}
-			last = now
-			fn(args...)
+	var later func(...T) T = func(args ...T) T {
+		if leading {
+			previous = Now()
 		} else {
-			if calltimer == nil {
-				calltimer = time.NewTimer(time.Duration(waitNanoseconds))
-				<-calltimer.C
-				last = now
-				if callTrailing {
-					fn(args...)
-				}
-				calltimer.Stop()
-				calltimer = nil
-			}
+			previous = 0
 		}
+		if timeout != nil {
+			timeout.Stop()
+			//timeout = nil, TODO, setting to nil throws panic
+		}
+		result = fn(args)
+		return result
+	}
+	return func(args ...T) T {
+		now := Now()
+		if previous == 0 && ! leading {
+			previous = now
+		}
+		remaining := waitN - (now - previous)
+		if remaining <= 0 || remaining > waitN {
+			if timeout != nil {
+				timeout.Stop()
+				timeout = nil //see above TODO, but this doesnt cause panic
+			}
+			previous = now
+			result = fn(args...)
+		} else if trailing && timeout == nil {
+			timeout = time.NewTimer(time.Duration(remaining))
+			go (func(){
+				for { select {
+					case <-timeout.C:
+						result = later(args...)
+						break }}})()
+		}
+		return result
 	}
 }
 
-func Throttle(fn func(...T), waitMilliseconds int64, options ...map[string]bool) func(...T) {
+func Throttle(fn func(...T) T, waitMilliseconds int64, options ...map[string]bool) func(...T) T {
 	return ThrottleNano(fn, waitMilliseconds * 1000000, options...)
 }
 
