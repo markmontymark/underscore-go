@@ -1252,9 +1252,9 @@ func Memoize(fn func(...T) T, opt_hasher ...func(...T) T) func(...T) T {
 //var log = _.bind(console.log, console);
 //_.delay(log, 1000, 'logged later');
 //=> 'logged later' // Appears after one second.
-func Delay(fn func(), waitMilliseconds int64, savedArgs ...T) {
+func DelayNano(fn func() T, waitNanoseconds int64, savedArgs ...T) {
 	go (func() {
-		timer := time.NewTimer( time.Duration( waitMilliseconds * 1000000 ))
+		timer := time.NewTimer( time.Duration( waitNanoseconds))
 		for {
 			select {
 				case <-timer.C:
@@ -1264,17 +1264,67 @@ func Delay(fn func(), waitMilliseconds int64, savedArgs ...T) {
 			}
 		}
 	})()
+}
+func Delay(fn func() T, waitMilliseconds int64, savedArgs ...T) {
+	DelayNano(fn, waitMilliseconds * 1000000, savedArgs...)
+}
 
-/*
-		func() {
-			//for {
-			//<-timer.C
-				//timer.Stop()
-				//fmt.Fprintf( os.Stdout, "about to call fn\n")
-				fn()
-			//}
-		})
-*/
+
+//debounce_.debounce(function, wait, [immediate]) 
+//Creates and returns a new debounced version of the passed function which will postpone its execution until after wait milliseconds have elapsed since the last time it was invoked. Useful for implementing behavior that should only happen after the input has stopped arriving. For example: rendering a preview of a Markdown comment, recalculating a layout after the window has stopped being resized, and so on.
+//
+//Pass true for the immediate parameter to cause debounce to trigger the function on the leading instead of the trailing edge of the wait interval. Useful in circumstances like preventing accidental double-clicks on a "submit" button from firing a second time.
+//
+//var lazyLayout = _.debounce(calculateLayout, 300);
+//$(window).resize(lazyLayout);
+func DebounceNano(fn func() T, waitNanoseconds int64, optImmediate ...bool) func() T {
+	immediate := len(optImmediate) > 0 && optImmediate[0]
+	var timestamp int64 //, result
+	var later func() T
+	var timer *time.Timer = nil
+	var lastResult T
+	later = func() T {
+		last := Now() - timestamp
+      if last < waitNanoseconds && last > 0 {
+         go func() T {
+            timer = time.NewTimer( time.Duration( waitNanoseconds - last))
+            for{ select {
+               case <-timer.C:
+                  timer.Stop()
+                  lastResult = later()
+						return lastResult
+                  }}}()
+      } else {
+			if ! immediate {
+				lastResult = fn()
+				timer.Stop()
+		  }
+      }
+		return lastResult
+	}
+
+	return func() T {
+		timestamp = Now()
+		callNow := immediate && timer == nil
+		if timer == nil {
+			timer = time.NewTimer( time.Duration( waitNanoseconds))
+			go (func() {
+				for{
+					<-timer.C
+						timer.Stop()
+						lastResult = later()
+						break }})()
+		}
+		if callNow {
+			lastResult = fn()
+		}
+		return lastResult
+	}
+}
+
+// Millisecond version, instead of nanosecond version, to be at parity with Underscore.js
+func Debounce(fn func() T, waitMilliseconds int64, immediate ...bool) func() T {
+	return DebounceNano(fn, waitMilliseconds * 1000000, immediate...)
 }
 
 //throttle_.throttle(function, wait, [options]) 

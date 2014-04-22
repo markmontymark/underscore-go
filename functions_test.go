@@ -158,12 +158,15 @@ func TestNow(t *testing.T) {
 
 func TestDelay(t *testing.T) {
 	delayed := false
-	Delay(func(){ delayed = true }, 100)
-	Delay(func(){
-		asserts.False( t, "didn't delay the function quite yet", delayed) },
+	Delay(func() T { delayed = true; return delayed }, 100)
+	Delay(func() T {
+		asserts.False( t, "didn't delay the function quite yet", delayed)
+		return delayed },
 		50)
-	Delay(func(){
-		asserts.True( t, "delayed the function", delayed) },
+	Delay(func() T {
+		asserts.True( t, "delayed the function", delayed) 
+		return delayed
+	},
 		150)
 
 	// wait for Delay calls above to run their course
@@ -178,7 +181,7 @@ func TestDefer(t *testing.T) {
 	deferred := false
 	func(){
 		defer func(boole bool){ deferred = boole }(true)
-		Delay(func(){ asserts.Ok(t, "deferred the function", deferred)  }, 50)
+		Delay(func() T{ asserts.Ok(t, "deferred the function", deferred) ; return deferred }, 50)
 	}()
 	// wait for Delay calls above to run their course
 	select {
@@ -187,66 +190,98 @@ func TestDefer(t *testing.T) {
 	}
 }
 
-/*
-// XXX: missing debounce, in progress
+// XXX: debounce, tests in progress
 func TestDebounce(t *testing.T) {
-	counter := 0
-	incr := func(){ counter += 1 }
-	debouncedIncr = Debounce(incr, 32)
+	var counter int = 0
+	incr := func() T { counter += 1
+		return counter }
+	debouncedIncr := Debounce(incr, 32)
 	debouncedIncr()
 	debouncedIncr()
-	Delay(debouncedIncr, 16)
-	Delay(func(){ asserts.IntEquals(t, counter, 1, "incr was debounced") },
-		96)
+	Delay(debouncedIncr, 32)
+	//Delay(func(){ asserts.IntEquals(t, "incr was debounced", counter, 0) },
+		//96)
+	select {
+		case <-time.After(5 * time.Millisecond):
+			asserts.IntEquals(t, "incr was debounced", counter, 0)
+		break
+	}
+	select {
+		case <-time.After(90 * time.Millisecond):
+			asserts.IntEquals(t, "incr was debounced", counter, 1)
+		break
+	}
 }
 
 func TestDebounceASAP(t *testing.T) {
 	counter := 0
-	incr := func() (counter int) { counter += 1; return }
+	incr := func() T { counter += 1; return counter }
 	debouncedIncr := Debounce(incr, 64, true)
-	a := DebouncedIncr()
-	b := DebouncedIncr()
-	asserts.IntEquals(a, 1)
-	asserts.IntEquals(b, 1)
+	a := debouncedIncr().(int)
+	b := debouncedIncr().(int)
+	asserts.IntEquals(t, "debounced immediate return a",a, 1)
+	asserts.IntEquals(t, "debounced immediate return b",b, 1)
 	asserts.IntEquals(t, "incr was called immediately",1,counter)
 	Delay(debouncedIncr, 16)
 	Delay(debouncedIncr, 32)
 	Delay(debouncedIncr, 48)
-	Delay(func(){ asserts.IntEquals(t, "Incr was debounced", counter, 1) },
-		128)
+	//Delay(func(){ asserts.IntEquals(t, "Incr was debounced", counter, 1) },
+	//	128)
+	select {
+		case <-time.After(128 * time.Millisecond):
+			asserts.IntEquals(t, "incr was debounced", counter, 1)
+		break
+	}
 }
 
 func TestDebounceASAPRecursively(t *testing.T) {
 	counter := 0
-	debouncedIncr := Debounce(func(){
+	var debouncedIncr func()T
+	debouncedIncr = Debounce(func() T{
 			counter += 1
 			if counter < 10 {
 				debouncedIncr()
 			}
+			return counter
 		}, 32, true)
 	debouncedIncr()
 	asserts.IntEquals(t, "incr was called immediately", counter, 1)
-	Delay(func(){ asserts.IntEquals( t, "Incr was debounced, recursively", counter, 1) },
-		96)
+	//Delay(func() T{ asserts.IntEquals( t, "Incr was debounced, recursively", counter, 1); return nil },
+		//96)
+	select {
+		case <-time.After(96 * time.Millisecond):
+			asserts.IntEquals(t, "incr was debounced, recursively", counter, 1)
+		break
+	}
 }
 
+/* not relevant to Go, can't redefine Now()
 func TestDebounceAfterSystemTimeIsMuckedWith(t *testing.T) {
     counter := 0
     origNowFunc := Now
-    debouncedIncr := Debounce(func(){ counter += 1 }, 100, true)
+    debouncedIncr := Debounce(func()T{ counter += 1; return counter }, 100, true)
     debouncedIncr();
     asserts.IntEquals(t, "Incr called immediately",counter, 1)
-    underscore.Now = func() {
-      return new Date(2013, 0, 1, 1, 1, 1);
+    Now = func() int64 {
+      return 201301111
     }
 
-	Delay(func() {
-		debouncedIncr()
-		asserts.IntEquals(t, "incr was debounced successfully", counter, 2)
-		Now = origNowFunc },
-		200)
+	//Delay(func() {
+		//debouncedIncr()
+		//Now = origNowFunc },
+		//asserts.IntEquals(t, "incr was debounced successfully", counter, 2)
+		//200)
+	select {
+		case <-time.After(200 * time.Millisecond):
+			debouncedIncr()
+			asserts.IntEquals(t, "incr was debounced, successively", counter, 2)
+			Now = origNowFunc
+		break
+	}
   }
+*/
 
+/*
 // XXX missing throttle, in progress
 func TestThrottle(t *testing.T) {
 	myfunc := func(args ...T){//arg1, arg2 string) {
