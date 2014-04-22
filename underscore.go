@@ -1354,10 +1354,12 @@ func ThrottleNano (fn func(...T) T, waitN int64 , options ...map[string]bool) fu
 	var leading bool = true
 	var trailing bool = true
 	if len(options) > 0 {
-		v,ok := options[0]["leading"]
-		leading = ok && v
-		v,ok = options[0]["trailing"]
-		trailing = ok && v
+		if v,ok := options[0]["leading"] ; ok {
+			leading = v
+		}
+		if v,ok := options[0]["trailing"]; ok {
+			trailing = v
+		}
 	}
 	var later func(...T) T = func(args ...T) T {
 		if leading {

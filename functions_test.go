@@ -317,96 +317,103 @@ func TestThrottleWithArgs (t *testing.T){
 		return nil }, 100)
 }
 
-/*
-  asyncTest('throttle once', 2, function() {
-    var counter = 0;
-    var incr = function(){ return ++counter; };
-    var throttledIncr = _.throttle(incr, 32);
-    var result = throttledIncr();
-    _.delay(function(){
-      equal(result, 1, 'throttled functions return their value');
-      equal(counter, 1, 'incr was called once'); start();
-    }, 64);
-  });
+func TestThrottleOnce(t *testing.T){
+    counter := 0
+    incr := func(...T) T{ counter += 1; return counter }
+    throttledIncr := Throttle(incr, 2)
+    result := throttledIncr().(int)
+    DelayAndWait(func()T {
+      asserts.IntEquals( t, "throttled functions return their value", result, 1)
+      asserts.IntEquals( t, "Incr was called once ", counter , 1)
+		return nil
+    }, 6)
+}
 
-  asyncTest('throttle twice', 1, function() {
-    var counter = 0;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 32);
-    throttledIncr(); throttledIncr();
-    _.delay(function(){ equal(counter, 2, 'incr was called twice'); start(); }, 64);
-  });
+func TestThrottleTwice(t *testing.T){
+    counter := 0
+    incr := func(...T) T{ counter += 1; return counter }
+    throttledIncr := Throttle(incr, 2)
+    throttledIncr()
+    throttledIncr()
+    DelayAndWait(func()T {
+      asserts.IntEquals( t, "Incr was called twice ", counter , 2)
+		return nil
+    }, 6)
+}
 
-  asyncTest('more throttling', 3, function() {
-    var counter = 0;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 30);
-    throttledIncr(); throttledIncr();
-    ok(counter == 1);
-    _.delay(function(){
-      ok(counter == 2);
-      throttledIncr();
-      ok(counter == 3);
-      start();
-    }, 85);
-  });
+func TestMoreThrottling(t *testing.T){
+	counter := 0
+	incr := func(...T) T{ counter += 1; return counter }
+	throttledIncr := Throttle(incr, 2)
+	throttledIncr()
+	throttledIncr()
+   asserts.True(t, "checking counter amidst throttling", counter == 1)
+   DelayAndWait(func()T {
+      asserts.Ok(t,"checking counter amidst throttling, 2",counter == 2)
+      throttledIncr()
+      asserts.Ok(t,"checking counter amidst throttling, 3",counter == 3)
+		return nil
+   }, 85)
+}
 
 
- asyncTest('throttle repeatedly with results', 6, function() {
-    var counter = 0;
-    var incr = function(){ return ++counter; };
-    var throttledIncr = _.throttle(incr, 100);
-    var results = [];
-    var saveResult = function() { results.push(throttledIncr()); };
-    saveResult(); saveResult();
-    _.delay(saveResult, 50);
-    _.delay(saveResult, 150);
-    _.delay(saveResult, 160);
-    _.delay(saveResult, 230);
-    _.delay(function() {
-      equal(results[0], 1, 'incr was called once');
-      equal(results[1], 1, 'incr was throttled');
-      equal(results[2], 1, 'incr was throttled');
-      equal(results[3], 2, 'incr was called twice');
-      equal(results[4], 2, 'incr was throttled');
-      equal(results[5], 3, 'incr was called trailing');
-      start();
-    }, 300);
-  });
+func TestThrottleRepeatedlyWithResults( t *testing.T ) {
+	counter := 0
+	incr := func(...T) T{ counter += 1; return counter }
+	throttledIncr := Throttle(incr, 100)
+   results := []int{}
+	saveResult := func() T { results = append(results,throttledIncr().(int)); return results }
+	saveResult()
+	saveResult()
+   Delay(saveResult, 50)
+   Delay(saveResult, 150)
+   Delay(saveResult, 160)
+   Delay(saveResult, 230)
+   DelayAndWait(func() T {
+      asserts.IntEquals( t, "incr was called once", results[0], 1)
+      asserts.IntEquals( t, "incr was throttled", results[1], 1)
+      asserts.IntEquals( t, "incr was throttled", results[2], 1)
+      asserts.IntEquals( t, "incr was called twice", results[3], 2)
+      asserts.IntEquals( t, "incr was throttled", results[4], 2)
+      asserts.IntEquals( t, "incr was called trailing", results[5], 3)
+		return nil
+    }, 300)
+}
 
-  asyncTest('throttle triggers trailing call when invoked repeatedly', 2, function() {
-    var counter = 0;
-    var limit = 48;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 32);
+func TestThrottleTriggersTrailingCallWhenInvokedRepeatedly( t *testing.T) {
+    counter := 0
+    counterRet := 0
+    var limit int64 = 4800
+    incr := func(...T) T{ counter += 1; return counter }
+    throttledIncr := Throttle(incr, 32)
 
-    var stamp = new Date;
-    while ((new Date - stamp) < limit) {
-      throttledIncr();
+    stamp := Now()
+    for (Now() - stamp) < limit {
+      throttledIncr()
+		counterRet += 1
     }
-    var lastCount = counter;
-    ok(counter > 1);
+    lastCount := counter
+    asserts.Ok( t, "Trailing test", counterRet > 1)
+    DelayAndWait(func() T {
+		asserts.Ok( t, "Counter > lastCount", counter > lastCount)
+		return nil
+    }, 96)
+}
 
-    _.delay(function() {
-      ok(counter > lastCount);
-      start();
-    }, 96);
-  });
+func TestThrottleDoesNotTriggerLeadingCallWhenLeadingIsFalse (t *testing.T){
+	counter := 0
+	incr := func(...T) T{ counter += 1; return counter }
+	throttledIncr := Throttle(incr, 60, map[string]bool{"leading":false})
+	throttledIncr()
+	throttledIncr()
+	asserts.Ok( t, "Throttle does not trigger leading call 1", counter == 0)
+	DelayAndWait(func() (ignore T) {
+		asserts.IntEquals( t, "Throttle does not trigger leading call 2", counter , 1)
+		return
+    }, 96)
+}
 
-  asyncTest('throttle does not trigger leading call when leading is set to false', 2, function() {
-    var counter = 0;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 60, {leading: false});
-
-    throttledIncr(); throttledIncr();
-    ok(counter === 0);
-
-    _.delay(function() {
-      ok(counter == 1);
-      start();
-    }, 96);
-  });
-
+/*
 asyncTest('more throttle does not trigger leading call when leading is set to false', 3, function() {
     var counter = 0;
     var incr = function(){ counter++; };
