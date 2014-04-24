@@ -152,6 +152,16 @@ func TestWithout(t *testing.T) {
 	asserts.True(t, "ditto", len(retval) == 1)
 }
 
+func TestPartition(t *testing.T) {
+	list := []T{1, 2, 1, 0, 3, 1, 4}
+	isOdd := func(elem T) bool {
+		return elem.(int) % 2 != 0
+	}
+	asserts.Equals(t, "Can partition list ",
+		fmt.Sprint(Partition(list, isOdd)), "[[1 1 3 1] [2 0 4]]")
+}
+
+
 func TestUniq(t *testing.T) {
 	list := []T{1, 2, 1, 3, 1, 4}
 	asserts.Equals(t, "can find the unique values of an unsorted array",

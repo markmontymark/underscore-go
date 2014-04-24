@@ -259,4 +259,12 @@ func TestNowOOP(t *testing.T) {
 		diff <= 0 && diff >= -500)
 }
 
+func TestPartitionOOP(t *testing.T) {
+   isOdd := func(elem T) bool {
+      return elem.(int) % 2 != 0
+   }
+   asserts.Equals(t, "Can oop partition list ",
+		fmt.Sprint(New([]T{1, 2, 1, 0, 3, 1, 4}).Chain().Partition(isOdd).Value()), "[[1 1 3 1] [2 0 4]]")
+}
+
 // TODO:  missing TestHas from objects.js "has"

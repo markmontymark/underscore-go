@@ -15,7 +15,6 @@ import (
 	"sync"
 	"time"
 _	"os"
-	
 )
 
 // Custom type T is a shorthand for interface{} to save myself from RMI or carpal tunnel syndrome
@@ -1022,6 +1021,26 @@ func Uniq(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T {
 // been sorted, you have the option of using a faster algorithm.
 // Aliased as `Uniq`.
 var Unique func(list T, isSorted T /*bool or func*/, opt_iterator ...T) []T = Uniq
+
+// partition_.partition(array, predicate) 
+// Split array into two arrays: one whose elements all satisfy predicate and one whose elements all do not satisfy predicate.
+// 
+// _.partition([0, 1, 2, 3, 4, 5], isOdd);
+// => [[1, 3, 5], [0, 2, 4]]
+func Partition (list []T, predicate func(T)bool) [][]T {
+	truelist := make([]T,0)
+	falselist := make([]T,0)
+	predicateAsEachIterator := func(elem T, index T, list T) bool{
+		if predicate(elem) {
+			truelist = append(truelist,elem)
+		} else {
+			falselist = append(falselist,elem)
+		}
+		return eachContinue
+	}
+	Each(list,predicateAsEachIterator)
+	return [][]T{truelist,falselist}
+}
 
 // Produce an array that contains the union: each distinct element from all of
 // the passed-in arrays.
@@ -2271,6 +2290,11 @@ func (this *Underscore) Values() *Underscore {
 // OOP-style support, add method to *Underscore, see func Without
 func (this *Underscore) Without(opt_from ...T) *Underscore {
 	return this.result(Without(this.wrapped.([]T), opt_from...))
+}
+
+// OOP-style support, add method to *Underscore, see func Without
+func (this *Underscore) Partition(predicate func(T)bool) *Underscore {
+	return this.result(Partition(this.wrapped.([]T), predicate))
 }
 
 // OOP-style support, add method to *Underscore, see func Where
