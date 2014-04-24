@@ -33,6 +33,9 @@ A Go port of Underscore.js
 # TODO
 
  -	Port speed.js to speed\_test.go
+ - Add Bench\*() functions for benchmarking
+ - Add Example\*() functions for showing how to use this code
+ - Export an Underscore Interface interface, to allow different types to provide enumeration, possibly something like C#'s IEnumerable?
 
 # Example usage
 
