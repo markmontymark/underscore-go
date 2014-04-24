@@ -30,6 +30,13 @@ A Go port of Underscore.js
 	cd underscore-go/
 	go test
 
+# Benchmarking
+
+	cd underscore-go/
+	go test -bench=.
+
+ - so far, only a few Array functions are benchmarked, but it's already interesting to see what's fast and what's slow
+
 # TODO
 
  -	Port speed.js to speed\_test.go

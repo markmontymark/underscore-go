@@ -84,8 +84,7 @@ func New(obj ...T) *Underscore {
 // Mirroring the version we started porting from, 1.5.2
 const VERSION string = "1.5.2"
 
-// Collection Functions
-// --------------------
+// Collections Functions
 
 // The cornerstone, an `each` implementation, aka `forEach`.
 // Handles objects and arrays
@@ -1629,16 +1628,21 @@ func Tap(obj T, fn func(...T) T) T {
 	return obj
 }
 
-func Result(obj, propertyName T) T {
-	if obj == nil {
-		return nil
-	}
-	val := obj.(map[T]T)[propertyName]
-	if IsFunctionVariadic(val) { // func(...T) T
-		return val.(func(...T) T)(obj)
-	}
-	return val
+// Shortcut function for checking if an object has a given property directly
+// on itself (in other words, not on a prototype).
+func Has(obj T, key T) bool {
+	_, ok := obj.(map[T]T)[key]
+	return ok
 }
+
+// TODO: missing Matches
+//matches_.matches(attrs) 
+//Returns a predicate function that will tell you if a passed in object contains all of the key/value properties present in attrs.
+//
+//var ready = _.matches({selected: true, visible: true});
+//var readyToGoList = _.filter(list, ready);
+
+
 
 // Add a "chain" function, which will delegate to the wrapper.
 func (this *Underscore) Chain() *Underscore {
@@ -1671,6 +1675,8 @@ func (this *Underscore) Has(key T) *Underscore {
 }
 
 // Utility Functions
+
+// XXX: missing NoConflict, probably wont implement, doesnt make sense for Go?
 
 func IdentityEach(val T, index T, list T) bool {
 	return val == val
@@ -1778,12 +1784,7 @@ func (this *Underscore) Identity(value ...T) T {
 	return value[0]
 }
 
-// Shortcut function for checking if an object has a given property directly
-// on itself (in other words, not on a prototype).
-func Has(obj T, key T) bool {
-	_, ok := obj.(map[T]T)[key]
-	return ok
-}
+
 
 // Run a function **n** times.
 func Times(n int, iterator func(...T) T) []T {
@@ -1816,6 +1817,17 @@ func Random(min int, optmax ...int) int {
 
 func (this *Underscore) Random(min int, optmax ...int) int {
 	return Random(min, optmax...)
+}
+
+func Result(obj, propertyName T) T {
+	if obj == nil {
+		return nil
+	}
+	val := obj.(map[T]T)[propertyName]
+	if IsFunctionVariadic(val) { // func(...T) T
+		return val.(func(...T) T)(obj)
+	}
+	return val
 }
 
 // Return a random float64 between min and max (inclusive).
