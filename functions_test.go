@@ -466,65 +466,46 @@ func TestMoreThrottleDoesNotTriggerLeadingCallWhenLeadingIsFalse (t *testing.T){
 	*/
 }
 
-/*
-  asyncTest('one more throttle with leading: false test', 2, function() {
-    var counter = 0;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 100, {leading: false});
+func TestOneMoreThrottleWithLeadingFalse(t *testing.T){
+	counter := 0
+	incr := func(...T)T{ counter += 1; return counter }
+	throttledIncr := Throttle(incr, 100, map[string]bool{"leading": false})
 
-    var time = new Date;
-    while (new Date - time < 350) throttledIncr();
-    ok(counter <= 3);
+	time := Now()
+	for Now() - time < 350000000 {
+		throttledIncr()
+	}
+	asserts.Ok(t, "One More leading false throttle test, first check", counter <= 3)
 
-    _.delay(function() {
-      ok(counter <= 4);
-      start();
-    }, 200);
-  });
+	DelayAndWait(func()T {
+		asserts.Ok(t, "One More leading false throttle test, second check", counter <= 4)
+		return nil
+	}, 200)
+}
 
-  asyncTest('throttle does not trigger trailing call when trailing is set to false', 4, function() {
-    var counter = 0;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 60, {trailing: false});
+func TestThrottleDoesNotTriggerTrailingCallWhenTrailingIsSettoFalse( t *testing.T){
+	counter := 0
+	incr := func(...T)T{ counter += 1; return counter }
+	throttledIncr := Throttle(incr, 60, map[string]bool{"trailing": false})
 
-    throttledIncr(); throttledIncr(); throttledIncr();
-    ok(counter === 1);
+	throttledIncr()
+	throttledIncr()
+	throttledIncr()
 
-    _.delay(function() {
-      ok(counter == 1);
+	asserts.IntEquals(t, "TriggerTrailingCall 1", counter, 1 )
+   Delay(func()T{
+		asserts.IntEquals(t, "TriggerTrailingCall 2", counter, 1 )
+      throttledIncr()
+		throttledIncr()
+		asserts.IntEquals(t, "TriggerTrailingCall 3", counter, 2 )
 
-      throttledIncr(); throttledIncr();
-      ok(counter == 2);
-
-      _.delay(function() {
-        ok(counter == 2);
-        start();
-      }, 96);
-    }, 96);
-  });
-*/
-/*
-  asyncTest('throttle continues to function after system time is set backwards', 2, function() {
-    var counter = 0;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 100);
-    var origNowFunc = _.now;
-
-    throttledIncr();
-    ok(counter == 1);
-    _.now = function () {
-      return new Date(2013, 0, 1, 1, 1, 1);
-    };
-
-    _.delay(function() {
-      throttledIncr();
-      ok(counter == 2);
-      start();
-      _.now = origNowFunc;
-    }, 200);
-  });
-
-*/
+      Delay(func()T{
+			asserts.IntEquals(t, "TriggerTrailingCall 4", counter, 2 )
+			return nil
+      }, 96)
+		return nil
+    }, 96)
+}
 
 func TestWaitPlaceholder(t *testing.T){
 	globalWg.Wait()
