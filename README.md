@@ -33,7 +33,6 @@ A Go port of Underscore.js
 # TODO
 
  -	Port speed.js to speed\_test.go
- - Port Underscore.js functions like defer, throttle, debounce (those using setTimeout) with go-routines and Go's Defer language support
 
 # Example usage
 
