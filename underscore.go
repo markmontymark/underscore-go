@@ -1277,7 +1277,7 @@ func DelayAndWait(fn func() T, waitMilliseconds int64, savedArgs ...T) T {
    Delay(func() T {
       retval = fn()
       wg.Done()
-      return nil }, 500)
+      return nil }, waitMilliseconds)
    wg.Wait()
 	return retval
 }
@@ -1353,6 +1353,7 @@ func ThrottleNano (fn func(...T) T, waitN int64 , options ...map[string]bool) fu
 	var previous int64
 	var leading bool = true
 	var trailing bool = true
+	var timeoutCancelled = false
 	if len(options) > 0 {
 		if v,ok := options[0]["leading"] ; ok {
 			leading = v
@@ -1368,7 +1369,9 @@ func ThrottleNano (fn func(...T) T, waitN int64 , options ...map[string]bool) fu
 			previous = 0
 		}
 		if timeout != nil {
-			timeout.Stop()
+			if timeout.Stop() {
+				timeoutCancelled = true
+			}
 			//timeout = nil, TODO, setting to nil throws panic
 		}
 		result = fn(args...)
@@ -1382,18 +1385,26 @@ func ThrottleNano (fn func(...T) T, waitN int64 , options ...map[string]bool) fu
 		remaining := waitN - (now - previous)
 		if remaining <= 0 || remaining > waitN {
 			if timeout != nil {
-				timeout.Stop()
+				if timeout.Stop() {
+					timeoutCancelled = true
+				}
 				timeout = nil //see above TODO, but this doesnt cause panic
 			}
 			previous = now
 			result = fn(args...)
-		} else if trailing && timeout == nil {
+		} else if trailing && timeout == nil {//|| ! timeout.Stop()) {
 			timeout = time.NewTimer(time.Duration(remaining))
 			go (func(){
 				for { select {
 					case <-timeout.C:
-						result = later(args...)
+						if timeoutCancelled {
+							timeoutCancelled = false
+						} else {
+							result = later(args...)
+						}
 						break }}})()
+		} else {
+			return result
 		}
 		return result
 	}

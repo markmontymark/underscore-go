@@ -7,13 +7,15 @@ package underscore
 import (
 	"github.com/markmontymark/asserts"
 	"fmt"
-	_ "sync"
+	"sync"
 	"testing"
 	"time"
 	_ "os"
 )
 
 var fib func(...T) T
+
+var globalWg sync.WaitGroup
 
 func init() {
 	fib = func(n ...T) T {
@@ -230,8 +232,10 @@ func TestDebounceASAP(t *testing.T) {
 	Delay(debouncedIncr, 16)
 	Delay(debouncedIncr, 32)
 	Delay(debouncedIncr, 48)
-	DelayAndWait(func () T {
+	 globalWg.Add(1)
+	/*w*/Delay(func () T {
 			asserts.IntEquals(t, "incr was debounced", counter, 1)
+		globalWg.Done()
 		return counter
 	},128)
 }
@@ -268,11 +272,6 @@ func TestDebounceAfterSystemTimeIsMuckedWith(t *testing.T) {
       return 201301111
     }
 
-	//Delay(func() {
-		//debouncedIncr()
-		//Now = origNowFunc },
-		//asserts.IntEquals(t, "incr was debounced successfully", counter, 2)
-		//200)
 	select {
 		case <-time.After(200 * time.Millisecond):
 			debouncedIncr()
@@ -290,8 +289,10 @@ func TestThrottle(t *testing.T){
 	throttledIncr()
 	throttledIncr()
    asserts.IntEquals(t, "incr was called immediately", counter, 1)
-	DelayAndWait(func () T {
+	 globalWg.Add(1)
+	/*w*/Delay(func () T {
 		asserts.IntEquals(t, "incr was throttled", counter, 2)
+		globalWg.Done()
 		return counter
 	},64)
 }
@@ -312,8 +313,10 @@ func TestThrottleWithArgs (t *testing.T){
 		return value
 	}, 85)
 	asserts.IntEquals(t, "updated to first value", value, 1)
-	DelayAndWait(func() T {
+	 globalWg.Add(1)
+	/*w*/Delay(func() T {
 		asserts.IntEquals(t, "updated to latest value", value, 3)
+		globalWg.Done()
 		return nil }, 100)
 }
 
@@ -322,9 +325,11 @@ func TestThrottleOnce(t *testing.T){
     incr := func(...T) T{ counter += 1; return counter }
     throttledIncr := Throttle(incr, 2)
     result := throttledIncr().(int)
-    DelayAndWait(func()T {
+	 globalWg.Add(1)
+    /*w*/Delay(func()T {
       asserts.IntEquals( t, "throttled functions return their value", result, 1)
       asserts.IntEquals( t, "Incr was called once ", counter , 1)
+		globalWg.Done()
 		return nil
     }, 6)
 }
@@ -335,8 +340,10 @@ func TestThrottleTwice(t *testing.T){
     throttledIncr := Throttle(incr, 2)
     throttledIncr()
     throttledIncr()
-    DelayAndWait(func()T {
+	 globalWg.Add(1)
+    /*w*/Delay(func()T {
       asserts.IntEquals( t, "Incr was called twice ", counter , 2)
+		globalWg.Done()
 		return nil
     }, 6)
 }
@@ -348,10 +355,12 @@ func TestMoreThrottling(t *testing.T){
 	throttledIncr()
 	throttledIncr()
    asserts.True(t, "checking counter amidst throttling", counter == 1)
-   DelayAndWait(func()T {
+	 globalWg.Add(1)
+   /*w*/Delay(func()T {
       asserts.Ok(t,"checking counter amidst throttling, 2",counter == 2)
       throttledIncr()
       asserts.Ok(t,"checking counter amidst throttling, 3",counter == 3)
+		globalWg.Done()
 		return nil
    }, 85)
 }
@@ -369,15 +378,19 @@ func TestThrottleRepeatedlyWithResults( t *testing.T ) {
    Delay(saveResult, 150)
    Delay(saveResult, 160)
    Delay(saveResult, 230)
-   DelayAndWait(func() T {
+	var localWg sync.WaitGroup
+	localWg.Add(1)
+   /*w*/Delay(func() T {
       asserts.IntEquals( t, "incr was called once", results[0], 1)
       asserts.IntEquals( t, "incr was throttled", results[1], 1)
       asserts.IntEquals( t, "incr was throttled", results[2], 1)
       asserts.IntEquals( t, "incr was called twice", results[3], 2)
       asserts.IntEquals( t, "incr was throttled", results[4], 2)
       asserts.IntEquals( t, "incr was called trailing", results[5], 3)
+		localWg.Done()
 		return nil
     }, 300)
+	localWg.Wait()
 }
 
 func TestThrottleTriggersTrailingCallWhenInvokedRepeatedly( t *testing.T) {
@@ -394,8 +407,10 @@ func TestThrottleTriggersTrailingCallWhenInvokedRepeatedly( t *testing.T) {
     }
     lastCount := counter
     asserts.Ok( t, "Trailing test", counterRet > 1)
-    DelayAndWait(func() T {
+	 globalWg.Add(1)
+    Delay(func() T {
 		asserts.Ok( t, "Counter > lastCount", counter > lastCount)
+		globalWg.Done()
 		return nil
     }, 96)
 }
@@ -403,38 +418,55 @@ func TestThrottleTriggersTrailingCallWhenInvokedRepeatedly( t *testing.T) {
 func TestThrottleDoesNotTriggerLeadingCallWhenLeadingIsFalse (t *testing.T){
 	counter := 0
 	incr := func(...T) T{ counter += 1; return counter }
-	throttledIncr := Throttle(incr, 60, map[string]bool{"leading":false})
+	throttledIncr := Throttle(incr, 60, map[string]bool{"leading":false,"name":true})
 	throttledIncr()
 	throttledIncr()
-	asserts.Ok( t, "Throttle does not trigger leading call 1", counter == 0)
-	DelayAndWait(func() (ignore T) {
+	asserts.IntEquals( t, "Throttle does not trigger leading call 1", counter , 0)
+	var localWg sync.WaitGroup
+	localWg.Add(1)
+	Delay(func() T {
 		asserts.IntEquals( t, "Throttle does not trigger leading call 2", counter , 1)
-		return
-    }, 96)
+		localWg.Done()
+		return nil
+    }, 100)
+	localWg.Wait()
+}
+
+
+func TestMoreThrottleDoesNotTriggerLeadingCallWhenLeadingIsFalse (t *testing.T){
+	counter := new(int)
+	incr := func(...T) T{ *counter += 1; return counter }
+	throttledIncr := Throttle(incr, 100, map[string]bool{"leading":false})
+	throttledIncr()
+   Delay(func()T{ throttledIncr(); return *counter }, 50)
+   Delay(func()T{ throttledIncr(); return *counter }, 60)
+   Delay(func()T{ throttledIncr(); return *counter }, 200)
+   Delay(func()T{ throttledIncr(); return *counter }, 350)
+
+	var localWg sync.WaitGroup
+	localWg.Add(2)
+   Delay(func()T {
+		asserts.IntEquals(t, "More throttle, first delay, counter should be 1", *counter , 1)
+		localWg.Done()
+		return nil
+    }, 250)
+
+   Delay(func() T{
+		asserts.IntEquals(t, "More throttle, second delay, counter should be 2", *counter , 2)
+		localWg.Done()
+		return nil
+    }, 350)
+   asserts.IntEquals(t, "More throttle, counter still zero ", *counter , 0)
+	localWg.Wait()
+
+	/*select {
+		case <-time.After(1000):
+	}
+	fmt.Printf("end counter %v, now %v\n",*counter,time.Now().UnixNano() / 1000000);
+	*/
 }
 
 /*
-asyncTest('more throttle does not trigger leading call when leading is set to false', 3, function() {
-    var counter = 0;
-    var incr = function(){ counter++; };
-    var throttledIncr = _.throttle(incr, 100, {leading: false});
-
-    throttledIncr();
-    _.delay(throttledIncr, 50);
-    _.delay(throttledIncr, 60);
-    _.delay(throttledIncr, 200);
-    ok(counter === 0);
-
-    _.delay(function() {
-      ok(counter == 1);
-    }, 250);
-
-    _.delay(function() {
-      ok(counter == 2);
-      start();
-    }, 350);
-  });
-
   asyncTest('one more throttle with leading: false test', 2, function() {
     var counter = 0;
     var incr = function(){ counter++; };
@@ -470,7 +502,8 @@ asyncTest('more throttle does not trigger leading call when leading is set to fa
       }, 96);
     }, 96);
   });
-
+*/
+/*
   asyncTest('throttle continues to function after system time is set backwards', 2, function() {
     var counter = 0;
     var incr = function(){ counter++; };
@@ -492,3 +525,7 @@ asyncTest('more throttle does not trigger leading call when leading is set to fa
   });
 
 */
+
+func TestWaitPlaceholder(t *testing.T){
+	globalWg.Wait()
+}
