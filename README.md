@@ -63,3 +63,9 @@ A Go port of Underscore.js
 
 	- Copy the above code in a file, runme.go, and then on the command line, `go run runme.go`
 
+
+# Wiki
+
+See also the wiki page for some comments on my development of underscore-go
+
+https://github.com/markmontymark/underscore-go/wiki
